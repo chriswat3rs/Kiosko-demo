@@ -624,20 +624,22 @@ body.display-mode .frame-caption{display:none}
 
 /* ================= TIMEOUT + TOAST ================= */
 /* ---- Pantalla de modo (accesibilidad primero) ---- */
-.mode-wrap{flex:1;display:flex;flex-direction:column;gap:30px;padding:34px 64px 44px}
+.mode-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:0 64px 30px}
 .mode-card{
-  flex:1;background:#fff;border:2.5px solid var(--line);border-radius:32px;box-shadow:var(--shadow);
-  display:flex;align-items:center;gap:46px;padding:0 56px;
+  background:#fff;border:2.5px solid var(--line);border-radius:30px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:40px;padding:38px 48px;
   cursor:pointer;transition:.12s;text-align:left;font-family:var(--sans);
 }
 .mode-card:active{transform:scale(.98);border-color:var(--blue)}
 .mode-card .mc-ic{
-  width:150px;height:150px;border-radius:34px;background:#E7F1FE;color:var(--blue);
+  width:128px;height:128px;border-radius:30px;background:#E7F1FE;color:var(--blue);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.mode-card .mc-ic svg{width:80px;height:80px}
-.mode-card .mc-t{font-size:48px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
-.mode-card .mc-s{font-size:29px;color:var(--ink-2);margin-top:10px}
+.mode-card .mc-ic svg{width:68px;height:68px}
+.mode-card .mc-tx{flex:1;min-width:0}
+.mode-card .mc-t{font-size:44px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.mode-card .mc-s{font-size:28px;color:var(--ink-2);margin-top:8px}
+.mode-card .mc-go{width:52px;height:52px;color:#B9C7D9;flex-shrink:0}
 /* ---- Emparejar teléfono como micrófono ---- */
 #ov-pair{background:#081D38F0;z-index:70;align-items:center;justify-content:center}
 #ov-pair .vcard{width:880px}
@@ -922,6 +924,7 @@ body.display-mode .frame-caption{display:none}
                   <div class="mc-t">Con mi voz</div>
                   <div class="mc-s">Háblame y te contesto</div>
                 </div>
+                <svg class="mc-go"><use href="#i-fwd"/></svg>
               </button>
               <button class="mode-card" id="mode-touch">
                 <div class="mc-ic"><svg><use href="#i-touch"/></svg></div>
@@ -929,6 +932,7 @@ body.display-mode .frame-caption{display:none}
                   <div class="mc-t">Tocando la pantalla</div>
                   <div class="mc-s">Elige opciones con un toque</div>
                 </div>
+                <svg class="mc-go"><use href="#i-fwd"/></svg>
               </button>
             </div>
           </section>
