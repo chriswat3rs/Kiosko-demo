@@ -1928,13 +1928,30 @@ function showQR(mode){
    resultado) + una frase corta hablada (apagable en la barra demo).
    ===================================================================== */
 let ttsOn = true, voiceMode = false;
+/* Voz masculina para Stebot: se busca por nombre entre las voces del
+   sistema (Juan/Raúl es-MX, Jorge, Diego, Pablo…). Si el equipo no tiene
+   ninguna voz masculina en español, se baja el tono como aproximación. */
+let vozBot = null, vozBotMale = false;
+function pickBotVoice(){
+  try{
+    const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().indexOf('es') === 0);
+    const male = ['juan','raul','raúl','jorge','diego','carlos','pablo','alvaro','álvaro','andres','andrés','enrique','miguel','gerardo'];
+    vozBot = vs.find(v => male.some(n => v.name.toLowerCase().indexOf(n) >= 0)) || null;
+    vozBotMale = !!vozBot;
+    if(!vozBot) vozBot = vs.find(v => v.lang.toLowerCase() === 'es-mx') || vs[0] || null;
+  }catch(e){}
+}
+if(window.speechSynthesis){
+  pickBotVoice();
+  speechSynthesis.onvoiceschanged = pickBotVoice;
+}
 function say(txt, onEnd){
   if(!ttsOn){ if(onEnd) onEnd(); return; }
   try{
     const u = new SpeechSynthesisUtterance(txt);
     u.lang = 'es-MX'; u.rate = 1.05;
-    const v = speechSynthesis.getVoices().find(x => x.lang && x.lang.indexOf('es') === 0);
-    if(v) u.voice = v;
+    if(vozBot) u.voice = vozBot;
+    u.pitch = vozBotMale ? 1 : 0.75; // sin voz masculina disponible: tono grave
     if(onEnd){ u.onend = onEnd; u.onerror = onEnd; }
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
