@@ -186,15 +186,23 @@ body.display-mode .frame-caption{display:none}
 }
 .att-slide.on{opacity:1}
 .as2-title{font-size:66px;font-weight:800;color:#fff;text-align:center;line-height:1.12;letter-spacing:-.01em}
-.as2-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;width:100%;padding:0 40px}
-.as2-card{
-  background:#fff;border-radius:28px;padding:28px 24px 24px;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
+/* Marquesinas de producto: movimiento continuo, sentidos opuestos */
+#att-s2{gap:36px;padding:0}
+.mq{width:100%;overflow:hidden;padding:14px 0}
+.mq-track{display:flex;width:max-content;animation:mq-l 32s linear infinite}
+.mq-track.rev{animation:mq-r 40s linear infinite}
+@keyframes mq-l{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mq-r{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.mq-card{
+  width:310px;margin-right:30px;background:#fff;border-radius:26px;padding:22px 20px 18px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;
   box-shadow:0 18px 40px rgba(0,15,50,.35);
 }
-.as2-card img{width:100%;height:200px;object-fit:contain}
-.as2-card .n{font-size:26px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2}
-.as2-card .p{font-size:36px;font-weight:800;color:var(--blue)}
+.mq-card:nth-child(odd){transform:rotate(-2.5deg)}
+.mq-card:nth-child(even){transform:rotate(2deg)}
+.mq-card img{width:100%;height:165px;object-fit:contain}
+.mq-card .n{font-size:23px;font-weight:700;color:var(--ink);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mq-card .p{font-size:33px;font-weight:800;color:var(--blue)}
 .st-bubble{
   background:#fff;color:var(--ink);border-radius:34px;padding:38px 50px;
   font-size:46px;font-weight:800;line-height:1.25;max-width:820px;min-height:190px;
@@ -1155,12 +1163,8 @@ body.display-mode .frame-caption{display:none}
           </div>
             <div class="att-slide" id="att-s2">
               <div class="as2-title">Encuéntralo hoy<br>en tu Steren</div>
-              <div class="as2-grid">
-                <div class="as2-card"><img src="https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/23209c27a/bocina-bluetooth-tws-resistente-a-salpicaduras-grande.jpg" alt="" onerror="this.style.visibility='hidden'"><div class="n">Bocina Bluetooth</div><div class="p">$715</div></div>
-                <div class="as2-card"><img src="https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/20475fce0/foco-led-wi-fi-rgb-w-multicolor-de-10-w.jpg" alt="" onerror="this.style.visibility='hidden'"><div class="n">Foco Wi-Fi multicolor</div><div class="p">$150</div></div>
-                <div class="as2-card"><img src="https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/22100b86a/cable-hdmir-2-1-certificado-de-ultra-alta-velocidad-de-2-m.jpg" alt="" onerror="this.style.visibility='hidden'"><div class="n">Cable HDMI 2.1</div><div class="p">$199</div></div>
-                <div class="as2-card"><img src="https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/23370d83c/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-doble-banda.jpg" alt="" onerror="this.style.visibility='hidden'"><div class="n">Cámara Wi-Fi</div><div class="p">$549</div></div>
-              </div>
+              <div class="mq"><div class="mq-track" id="mq-a"></div></div>
+              <div class="mq"><div class="mq-track rev" id="mq-b"></div></div>
             </div>
           </div>
           <div class="attract-cta">
@@ -2288,6 +2292,20 @@ function handleRemoteText(text){
   routeVoice(text);
   pubPhone({t:'ok', x:'Listo — mira la pantalla.'});
 }
+
+/* ---- Attract: marquesinas de producto desde el catálogo real ---- */
+const MQ_A = ['BOC-970','SHOME-120','299-502','CCTV-213','BSD-120','SHOME-127'];
+const MQ_B = ['NB-900','COM-8300','AUD-7625','STV-105','905-3107','USB-4724'];
+function mqHTML(skus){
+  const one = skus.map(s => {
+    const pr = P[s];
+    const nm = pr.n.split(' · ')[0];
+    return `<div class="mq-card"><img src="${pr.img}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div class="n">${nm}</div><div class="p">${money(pr.p)}</div></div>`;
+  }).join('');
+  return one + one; // duplicado exacto para loop perfecto
+}
+$('#mq-a').innerHTML = mqHTML(MQ_A);
+$('#mq-b').innerHTML = mqHTML(MQ_B);
 
 /* ---- Attract: rotación de slides (el CTA permanece fijo) ---- */
 let attSlide = 0;
