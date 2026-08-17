@@ -648,7 +648,7 @@ body.display-mode .frame-caption{display:none}
 
 /* ================= TIMEOUT + TOAST ================= */
 /* ---- Pantalla de modo (accesibilidad primero) ---- */
-.mode-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;padding:0 64px 30px}
+.mode-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:28px;padding:34px 64px 30px}
 .mode-card{
   background:#fff;border:2.5px solid var(--line);border-radius:30px;box-shadow:var(--shadow);
   display:flex;align-items:center;gap:40px;padding:38px 48px;
@@ -1462,7 +1462,7 @@ function startBrowse(){
   renderChips(BROWSE.map(cat => ({ic:cat.ic, l:cat.l, cat})), o => {
     if(o.cat.other){
       track('voice_from_browse');
-      return openVoice();
+      return openVoiceSmart();
     }
     openBrowseCat(o.cat);
   });
@@ -2190,7 +2190,7 @@ function showVoiceMatches(skus, raw){
   const nf = document.createElement('button');
   nf.className = 'prow nofind';
   nf.innerHTML = `<div class="ppic"><svg><use href="#i-mic"/></svg></div><div><div class="pnm">No es ninguno de estos</div><div class="ploc">Dímelo otra vez con tu voz</div></div>`;
-  nf.addEventListener('click', () => openVoice());
+  nf.addEventListener('click', () => openVoiceSmart());
   box.appendChild(nf);
   go('s-browse');
   box.scrollTop = 0;
@@ -2315,6 +2315,11 @@ setInterval(() => {
   $('#att-s1').classList.toggle('on', attSlide === 0);
   $('#att-s2').classList.toggle('on', attSlide === 1);
 }, 7000);
+
+function openVoiceSmart(){
+  voiceMode = true;
+  if(pairOn || voiceSource === 'kiosko') openVoice(); else openPair();
+}
 
 /* ---- Pantalla de modo ---- */
 $('#mode-stebot').src = document.querySelector('#s-home .hh-stebot').src;
@@ -2452,7 +2457,7 @@ function simChipListen(opts, onPick){
 }
 
 /* ---- Cableado del overlay de voz ---- */
-$('#home-voice').addEventListener('click', () => { voiceMode = true; if(pairOn || voiceSource === 'kiosko') openVoice(); else openPair(); });
+$('#home-voice').addEventListener('click', openVoiceSmart);
 $('#vc-cancel').addEventListener('click', closeVoice);
 $('#vc-close2').addEventListener('click', closeVoice);
 $('#vc-done').addEventListener('click', () => {
