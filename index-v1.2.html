@@ -2106,6 +2106,7 @@ function voiceFail(extra){
   $('#vc-err-s').textContent = extra
     ? 'Dilo con otras palabras, o mejor explóralo tocando.'
     : 'Puede ser el ruido de la tienda — intentemos otra vez.';
+  if(pairOn) pubPhone({t:'miss', x: extra ? 'No encontré eso — dilo con otras palabras.' : 'No te escuché bien — repite.'});
   if(extra) track('demanda_no_atendida', 'voz: ' + extra);
   say(extra ? 'No encontré eso. ¿Lo intentamos con otras palabras?' : 'No te escuché bien.');
 }
@@ -2121,21 +2122,31 @@ const vnorm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, 
 function routeVoice(raw){
   const q = vnorm(raw);
   const has = (...ws) => ws.some(w => q.indexOf(w) >= 0);
+  const distStated = has('lejos','otro cuarto','otra habitacion','otro piso','metros','junto','al lado','a un lado','mueble','pegado');
   const dist = has('lejos', 'otro cuarto', 'otra habitacion', 'otro piso', '10 metros') ? 'c'
-             : has('junto', 'al lado', 'a un lado') ? 'j' : 'm';
+             : has('junto', 'al lado', 'a un lado', 'pegado') ? 'j' : 'm';
   closeVoice();
   track('voice_search', raw);
 
-  // 1) Intenciones de conexión → solución completa
+  // 1) Conexión con ambos aparatos: si NO dijo la distancia, se pregunta.
+  //    Sin happy path: el resultado llega cuando el bot está seguro.
   const A = has('laptop','computadora','compu','pc') ? 'laptop' : has('celular','telefono','iphone') ? 'celular' : has('consola','xbox','playstation','play ','nintendo','switch') ? 'consola' : has('bocina','bocinas') ? 'bocina' : null;
   const B = has('tele','tv','television','pantalla') ? 'tv' : has('monitor') ? 'monitor' : null;
-  if(A && B && has('conectar','conecto','conexion','cable') || (A && B)){
-    const res = computeConnect(A, B, dist);
-    if(res){ say('Listo, esto es lo que necesitas.'); return showResult(res); }
+  if(A && B && computeConnect(A, B, 'm')){
+    if(distStated){
+      say('Listo, esto es lo que necesitas.');
+      return showResult(computeConnect(A, B, dist));
+    }
+    flow = {type:'connect', step:3, a:A, b:B};
+    $('#chat-crumb').textContent = 'Conectar dos aparatos';
+    $('#chat-title').textContent = 'Encontremos tu cable';
+    go('s-chat');
+    connectStep(3);
+    return;
   }
 
   // 1.5) Arranque vago: "quiero un cable" → el bot repregunta (conversación)
-  if(has('cable','cables') && !(A && B)){
+  if(has('cable','cables') && !(A && B) && !has('usb','carga','cargador','aux','auxiliar','optico')){
     if(A){
       flow = {type:'connect', step:2, a:A};
       $('#chat-crumb').textContent = 'Conectar dos aparatos';
@@ -2148,24 +2159,33 @@ function routeVoice(raw){
     return;
   }
 
-  // 2) Problemas en casa → solución completa
+  // 2) Problemas en casa: respuesta directa SOLO si el usuario ya dio el dato
+  //    que discrimina; si no, el bot hace su pregunta de diagnóstico por voz.
+  const askProblem = p => {
+    flow = {type:'problem', step:2, problem:p};
+    $('#chat-crumb').textContent = 'Resolver un problema en casa';
+    $('#chat-title').textContent = 'Cuéntame qué pasa';
+    go('s-chat');
+    problemStep(2);
+  };
+  const optByWords = p => p.opts.find(o =>
+    vnorm(o.l + ' ' + (o.s || '')).split(/[^a-z0-9]+/).some(w => w.length > 3 && q.indexOf(w) >= 0));
   if(has('wifi','wi-fi','internet','senal','modem')){
     const p = PROBLEMS.find(x => x.ic === 'i-wifi');
-    const opt = has('piso','toda','fondo','grande','varios') ? p.opts[1] : p.opts[0];
-    say('Listo, esto es lo que necesitas.');
-    return showResult(opt.res);
+    const opt = has('piso','toda','fondo','grande','varios') ? p.opts[1]
+              : has('cuarto','cerca','pared') ? p.opts[0] : optByWords(p);
+    if(opt){ say('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
+    return askProblem(p);
   }
   if(has('luz','apagon','apagones','voltaje','regulador','no break','nobreak','picos','se apaga')){
     const p = PROBLEMS.find(x => x.ic === 'i-bolt');
-    const opt = p.opts.find(o => {
-      const w = vnorm(o.l);
-      return has('compu','consola','pc') ? w.indexOf('computadora') >= 0 : false;
-    }) || p.opts[0];
-    say('Listo, esto es lo que necesitas.');
-    return showResult(opt.res);
+    const opt = optByWords(p);
+    if(opt){ say('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
+    return askProblem(p);
   }
 
-  // 3) Búsqueda por palabras en el catálogo
+  // 3) Búsqueda en catálogo: ANTES de mostrar productos, una pregunta de
+  //    afinación por categoría. Los productos son el final del diálogo.
   const stop = ['quiero','busco','necesito','para','una','unos','unas','que','con','los','las','del','tengo','comprar','ando','buscando','algo'];
   const words = q.split(/[^a-z0-9]+/).filter(w => w.length > 3 && stop.indexOf(w) < 0);
   const scored = Object.keys(P).map(sku => {
@@ -2174,6 +2194,12 @@ function routeVoice(raw){
     return {sku, score};
   }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
   if(scored.length){
+    if(scored.length === 1){
+      say('Listo, esto encontré.');
+      return showResult(fichaFor(scored[0].sku));
+    }
+    const cat = P[scored[0].sku].cat;
+    if(VREFINE[cat]) return voiceRefineCat(cat, raw);
     say('Esto encontré — elige el tuyo.');
     return showVoiceMatches(scored.slice(0, 6).map(x => x.sku), raw);
   }
@@ -2181,6 +2207,54 @@ function routeVoice(raw){
   // 4) Sin coincidencia → demanda no atendida + reintento
   $('#ov-voice').classList.add('active');
   voiceFail(raw);
+}
+
+/* ---- Afinación por categoría: una pregunta antes de mostrar producto ---- */
+const VREFINE = {
+  'Cables': {q:'¿Para qué es el cable?', opts:[
+    {l:'Video · TV o monitor', ic:'i-tv',      skus:['299-502','295-503','299-830','295-600']},
+    {l:'Carga y datos',        ic:'i-phone',   skus:['USB-3102']},
+    {l:'Audio',                ic:'i-speaker', skus:['255-258','299-400']}]},
+  'Bocinas': {q:'¿Dónde la vas a usar?', opts:[
+    {l:'Fiesta o exterior', ic:'i-speaker', skus:['BOC-970']},
+    {l:'Para la tele',      ic:'i-tv',      skus:['BSD-120','299-400','POD-165']},
+    {l:'Uso personal',      ic:'i-headset', skus:['AUD-7625']}]},
+  'Audio': {q:'¿Dónde lo vas a usar?', opts:[
+    {l:'Fiesta o exterior', ic:'i-speaker', skus:['BOC-970']},
+    {l:'Para la tele',      ic:'i-tv',      skus:['BSD-120','299-400','POD-165']},
+    {l:'Uso personal',      ic:'i-headset', skus:['AUD-7625','255-258']}]},
+  'Adaptadores': {q:'¿Qué quieres adaptar?', opts:[
+    {l:'Video',  ic:'i-monitor', skus:['USB-4724','USB-471']},
+    {l:'Audio',  ic:'i-speaker', skus:['USB-456']}]},
+  'Energía': {q:'¿Qué quieres resolver?', opts:[
+    {l:'Apagones',                 ic:'i-nobreak', skus:['NB-900']},
+    {l:'Variaciones de voltaje',   ic:'i-bolt',    skus:['REG-1050']},
+    {l:'Más contactos protegidos', ic:'i-bolt',    skus:['905-3107']}]},
+  'Conectividad': {q:'¿Dónde falla tu red?', opts:[
+    {l:'En un cuarto',      ic:'i-wifi', skus:['COM-8300']},
+    {l:'En toda la casa',   ic:'i-wifi', skus:['MESH-200+']}]},
+  'Smart Home': {q:'¿Qué quieres hacer en casa?', opts:[
+    {l:'Iluminación', ic:'i-bulb', skus:['SHOME-120','SHOME-127']},
+    {l:'Vigilancia',  ic:'i-cam',  skus:['CCTV-213']}]}
+};
+function voiceRefineCat(cat, raw){
+  const R = VREFINE[cat];
+  flow = {type:'refine', step:1};
+  $('#chat-crumb').textContent = 'Encontremos el tuyo';
+  $('#chat-title').textContent = '“' + raw + '”';
+  go('s-chat');
+  setSteps(0, 0);
+  botSay($('#bot-text'), R.q, () => {});
+  renderChips(R.opts.map(o => ({ic:o.ic, l:o.l, skus:o.skus})), o => {
+    if(o.skus.length === 1){
+      say('Listo, esto es lo que necesitas.');
+      showResult(fichaFor(o.skus[0]));
+    }else{
+      say('Esto es lo que tengo — elige el tuyo.');
+      showVoiceMatches(o.skus, raw);
+    }
+  }, true);
+  track('voice_refine', cat);
 }
 function showVoiceMatches(skus, raw){
   flow = {type:'browse', step:2};
@@ -2271,15 +2345,7 @@ function pubPhone(obj){
 function handleRemoteText(text){
   armIdle();
   track('voice_remote_text', text);
-  // 1) Overlay de voz abierto y escuchando → confirmación
-  if($('#ov-voice').classList.contains('active') && $('#vc-listen').style.display !== 'none'){
-    vFinal = text;
-    $('#vc-live').textContent = text;
-    confirmVoice(text);
-    pubPhone({t:'ok', x:'Te leí. Confirma en la pantalla o repite.'});
-    return;
-  }
-  // 2) Turno de chips activo → mapear la frase a una opción
+  // Turno de chips activo → mapear la frase a una opción (sin clics)
   if(chipCtx){
     const m = matchChip(text, chipCtx.opts);
     if(m){
@@ -2296,7 +2362,9 @@ function handleRemoteText(text){
     }
     return;
   }
-  // 3) Cualquier otra pantalla → nueva búsqueda por voz
+  // Cualquier otra pantalla (incluida la escucha abierta): el teléfono ya
+  // mostró la transcripción antes de enviar — esa ES la confirmación.
+  // Directo a la pantalla, cero clics extra.
   routeVoice(text);
   pubPhone({t:'ok', x:'Listo — mira la pantalla.'});
 }
