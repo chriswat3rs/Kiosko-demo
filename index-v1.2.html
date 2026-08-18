@@ -306,6 +306,12 @@ body.display-mode .frame-caption{display:none}
   padding:36px 64px 40px;align-content:start;overflow:hidden;
 }
 .chips.one-col{grid-template-columns:1fr}
+/* Muchas opciones (>8): grid compacto a 3 columnas — TODO visible, jamás cortado */
+.chips.dense{grid-template-columns:repeat(3,1fr);gap:22px}
+.chips.dense .chip{min-height:172px;padding:20px 16px;gap:12px;border-radius:24px}
+.chips.dense .chip svg{width:84px;height:84px}
+.chips.dense .chip .l{font-size:29px}
+.chips.dense .chip .s{font-size:22px}
 .chip{
   background:#fff;border:2.5px solid var(--line);border-radius:28px;box-shadow:var(--shadow);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
@@ -317,6 +323,9 @@ body.display-mode .frame-caption{display:none}
 .chip:nth-child(1){animation-delay:.05s}.chip:nth-child(2){animation-delay:.12s}
 .chip:nth-child(3){animation-delay:.19s}.chip:nth-child(4){animation-delay:.26s}
 .chip:nth-child(5){animation-delay:.33s}.chip:nth-child(6){animation-delay:.4s}
+.chip:nth-child(7){animation-delay:.47s}.chip:nth-child(8){animation-delay:.54s}
+.chip:nth-child(9){animation-delay:.61s}.chip:nth-child(10){animation-delay:.68s}
+.chip:nth-child(11){animation-delay:.75s}.chip:nth-child(12){animation-delay:.82s}
 @keyframes chipIn{to{opacity:1;transform:none}}
 .chip:active{transform:scale(.965);border-color:var(--blue);background:#F0F7FE}
 .chip svg{width:120px;height:120px;color:var(--blue);flex-shrink:0}
@@ -917,6 +926,13 @@ body.display-mode .frame-caption{display:none}
     <path d="M21 27q5-4 10-2" stroke="#4FC3FF" stroke-width="2.2" fill="none" stroke-linecap="round"/>
     <path d="M35 25q5-2 9 2" stroke="#4FC3FF" stroke-width="2.2" fill="none" stroke-linecap="round"/>
   </symbol>
+  <symbol id="i-batt" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="20" width="42" height="24" rx="5"/><path d="M54 27v10"/><path d="M17 28v8M26 28v8M35 28v8"/>
+  </symbol>
+  <symbol id="i-chip" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="18" width="28" height="28" rx="4"/><rect x="27" y="27" width="10" height="10"/>
+    <path d="M24 18v-7M32 18v-7M40 18v-7M24 53v-7M32 53v-7M40 53v-7M18 24h-7M18 32h-7M18 40h-7M46 24h7M46 32h7M46 40h7"/>
+  </symbol>
   <symbol id="i-search" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="27" cy="27" r="15"/><path d="M38 38 L54 54"/>
   </symbol>
@@ -1377,27 +1393,27 @@ const P = {
   '400-200N':{n:'Tubo organizador de cables en espiral',  p:99,   loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-box',    st:[40,33], img:IMG+'158669d78/tubo-organizador-de-cables-tipo-espiral-negro.jpg'},
   /* Familia de miles de SKUs (resistencias reales steren.com.mx): mismo
      producto, muchas variantes — el caso "no happy path" por excelencia. */
-  'R22-1/2': {n:'Resistencia de carbón · ½ watt · 22 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[420,300], fam:'resist', a:{ohm:22, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R47-1/2': {n:'Resistencia de carbón · ½ watt · 47 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[380,260], fam:'resist', a:{ohm:47, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R100-1/2':{n:'Resistencia de carbón · ½ watt · 100 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[500,410], fam:'resist', a:{ohm:100, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R330-1/2':{n:'Resistencia de carbón · ½ watt · 330 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[460,350], fam:'resist', a:{ohm:330, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R5K6-1/2':{n:'Resistencia de carbón · ½ watt · 5.6 kOhms · 5%', p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[340,280], fam:'resist', a:{ohm:5600, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R10K-1/2':{n:'Resistencia de carbón · ½ watt · 10 kOhms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[390,310], fam:'resist', a:{ohm:10000, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R100-1W': {n:'Resistencia de carbón · 1 watt · 100 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[260,190], fam:'resist', a:{ohm:100, w:'1'}, img:RIMG+'198833eca/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-100-ohms.jpg'},
-  'R330-1W': {n:'Resistencia de carbón · 1 watt · 330 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[240,170], fam:'resist', a:{ohm:330, w:'1'}, img:RIMG+'198821380/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-330-ohms.jpg'},
-  'R5K6-1W': {n:'Resistencia de carbón · 1 watt · 5.6 kOhms · 5%', p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[210,150], fam:'resist', a:{ohm:5600, w:'1'}, img:RIMG+'199160fe9/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-5-6-kohms.jpg'},
-  'R10K-1W': {n:'Resistencia de carbón · 1 watt · 10 kOhms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[230,160], fam:'resist', a:{ohm:10000, w:'1'}, img:RIMG+'19877742f/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-10-kohms.jpg'},
+  'R22-1/2': {n:'Resistencia de carbón · ½ watt · 22 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[420,300], fam:'resist', a:{ohm:22, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R47-1/2': {n:'Resistencia de carbón · ½ watt · 47 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[380,260], fam:'resist', a:{ohm:47, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1/2':{n:'Resistencia de carbón · ½ watt · 100 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[500,410], fam:'resist', a:{ohm:100, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R330-1/2':{n:'Resistencia de carbón · ½ watt · 330 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[460,350], fam:'resist', a:{ohm:330, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R5K6-1/2':{n:'Resistencia de carbón · ½ watt · 5.6 kOhms · 5%', p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[340,280], fam:'resist', a:{ohm:5600, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R10K-1/2':{n:'Resistencia de carbón · ½ watt · 10 kOhms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[390,310], fam:'resist', a:{ohm:10000, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1W': {n:'Resistencia de carbón · 1 watt · 100 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[260,190], fam:'resist', a:{ohm:100, w:'1'}, img:RIMG+'198833eca/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-100-ohms.jpg'},
+  'R330-1W': {n:'Resistencia de carbón · 1 watt · 330 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[240,170], fam:'resist', a:{ohm:330, w:'1'}, img:RIMG+'198821380/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-330-ohms.jpg'},
+  'R5K6-1W': {n:'Resistencia de carbón · 1 watt · 5.6 kOhms · 5%', p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[210,150], fam:'resist', a:{ohm:5600, w:'1'}, img:RIMG+'199160fe9/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-5-6-kohms.jpg'},
+  'R10K-1W': {n:'Resistencia de carbón · 1 watt · 10 kOhms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[230,160], fam:'resist', a:{ohm:10000, w:'1'}, img:RIMG+'19877742f/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-10-kohms.jpg'},
   /* Pilas y baterías (reales steren.com.mx) */
-  'PIL-D2':   {n:'Par de pilas alcalinas Ultra “D”',            p:85.84, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[60,42],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2368030eb/paquete-de-2-pilas-alcalinas-ultra-d.jpg'},
-  'PIL-C2':   {n:'Par de pilas alcalinas Ultra “C”',            p:75.40, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[55,38],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'2367909ea/paquete-de-2-pilas-alcalinas-ultra-c.jpg'},
-  'PIL-D6':   {n:'Paquete de 6 pilas alcalinas “D”',            p:220.40,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[30,22],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2053337b6/paquete-de-6-pilas-alcalinas-d.jpg'},
-  'PIL-C6':   {n:'Paquete de 6 pilas alcalinas “C”',            p:174,   loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[28,19],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'20505eb7f/paquete-de-6-pilas-alcalinas-c.jpg'},
-  'PIL-N2':   {n:'Par de pilas alcalinas tipo “N”',             p:29,    loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[40,31],  fam:'pilas', a:{tipo:'n'},          img:RIMG+'195345df5/paquete-de-2-pilas-alcalinas-tipo-n.jpg'},
-  'CR2016':   {n:'Pila de litio tipo botón CR2016',             p:10.79, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[120,95], fam:'pilas', a:{tipo:'boton'},      img:RIMG+'16365f482/pila-de-litio-tipo-boton-cr2016.jpg'},
-  'CR2025-6': {n:'Paquete de 6 pilas botón CR2025',             p:47.56, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[80,64],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'22269aa6f/6-pilas-de-litio-tipo-boton-cr2025.jpg'},
-  'CR1632':   {n:'Pila de litio tipo botón CR1632',             p:11.60, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[90,70],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'20573ccb6/pila-de-litio-tipo-boton-cr1632.jpg'},
-  'LIPO-1000':{n:'Batería recargable LiPo · 1 000 mAh',         p:66.12, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[45,30],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'22785a29d/bateria-recargable-lipo-1-000-mah.jpg'},
-  'LI-14500': {n:'Par de baterías recargables Li-ion 14500',    p:127.60,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-bolt', st:[35,26],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'2278671e8/2-baterias-recargables-li-ion-800-mah-tipo-14500.jpg'},
+  'PIL-D2':   {n:'Par de pilas alcalinas Ultra “D”',            p:85.84, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[60,42],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2368030eb/paquete-de-2-pilas-alcalinas-ultra-d.jpg'},
+  'PIL-C2':   {n:'Par de pilas alcalinas Ultra “C”',            p:75.40, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[55,38],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'2367909ea/paquete-de-2-pilas-alcalinas-ultra-c.jpg'},
+  'PIL-D6':   {n:'Paquete de 6 pilas alcalinas “D”',            p:220.40,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[30,22],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2053337b6/paquete-de-6-pilas-alcalinas-d.jpg'},
+  'PIL-C6':   {n:'Paquete de 6 pilas alcalinas “C”',            p:174,   loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[28,19],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'20505eb7f/paquete-de-6-pilas-alcalinas-c.jpg'},
+  'PIL-N2':   {n:'Par de pilas alcalinas tipo “N”',             p:29,    loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[40,31],  fam:'pilas', a:{tipo:'n'},          img:RIMG+'195345df5/paquete-de-2-pilas-alcalinas-tipo-n.jpg'},
+  'CR2016':   {n:'Pila de litio tipo botón CR2016',             p:10.79, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[120,95], fam:'pilas', a:{tipo:'boton'},      img:RIMG+'16365f482/pila-de-litio-tipo-boton-cr2016.jpg'},
+  'CR2025-6': {n:'Paquete de 6 pilas botón CR2025',             p:47.56, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[80,64],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'22269aa6f/6-pilas-de-litio-tipo-boton-cr2025.jpg'},
+  'CR1632':   {n:'Pila de litio tipo botón CR1632',             p:11.60, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[90,70],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'20573ccb6/pila-de-litio-tipo-boton-cr1632.jpg'},
+  'LIPO-1000':{n:'Batería recargable LiPo · 1 000 mAh',         p:66.12, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[45,30],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'22785a29d/bateria-recargable-lipo-1-000-mah.jpg'},
+  'LI-14500': {n:'Par de baterías recargables Li-ion 14500',    p:127.60,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[35,26],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'2278671e8/2-baterias-recargables-li-ion-800-mah-tipo-14500.jpg'},
   /* Soldadura y cautines (reales steren.com.mx) */
   'CAU-30':   {n:'Cautín tipo lápiz · 30 watts',                p:89,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[40,28], fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166511739/cautin-tipo-lapiz-de-30-watts.jpg'},
   'CAU-35':   {n:'Cautín tipo lápiz · 35 watts',                p:99,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[38,27], fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166535a61/cautin-tipo-lapiz-de-35-watts.jpg'},
@@ -1542,8 +1558,8 @@ const BROWSE = [
   {id:'energia', l:'Energía',         ic:'i-bolt',    skus:['905-3107','NB-900','REG-1050','ELI-12-2','ELI-12-5','ELI-MULTI']},
   {id:'soportes',l:'Soportes',        ic:'i-mount',   skus:['STV-105','COM-083']},
   {id:'smart',   l:'Smart Home',      ic:'i-bulb',    skus:['SHOME-120','SHOME-127','CCTV-213']},
-  {id:'electronica', l:'Proyectos de electrónica', ic:'i-bolt', fams:['resist','soldar'], skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W','CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH']},
-  {id:'pilas', l:'Pilas y baterías', ic:'i-bolt', fams:['pilas'], skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500']},
+  {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W','CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH']},
+  {id:'pilas', l:'Pilas y baterías', ic:'i-batt', fams:['pilas'], skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500']},
   {id:'otro',    l:'Busco otra cosa', ic:'i-chat',    other:true}
 ];
 const FICHA = {
@@ -1691,10 +1707,31 @@ function openBrowseCat(cat){
 }
 function openBrowseList(cat){
   flow = {type:'browse', step:2, cat, list:1};
+  vmState = null;
   $('#browse-title').textContent = cat.l;
   const box = $('#browse-list');
   box.innerHTML = '';
   const groups = SUBCATS[cat.id] || [{l:null, skus:cat.skus}];
+  if(groups.length > 1 && cat.skus.length > 8){
+    // Categoría grande → índice VISUAL de grupos (foto + cuántos hay).
+    // Cada grupo abre sus productos en tandas de 4. Jamás un muro con scroll.
+    groups.forEach(g => {
+      const pv = P[g.skus[0]];
+      const r = document.createElement('button');
+      r.className = 'prow';
+      r.innerHTML = `<div class="ppic"><img src="${pv.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${pv.ic}"/></svg></div><div><div class="pnm">${g.l}</div><div class="ploc">${g.skus.length} ${g.skus.length === 1 ? 'opción' : 'opciones'}</div></div><div class="ppr">›</div>`;
+      r.addEventListener('click', () => {
+        track('browse_group', cat.id + ' · ' + g.l);
+        showVoiceMatches(g.skus, g.l, true, () => openBrowseList(cat));
+      });
+      box.appendChild(r);
+    });
+    addBrowseNotFound(box, cat);
+    go('s-browse');
+    box.scrollTop = 0;
+    track('browse_groups', cat.id);
+    return;
+  }
   groups.forEach(g => {
     if(g.l){
       const h = document.createElement('div');
@@ -1844,7 +1881,7 @@ function botSay(el, text, cb){
 
 function renderChips(opts, onPick, rowMode){
   const box = $('#chips');
-  box.className = 'chips' + (rowMode ? ' one-col' : '');
+  box.className = 'chips' + (rowMode ? ' one-col' : '') + (!rowMode && opts.length > 8 ? ' dense' : '');
   box.innerHTML = '';
   opts.forEach(o => {
     const b = document.createElement('button');
@@ -2433,12 +2470,19 @@ function routeVoice(raw){
   // 2.7) Familias del mapa de conocimiento: el dato exacto ES la
   //      conversación. Lo que el usuario ya dijo se aprovecha; lo que
   //      falte, se pregunta. Nunca un muro de resultados.
+  const wantAll = has('todos', 'todas', 'muestrame', 'muestramelos', 'ensename', 'ver todo', 'completo');
   for(const fk in KMAP){
     if(KMAP[fk].words.some(w => q.indexOf(w) >= 0)){
-      return startFunnel(fk, parseFamVals(fk, q), raw);
+      const pre = parseFamVals(fk, q);
+      if(!pre && wantAll){ // "muéstrame todas las pilas" → tandas de 4, sin preguntas
+        track('fam_all', fk);
+        return showVoiceMatches(famProducts(fk), KMAP[fk].label, true);
+      }
+      return startFunnel(fk, pre, raw);
     }
   }
   if(flow && flow.type === 'funnel' && currentScreen === 's-chat'){
+    if(wantAll) return showVoiceMatches(famMatches(flow.fam, flow.vals), KMAP[flow.fam].label, true);
     const fv = parseFamVals(flow.fam, q);
     if(fv) return funnelApply(fv); // respuesta suelta dentro del embudo ("de 100 ohms")
   }
@@ -2522,11 +2566,11 @@ function offCatalog(raw, g){
    En producción este mapa ES la respuesta del backend (base de
    conocimientos): mismo contrato, otra fuente — ver motor-navegacion-kb.md.
    ===================================================================== */
-const NS_OPT = {l:'No lo sé / otro', ic:'i-chat', v:null, syn:['no lo se','no se','ni idea','no estoy seguro']};
+const NS_OPT = {l:'No lo sé / otro', ic:'i-chat', v:null, syn:['no lo se','no se','ni idea','no estoy seguro','todos','todas','muestrame','ver todo']};
 const fmtOhm = v => v >= 1000 ? (v / 1000) + ' kΩ' : v + ' Ω';
 const KMAP = {
   resist: {
-    label:'Resistencias', crumb:'Proyectos de electrónica', ic:'i-bolt',
+    label:'Resistencias', crumb:'Proyectos de electrónica', ic:'i-chip',
     words:['resistencia','resistencias','resistor','resistores'],
     attrs:[
       {key:'ohm',
@@ -2561,7 +2605,7 @@ const KMAP = {
     ]
   },
   pilas: {
-    label:'Pilas y baterías', crumb:'Pilas y baterías', ic:'i-bolt',
+    label:'Pilas y baterías', crumb:'Pilas y baterías', ic:'i-batt',
     words:['pila','pilas','bateria','baterias'],
     attrs:[
       {key:'tipo',
@@ -2760,8 +2804,8 @@ function voiceRefineCat(cat, raw){
    salida: siguiente tanda, decirlo otra vez con su voz, o un asesor. */
 const VM_PER = 4;
 let vmState = null;
-function showVoiceMatches(skus, raw, plain){
-  vmState = {skus: skus.slice(), raw, page: 0, plain: !!plain};
+function showVoiceMatches(skus, raw, plain, backFn){
+  vmState = {skus: skus.slice(), raw, page: 0, plain: !!plain, backFn: backFn || null};
   if(skus.length > VM_PER) say('Tengo ' + skus.length + ' que coinciden — te enseño ' + VM_PER + ' a la vez. Dime si ves el tuyo.');
   else say('Esto es lo que tengo — elige el tuyo.');
   renderVMPage();
@@ -3316,7 +3360,10 @@ function goBack(){
     }
     return goHome();
   }
-  if(currentScreen === 's-browse') return startBrowse();
+  if(currentScreen === 's-browse'){
+    if(vmState && vmState.backFn){ const f = vmState.backFn; vmState = null; return f(); }
+    return startBrowse();
+  }
   if(currentScreen === 's-detail') return go(detailFrom || 's-result');
   if(currentScreen === 's-asesor'){
     if(asesorFrom === 's-chat' || asesorFrom === 's-asesor') return goHome();
