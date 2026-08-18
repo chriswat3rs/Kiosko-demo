@@ -2421,6 +2421,33 @@ function routeVoice(raw){
   track('voice_search', raw);
   userEcho('\u201C' + raw + '\u201D');
 
+  // 1.2) CONTINUACIÓN CONTEXTUAL: el bot recuerda qué acaba de enseñar.
+  //      "más opciones", "otro modelo", "más barato"… siguen la conversación
+  //      desde el producto o la lista actual — nunca un "no te entendí".
+  const wantsMore  = has('mas opciones','otras opciones','otra opcion','ver mas','otro modelo','otros modelos','otras marcas','parecidos','similares','algo parecido','ensename otros','ensename otras','quiero ver otros','quiero ver otras','que mas tienes','que mas hay');
+  const wantsCheap = has('mas barato','mas barata','mas economico','mas economica','algo barato','algo economico');
+  const wantsPricey = has('mas caro','mas cara','mejor calidad','el mejor','la mejor','mas potente');
+  if(wantsMore || wantsCheap || wantsPricey){
+    // sobre una lista de tandas → la siguiente tanda, por voz
+    if(currentScreen === 's-browse' && vmState && vmState.skus.length > VM_PER && wantsMore){
+      const pages = Math.ceil(vmState.skus.length / VM_PER);
+      vmState.page = (vmState.page + 1) % pages;
+      say(vmState.page === 0 ? 'Volvemos a las primeras.' : 'Van las siguientes.');
+      track('vm_next_voice', vmState.page + 1);
+      return renderVMPage();
+    }
+    const ctx = ctxAlternates();
+    if(ctx){
+      let skus = ctx.skus.slice();
+      if(wantsCheap)  skus.sort((a, b) => P[a].p - P[b].p);
+      if(wantsPricey) skus.sort((a, b) => P[b].p - P[a].p);
+      track('ctx_more', (wantsCheap ? 'barato' : wantsPricey ? 'caro' : 'mas') + ' · ' + ctx.raw);
+      return showVoiceMatches(skus, ctx.raw, ctx.plain);
+    }
+    say('Claro — ¿de qué producto? Dímelo o toca una categoría.');
+    return startBrowse();
+  }
+
   // 1) Conexión con ambos aparatos: si NO dijo la distancia, se pregunta.
   //    Sin happy path: el resultado llega cuando el bot está seguro.
   const A = has('laptop','computadora','compu','pc') ? 'laptop' : has('celular','telefono','iphone') ? 'celular' : has('consola','xbox','playstation','play ','nintendo','switch') ? 'consola' : has('bocina','bocinas') ? 'bocina' : null;
@@ -2818,6 +2845,21 @@ function voiceRefineCat(cat, raw){
     }
   }, true);
   track('voice_refine', cat);
+}
+/* ¿Desde dónde continúa la conversación? El producto en pantalla manda;
+   si no hay, la última lista de coincidencias. */
+function ctxAlternates(){
+  const sku = lastResult && lastResult.main;
+  if(sku && P[sku]){
+    const p = P[sku];
+    const pool = (p.fam ? famProducts(p.fam) : Object.keys(P).filter(k => P[k].cat === p.cat))
+      .filter(k => k !== sku);
+    if(pool.length) return {skus: pool, raw: p.fam ? KMAP[p.fam].label : p.cat, plain: true};
+  }
+  if(vmState && vmState.skus && vmState.skus.length > 1){
+    return {skus: vmState.skus, raw: vmState.raw, plain: vmState.plain};
+  }
+  return null;
 }
 /* Coincidencias SIN scroll infinito: máximo 4 a la vez, en tandas que se
    REEMPLAZAN. El usuario siempre sabe dónde va (x–y de N) y siempre tiene
@@ -3385,6 +3427,7 @@ function startSession(){
   track('session_start');
   voiceMode = false; voiceSource = null;
   myList = [];
+  vmState = null; lastResult = null; // cada sesión olvida el contexto anterior
   userEcho(null);
   endPhoneSession();
   closePair();
