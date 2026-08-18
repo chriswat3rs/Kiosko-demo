@@ -113,7 +113,8 @@ footer{padding:10px 20px 16px;font-size:12px;color:#8A99AC;text-align:center;lin
 'use strict';
 const $ = s => document.querySelector(s);
 const BROKER = 'wss://broker.emqx.io:8084/mqtt';
-let client = null, code = '', connected = false;
+let client = null, code = '', connected = false, blocked = false;
+const pid = Math.random().toString(36).slice(2, 10); // identidad de este teléfono
 
 function topic(sub){ return 'steren-kiosko-demo/' + code + '/' + sub; }
 function setSt(cls, txt){ const el = $('#st'); el.className = 'st ' + cls; el.textContent = txt; }
@@ -125,27 +126,50 @@ function start(c){
   $('#talkui').classList.remove('hide');
   if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
   setSt('', 'Conectando…');
-  client = mqtt.connect(BROKER, {clientId:'phone-' + code + '-' + Date.now().toString(36), clean:true, connectTimeout:8000, reconnectPeriod:3000});
+  client = mqtt.connect(BROKER, {
+    clientId: 'phone-' + code + '-' + pid,
+    clean: true, connectTimeout: 8000, reconnectPeriod: 3000,
+    // aviso de última voluntad: si el teléfono muere (pila, red), el kiosko lo sabe
+    will: {topic: 'steren-kiosko-demo/' + code.toUpperCase() + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false}
+  });
   client.on('connect', () => {
     connected = true;
-    setSt('ok', 'Conectado');
+    setSt('', 'Sincronizando…');
     client.subscribe(topic('k2p'));
-    client.publish(topic('p2k'), JSON.stringify({t:'hello'}));
+    client.publish(topic('p2k'), JSON.stringify({t:'hello', ph:pid}));
   });
   client.on('message', (tp, msg) => {
     let d = null;
     try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
+    if(d.t === 'ack' && d.ph === pid){ blocked = false; setSt('ok', 'Conectado'); }
+    if(d.t === 'busy' && d.ph === pid){
+      blocked = true;
+      setSt('err', 'Kiosko ocupado');
+      $('#ask').textContent = 'Este kiosko ya está en sesión con otro teléfono. Espera a que termine y escanea de nuevo.';
+      fb('miss', '');
+    }
+    if(d.t === 'end'){
+      blocked = true;
+      setSt('', 'Sesión terminada');
+      $('#ask').textContent = 'La sesión del kiosko terminó. Escanea el QR de la pantalla para empezar otra.';
+      fb('', '');
+      try{ client.end(true); }catch(e){}
+    }
+    if(blocked) return;
     if(d.t === 'ask' && d.x){ $('#ask').textContent = d.x; fb('', ''); }
     if(d.t === 'ok' && d.x){ fb('ok', d.x); }
     if(d.t === 'miss' && d.x){ fb('miss', d.x); }
+  });
+  window.addEventListener('beforeunload', () => {
+    try{ client.publish(topic('p2k'), JSON.stringify({t:'bye', ph:pid})); }catch(e){}
   });
   client.on('error', () => { if(!connected) setSt('err', 'Sin conexión'); });
   client.on('close', () => { if(connected) setSt('', 'Reconectando…'); });
 }
 function sendText(x){
   x = (x || '').trim();
-  if(!x || !client) return;
-  client.publish(topic('p2k'), JSON.stringify({t:'text', x}));
+  if(!x || !client || blocked) return;
+  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}));
   fb('', 'Enviado — mira el kiosko.');
   $('#live').textContent = '';
 }

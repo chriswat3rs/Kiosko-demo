@@ -701,19 +701,20 @@ body.display-mode .frame-caption{display:none}
   box-shadow:0 10px 24px rgba(0,70,190,.25);
 }
 /* ---- Búsqueda escrita (QA-7) y subcategorías (QA-1) ---- */
-.chat-search{
-  margin:20px 64px 0;background:#fff;border:2.5px solid var(--line);border-radius:24px;
-  box-shadow:var(--shadow);padding:14px 16px 14px 28px;display:flex;align-items:center;gap:16px;
+.chat-voicehint{
+  margin:20px 64px 0;background:#E7F1FE;border:2.5px solid var(--blue);border-radius:24px;
+  padding:22px 30px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:.12s;
+  font-family:var(--sans);font-size:28px;font-weight:700;color:var(--blue);text-align:left;
 }
-.chat-search svg{width:40px;height:40px;color:var(--blue);flex-shrink:0}
-.chat-search input{
-  flex:1;min-width:0;border:none;outline:none;font-family:var(--sans);font-size:30px;color:var(--ink);background:transparent;
+.chat-voicehint:active{transform:scale(.98)}
+.chat-voicehint svg{width:42px;height:42px;flex-shrink:0}
+.toast{
+  position:absolute;left:50%;bottom:220px;transform:translateX(-50%) translateY(20px);
+  background:var(--navy);color:#fff;font-family:var(--sans);font-size:26px;font-weight:600;line-height:1.35;
+  padding:22px 34px;border-radius:20px;box-shadow:0 18px 40px rgba(0,0,0,.4);
+  max-width:860px;text-align:center;z-index:90;opacity:0;pointer-events:none;transition:.35s;
 }
-.chat-search input::placeholder{color:#9AA9BC}
-.chat-search button{
-  height:84px;padding:0 34px;border:none;border-radius:18px;background:var(--grad);color:#fff;
-  font-family:var(--sans);font-size:27px;font-weight:800;cursor:pointer;flex-shrink:0;
-}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .browse-sub{
   font-size:24px;font-weight:800;color:var(--blue);letter-spacing:.06em;text-transform:uppercase;
   margin:16px 6px 0;
@@ -1052,11 +1053,10 @@ body.display-mode .frame-caption{display:none}
                 <span id="bot-text"></span>
               </div>
             </div>
-            <div class="chat-search" id="chat-search" style="display:none">
-              <svg><use href="#i-search"/></svg>
-              <input id="cs-in" placeholder="Escribe lo que buscas…" autocomplete="off">
-              <button id="cs-go">Buscar</button>
-            </div>
+            <button class="chat-voicehint" id="chat-voicehint" style="display:none">
+              <svg><use href="#i-mic"/></svg>
+              <span id="cvh-txt">¿Buscas algo específico? Dilo con tu voz.</span>
+            </button>
             <div class="chips" id="chips"></div>
             <div class="chat-listen" id="chat-listen" style="display:none">
               <span class="clw"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1214,6 +1214,8 @@ body.display-mode .frame-caption{display:none}
         </section>
 
         <!-- TELÉFONO COMO MICRÓFONO (V1.2) -->
+        <div class="toast" id="toast"></div>
+
         <div class="cover" id="ov-pair">
           <div class="vcard">
             <div class="vc-title">Usa tu teléfono<br>como micrófono</div>
@@ -1506,8 +1508,11 @@ function startBrowse(){
   $('#chat-crumb').textContent = 'Buscar un producto';
   $('#chat-title').textContent = '¿Qué estás buscando?';
   go('s-chat');
-  $('#chat-search').style.display = 'flex';
-  $('#cs-in').value = '';
+  $('#chat-voicehint').style.display = 'flex';
+  $('#cvh-txt').textContent = voiceMode
+    ? '¿Buscas algo específico? Solo dilo — te escucho.'
+    : '¿Buscas algo específico? Dilo con tu voz.';
+  chipFreeRoute = true; // en este turno, una frase libre va al buscador
   setSteps(0, 0);
   botSay($('#bot-text'), 'Elige una categoría.', () => {});
   renderChips(BROWSE.map(cat => ({ic:cat.ic, l:cat.l, cat})), o => {
@@ -1608,7 +1613,7 @@ let typeTimer = null;
 const COVERS = ['s-attract','ov-timeout'];
 
 function go(id){
-  const cs = $('#chat-search');
+  const cs = $('#chat-voicehint');
   if(cs) cs.style.display = 'none';
   if(id !== 's-chat' && typeof stopChipListen === 'function') stopChipListen();
   COVERS.forEach(c => { if(c !== id) $('#'+c).classList.remove('active'); });
@@ -2370,7 +2375,7 @@ window.voiceReady = true; // renderChips ya puede invocar la capa de voz
    ===================================================================== */
 const MIC_PAGE = 'https://chriswat3rs.github.io/Kiosko-demo/mic.html';
 const PAIR_BROKER = 'wss://broker.emqx.io:8084/mqtt';
-let pairClient = null, pairCode = '', pairOn = false, voiceSource = null;
+let pairClient = null, pairCode = '', pairOn = false, voiceSource = null, pairPid = null;
 const pairTopic = sub => 'steren-kiosko-demo/' + pairCode + '/' + sub;
 
 function openPair(){
@@ -2407,17 +2412,58 @@ function connectPair(){
     pairClient.on('message', (topic, msg) => {
       let d = null;
       try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
-      if(d.t === 'hello' && !pairOn){
-        pairOn = true;
-        voiceSource = 'telefono';
-        setPairStatus('ok');
-        track('pair_connected');
-        setTimeout(() => { closePair(); openVoice(); }, 900);
+      const ph = d.ph || 'p1';
+      if(d.t === 'hello'){
+        if(!pairOn){
+          // primer teléfono en llegar: se queda con la sesión
+          pairOn = true;
+          pairPid = ph;
+          voiceSource = 'telefono';
+          setPairStatus('ok');
+          track('pair_connected');
+          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
+          setTimeout(() => { closePair(); openVoice(); }, 900);
+        }else if(ph === pairPid){
+          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
+        }else{
+          // segundo teléfono con el mismo código: sesión ocupada
+          track('pair_busy');
+          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'busy', ph})); }catch(e){}
+        }
+        return;
       }
-      if(d.t === 'text' && d.x) handleRemoteText(String(d.x).slice(0, 200));
+      if(d.t === 'bye' && pairOn && ph === pairPid) return phoneLost();
+      if(d.t === 'text' && d.x && pairOn && ph === pairPid) handleRemoteText(String(d.x).slice(0, 200));
     });
     pairClient.on('error', () => { if(!pairOn) setPairStatus('err'); });
   }catch(e){ setPairStatus('err'); }
+}
+function showToast(msg){
+  const el = $('#toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove('on'), 4500);
+}
+function phoneLost(){
+  if(!pairOn) return;
+  pairOn = false;
+  pairPid = null;
+  track('pair_lost');
+  say('Tu teléfono se desconectó. Sigue aquí en la pantalla.');
+  showToast('Tu teléfono se desconectó — sigue tocando la pantalla o usa el micrófono del kiosko.');
+  if($('#ov-voice').classList.contains('active')) voiceFail();
+  if(currentScreen === 's-chat' && chipCtx) pillSay('Tu teléfono se desconectó — toca una opción.');
+}
+function endPhoneSession(){
+  if(pairClient){
+    try{ if(pairOn) pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'end'})); }catch(e){}
+    try{ pairClient.end(false); }catch(e){}
+    pairClient = null;
+  }
+  pairOn = false;
+  pairPid = null;
 }
 function pubPhone(obj){
   if(pairClient && pairOn){ try{ pairClient.publish(pairTopic('k2p'), JSON.stringify(obj)); }catch(e){} }
@@ -2436,6 +2482,9 @@ function handleRemoteText(text){
       const ctx = chipCtx;
       stopChipListen();
       setTimeout(() => ctx.onPick(m), 400);
+    }else if(chipFreeRoute){
+      stopChipListen();
+      routeVoice(text);
     }else{
       pillSay('No encontré esa opción — dilo otra vez o tócala.');
       pubPhone({t:'miss', x:'No encontré esa opción — dilo con otras palabras.'});
@@ -2478,16 +2527,6 @@ function openVoiceSmart(){
   if(pairOn || voiceSource === 'kiosko') openVoice(); else openPair();
 }
 
-/* ---- Búsqueda directa escrita (QA-7): usa el mismo router de la voz ---- */
-function typedSearch(){
-  const v = ($('#cs-in').value || '').trim();
-  if(v.length < 2) return;
-  track('type_search', v);
-  routeVoice(v);
-}
-$('#cs-go').addEventListener('click', typedSearch);
-$('#cs-in').addEventListener('keydown', e => { if(e.key === 'Enter') typedSearch(); });
-
 /* ---- Eco del usuario (fluidez conversacional en el kiosko) ---- */
 function userEcho(txt){
   const el = $('#user-echo');
@@ -2496,6 +2535,8 @@ function userEcho(txt){
   $('#ue-txt').textContent = txt;
   el.style.display = 'flex';
 }
+
+$('#chat-voicehint').addEventListener('click', () => { track('voicehint_tap'); openVoiceSmart(); });
 
 /* ---- Pantalla de modo ---- */
 $('#mode-stebot').src = document.querySelector('#s-home .hh-stebot').src;
@@ -2535,7 +2576,7 @@ const CHIP_SYN = {
   m:['otro mueble','mueble','cerca','dos metros','tres metros'],
   c:['otra habitacion','otro cuarto','lejos','otro piso','habitacion','cinco metros']
 };
-let clRec = null, clListening = false, clSimTimer = null, clRetries = 0, clWait = null, chipCtx = null;
+let clRec = null, clListening = false, clSimTimer = null, clRetries = 0, clWait = null, chipCtx = null, chipFreeRoute = false;
 
 function matchChip(raw, opts){
   const q = vnorm(raw);
@@ -2558,6 +2599,7 @@ function hidePill(){ $('#chat-listen').style.display = 'none'; }
 
 function stopChipListen(){
   chipCtx = null;
+  chipFreeRoute = false;
   clearTimeout(clWait); clearInterval(clSimTimer);
   if(clRec && clListening){ try{ clRec.stop(); }catch(e){} }
   clListening = false;
@@ -2608,6 +2650,9 @@ function realChipListen(opts, onPick){
       pillSay('Entendí: ' + m.l);
       userEcho('\u201C' + heard + '\u201D');
       setTimeout(() => { hidePill(); onPick(m); }, 500);
+    }else if(heard && chipFreeRoute){
+      stopChipListen();
+      return routeVoice(heard);
     }else if(clRetries++ < 2){
       pillSay(heard ? 'No encontré esa opción — dilo otra vez o tócala.' : 'No te escuché — dilo otra vez o toca una opción.');
       track('voice_chip_miss', heard);
@@ -2716,6 +2761,7 @@ function endSession(msg){
   go('s-attract');
   if(msg) toast(msg);
   track('session_end');
+  endPhoneSession();
 }
 function startSession(){
   session = {t: 0};
@@ -2723,10 +2769,10 @@ function startSession(){
   sessionV = VENDORS[vSeq++ % VENDORS.length];
   sid = 'S' + Date.now().toString(36);
   track('session_start');
-  voiceMode = false; voiceSource = null; pairOn = false;
+  voiceMode = false; voiceSource = null;
   myList = [];
   userEcho(null);
-  if(pairClient){ try{ pairClient.end(true); }catch(e){} pairClient = null; }
+  endPhoneSession();
   closePair();
   go('s-mode');
   armIdle();
