@@ -2740,7 +2740,7 @@ function mqHTML(skus){
   const one = skus.map(s => {
     const pr = P[s];
     const nm = pr.n.split(' · ')[0];
-    return `<div class="mq-card"><img src="${pr.img}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div class="n">${nm}</div><div class="p">${money(pr.p)}</div></div>`;
+    return `<div class="mq-card"><img src="${pr.img}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><div class="n">${nm}</div></div>`;
   }).join('');
   return one + one; // duplicado exacto para loop perfecto
 }
