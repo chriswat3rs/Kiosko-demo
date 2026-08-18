@@ -1308,7 +1308,7 @@ body.display-mode .frame-caption{display:none}
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-const money = n => '$' + n.toLocaleString('es-MX');
+const money = n => '$' + (n < 1 ? n.toFixed(2) : n.toLocaleString('es-MX'));
 /* ---------------- IDENTIDAD DEL KIOSKO (config por sucursal) ----------------
    El id viaja en cada evento y en el mensaje del QR → permite atribuir
    conversaciones de WhatsApp y métricas a un display concreto. */
@@ -1324,6 +1324,7 @@ window.KIOSK_EVENTS = EVENTS; // inspección en demo: embudo completo de la sesi
 
 /* ---------------- CATÁLOGO (productos reales steren.com.mx, julio 2026) ---------------- */
 const IMG = 'https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/';
+const RIMG = 'https://www.steren.com.mx/media/catalog/product/cache/92457bf2b5977fff7efe99bd6badebc6/image/';
 const P = {
   '299-502':{n:'Cable HDMI 2.1 certificado · 2 m',        p:199,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[22,14], img:IMG+'22100b86a/cable-hdmir-2-1-certificado-de-ultra-alta-velocidad-de-2-m.jpg'},
   '295-503':{n:'Cable HDMI 2.0 certificado · 3 m',        p:199,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[18,11], img:IMG+'220978f81/cable-hdmir-2-0-certificado-de-alta-velocidad-de-3-m.jpg'},
@@ -1349,7 +1350,19 @@ const P = {
   'SHOME-120':{n:'Foco LED Wi-Fi multicolor · 10 W',               p:150, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-bulb', st:[30,22], img:IMG+'20475fce0/foco-led-wi-fi-rgb-w-multicolor-de-10-w.jpg'},
   'SHOME-127':{n:'Tira LED Wi-Fi multicolor · 2 m',                p:299, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-bulb', st:[14,9], img:IMG+'219076343/tira-led-wi-fi-multicolor-rgb-w-de-2-m.jpg'},
   'CCTV-213':{n:'Cámara Wi-Fi 3 Mpx · sigue el movimiento',        p:549, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[7,5], img:IMG+'23370d83c/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-doble-banda.jpg'},
-  '400-200N':{n:'Tubo organizador de cables en espiral',  p:99,   loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-box',    st:[40,33], img:IMG+'158669d78/tubo-organizador-de-cables-tipo-espiral-negro.jpg'}
+  '400-200N':{n:'Tubo organizador de cables en espiral',  p:99,   loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-box',    st:[40,33], img:IMG+'158669d78/tubo-organizador-de-cables-tipo-espiral-negro.jpg'},
+  /* Familia de miles de SKUs (resistencias reales steren.com.mx): mismo
+     producto, muchas variantes — el caso "no happy path" por excelencia. */
+  'R22-1/2': {n:'Resistencia de carbón · ½ watt · 22 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[420,300], ohm:22,    w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R47-1/2': {n:'Resistencia de carbón · ½ watt · 47 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[380,260], ohm:47,    w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1/2':{n:'Resistencia de carbón · ½ watt · 100 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[500,410], ohm:100,   w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R330-1/2':{n:'Resistencia de carbón · ½ watt · 330 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[460,350], ohm:330,   w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R5K6-1/2':{n:'Resistencia de carbón · ½ watt · 5.6 kOhms · 5%', p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[340,280], ohm:5600,  w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R10K-1/2':{n:'Resistencia de carbón · ½ watt · 10 kOhms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[390,310], ohm:10000, w:'½', img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1W': {n:'Resistencia de carbón · 1 watt · 100 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[260,190], ohm:100,   w:'1', img:RIMG+'198833eca/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-100-ohms.jpg'},
+  'R330-1W': {n:'Resistencia de carbón · 1 watt · 330 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[240,170], ohm:330,   w:'1', img:RIMG+'198821380/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-330-ohms.jpg'},
+  'R5K6-1W': {n:'Resistencia de carbón · 1 watt · 5.6 kOhms · 5%', p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[210,150], ohm:5600,  w:'1', img:RIMG+'199160fe9/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-5-6-kohms.jpg'},
+  'R10K-1W': {n:'Resistencia de carbón · 1 watt · 10 kOhms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-bolt', st:[230,160], ohm:10000, w:'1', img:RIMG+'19877742f/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-10-kohms.jpg'}
 };
 
 /* ---------------- URLS DE PÁGINA DE PRODUCTO ---------------- */
@@ -1478,6 +1491,7 @@ const BROWSE = [
   {id:'energia', l:'Energía',         ic:'i-bolt',    skus:['905-3107','NB-900','REG-1050']},
   {id:'soportes',l:'Soportes',        ic:'i-mount',   skus:['STV-105','COM-083']},
   {id:'smart',   l:'Smart Home',      ic:'i-bulb',    skus:['SHOME-120','SHOME-127','CCTV-213']},
+  {id:'electronica', l:'Proyectos de electrónica', ic:'i-bolt', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W']},
   {id:'otro',    l:'Busco otra cosa', ic:'i-chat',    other:true}
 ];
 const FICHA = {
@@ -1494,7 +1508,7 @@ const FICHA = {
 const VCOMP = {
   'Cables':['400-200N'], 'Bocinas':['299-400'], 'Audio':['POD-165'],
   'Adaptadores':['295-503'], 'Energía':['905-3107'], 'Conectividad':['905-3107'],
-  'Soportes':['299-830'], 'Smart Home':['COM-8300']
+  'Soportes':['299-830'], 'Smart Home':['COM-8300'], 'Electrónica':['400-200N']
 };
 function fichaFor(sku){
   const p = P[sku], f = FICHA[sku] || {};
@@ -1527,7 +1541,9 @@ const SUBCATS = {
   bocinas: [{l:'Bocinas', skus:['BOC-970','BSD-120']}, {l:'Audífonos', skus:['AUD-7625']}, {l:'Accesorios de audio', skus:['POD-165','255-258','299-400']}],
   cables:  [{l:'Video', skus:['299-502','295-503','299-830','295-600']}, {l:'Carga y datos', skus:['USB-3102']}, {l:'Organización', skus:['400-200N']}],
   adapt:   [{l:'Video', skus:['USB-4724','USB-471']}, {l:'Audio', skus:['USB-456']}],
-  wifi:    [{l:'Repetidores', skus:['COM-8300']}, {l:'Sistemas mesh', skus:['MESH-200+']}]
+  wifi:    [{l:'Repetidores', skus:['COM-8300']}, {l:'Sistemas mesh', skus:['MESH-200+']}],
+  electronica: [{l:'Resistencias ½ watt', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2']},
+                {l:'Resistencias 1 watt', skus:['R100-1W','R330-1W','R5K6-1W','R10K-1W']}]
 };
 function openBrowseCat(cat){
   flow = {type:'browse', step:2, cat};
@@ -2106,6 +2122,7 @@ const VOICE_SAMPLES = [
   'no me llega el wifi al segundo piso',
   'busco una bocina bluetooth para fiestas',
   'quiero conectar mi laptop a la tele',
+  'necesito una resistencia de 100 ohms',
   'se va la luz y quiero proteger mi computadora'
 ];
 let vSampleIx = 0, vRec = null, vFinal = '', vSimTimer = null, vListening = false;
@@ -2269,6 +2286,18 @@ function routeVoice(raw){
     return askProblem(p);
   }
 
+  // 2.7) Familia de miles de SKUs (resistencias): el dato exacto ES la
+  //      conversación. Si el usuario ya dijo valor/potencia se aprovecha;
+  //      lo que falte, se pregunta. Nunca un muro de resultados.
+  if(has('resistencia','resistencias','resistor','resistores')){
+    if(flow && flow.type === 'resist') flow = null; // frase nueva = arranque limpio
+    if(!resistParse(raw)) startResist({}, raw);
+    return;
+  }
+  if(flow && flow.type === 'resist' && currentScreen === 's-chat' && resParseVals(raw)){
+    return resistParse(raw); // respuesta suelta dentro del embudo ("de 100 ohms")
+  }
+
   // 3) Búsqueda en catálogo: ANTES de mostrar productos, una pregunta de
   //    afinación por categoría. Los productos son el final del diálogo.
   const stop = ['quiero','busco','necesito','para','una','unos','unas','que','con','los','las','del','tengo','comprar','ando','buscando','algo'];
@@ -2284,14 +2313,158 @@ function routeVoice(raw){
       return showResult(fichaFor(scored[0].sku));
     }
     const cat = P[scored[0].sku].cat;
+    if(cat === 'Electrónica') return startResist({}, raw); // familia grande → embudo
     if(VREFINE[cat]) return voiceRefineCat(cat, raw);
-    say('Esto encontré — elige el tuyo.');
-    return showVoiceMatches(scored.slice(0, 6).map(x => x.sku), raw);
+    return showVoiceMatches(scored.slice(0, 8).map(x => x.sku), raw);
   }
 
-  // 4) Sin coincidencia → demanda no atendida + reintento
+  // 4) Sin coincidencia: ¿fuera del giro de la tienda? Respuesta honesta y
+  //    registro de demanda. Si no, reintento de voz.
+  const off = offCatMatch(q);
+  if(off) return offCatalog(raw, off);
   $('#ov-voice').classList.add('active');
   voiceFail(raw);
+}
+
+/* ---- Fuera de giro: el bot procesa CUALQUIER palabra, también las que
+   Steren no vende (motos, joyas…). Respuesta honesta + demanda registrada,
+   nunca un silencio ni un falso resultado. ---- */
+const OFFCAT = [
+  {l:'cosas de vehículos',   ws:['moto','motos','motocicleta','llanta','llantas','refaccion','refacciones','casco','cascos']},
+  {l:'joyería',              ws:['joya','joyas','anillo','anillos','collar','collares','aretes','oro','plata']},
+  {l:'ropa y calzado',       ws:['ropa','zapatos','tenis','playera','playeras','pantalon','vestido','chamarra']},
+  {l:'comida',               ws:['comida','pizza','tacos','despensa','refresco','cerveza']},
+  {l:'perfumería',           ws:['perfume','perfumes','maquillaje','crema','shampoo']},
+  {l:'muebles',              ws:['mueble','muebles','sillon','colchon','ropero']},
+  {l:'cosas de farmacia',    ws:['medicina','medicinas','farmacia','pastillas']},
+  {l:'cosas para mascotas',  ws:['croquetas','mascota','mascotas','perro','gato']}
+];
+function offCatMatch(q){
+  const qw = q.split(/[^a-z0-9]+/); // palabra completa: "motor" NO dispara "moto"
+  for(const g of OFFCAT) if(g.ws.some(w => qw.indexOf(w) >= 0)) return g;
+  return null;
+}
+function offCatalog(raw, g){
+  track('demanda_no_atendida', 'fuera de giro: ' + raw);
+  flow = {type:'refine', step:1};
+  $('#chat-crumb').textContent = 'Buscar un producto';
+  $('#chat-title').textContent = '“' + raw + '”';
+  go('s-chat');
+  setSteps(0, 0);
+  $('#chat-voicehint').style.display = 'none';
+  botSay($('#bot-text'), 'Eso suena a ' + g.l + ' — y ahí sí no te puedo ayudar: en Steren lo nuestro es la electrónica. ¿Te enseño lo que sí tengo?', () => {});
+  if(pairOn) pubPhone({t:'ask', x:'Eso no lo manejamos en Steren — ¿te ayudo con algo de electrónica?'});
+  renderChips([
+    {ic:'i-box',    l:'Ver las categorías', act:'browse'},
+    {ic:'i-mic',    l:'Buscar otra cosa', s:'dilo con tu voz', act:'voice'},
+    {ic:'i-person', l:'Hablar con un asesor', act:'human'}
+  ], o => {
+    if(o.act === 'browse') return startBrowse();
+    if(o.act === 'voice') return openVoiceSmart();
+    lastResult = null;
+    showHandoff('Cliente busca “' + raw + '” — fuera del giro de la tienda');
+  });
+}
+
+/* ---- Embudo de resistencias: preguntar hasta estar seguro ---- */
+const RES_SKUS = () => Object.keys(P).filter(k => P[k].ohm !== undefined);
+const resMatches = (ohm, w) => RES_SKUS().filter(k => (ohm == null || P[k].ohm === ohm) && (w == null || P[k].w === w));
+const ohmTxt = v => v >= 1000 ? (v / 1000) + ' kΩ' : v + ' Ω';
+const OHM_CHIPS = [
+  {k:'r22',  ic:'i-bolt', l:'22 Ω',  v:22},
+  {k:'r47',  ic:'i-bolt', l:'47 Ω',  v:47},
+  {k:'r100', ic:'i-bolt', l:'100 Ω', v:100},
+  {k:'r330', ic:'i-bolt', l:'330 Ω', v:330},
+  {k:'r5k6', ic:'i-bolt', l:'5.6 kΩ', v:5600},
+  {k:'r10k', ic:'i-bolt', l:'10 kΩ', v:10000},
+  {k:'rns',  ic:'i-chat', l:'Otro valor / no lo sé', v:null}
+];
+function resParseVals(text){
+  let q = vnorm(text);
+  let w = null;
+  if(q.indexOf('1/2') >= 0 || /\b(medio|media)\s*(watt|watts|wat)?\b/.test(q)) w = '½';
+  else if(/\b(un|1)\s*(watt|watts|wat)\b/.test(q)) w = '1';
+  q = q.replace(/\b(un|1)\s*(watt|watts|wat)\b/g, ' ').replace(/1\/2/g, ' ').replace(/\b(medio|media)\s*(watt|watts|wat)?\b/g, ' ');
+  let ohm = null;
+  const mk = q.match(/(\d+(?:[.,]\d+)?)\s*(k\b|kilo|kilos|kohm|kohms|kilohm|kilohms|kiloohms)/);
+  const md = q.match(/(\d+(?:[.,]\d+)?)/);
+  if(mk) ohm = Math.round(parseFloat(mk[1].replace(',', '.')) * 1000);
+  else if(q.indexOf('diez mil') >= 0) ohm = 10000;
+  else if(/\bcien\b/.test(q)) ohm = 100;
+  else if(md) ohm = Math.round(parseFloat(md[1].replace(',', '.')));
+  if(ohm == null && !w) return null;
+  return {ohm, w};
+}
+function resistParse(text){
+  const v = resParseVals(text);
+  if(!v) return false;
+  if(flow && flow.type === 'resist'){
+    if(v.ohm != null) flow.ohm = v.ohm;
+    if(v.w) flow.w = v.w;
+    resistStep();
+  }else{
+    startResist(v, text);
+  }
+  return true;
+}
+function startResist(pre, raw){
+  flow = {type:'resist', step:1, ohm:(pre && pre.ohm != null) ? pre.ohm : null, w:(pre && pre.w) || null};
+  $('#chat-crumb').textContent = 'Proyectos de electrónica';
+  $('#chat-title').textContent = raw ? '“' + raw + '”' : 'Encontremos tu resistencia';
+  go('s-chat');
+  $('#chat-voicehint').style.display = 'none';
+  track('resist_start', raw || '');
+  resistStep();
+}
+function resistStep(){
+  const f = flow;
+  const m = resMatches(f.ohm, f.w);
+  const pickOhm = o => {
+    if(o.v == null){
+      say('Va — te lo enseño de a poco. Dime si ves la tuya.');
+      return showVoiceMatches(resMatches(null, f.w), 'Resistencias · todos los valores');
+    }
+    f.ohm = o.v;
+    resistStep();
+  };
+  // El valor pedido no existe aquí → honestidad + demanda registrada + reintento
+  if(f.ohm != null && !m.length){
+    track('demanda_no_atendida', 'resistencia de ' + ohmTxt(f.ohm));
+    f.step = 1; f.ohm = null;
+    setSteps(1, 2);
+    botSay($('#bot-text'), 'De ese valor no tengo en esta tienda — lo anoto para pedirlo. Estos son los que sí manejo, ¿te sirve alguno?', () => {});
+    if(pairOn) pubPhone({t:'ask', x:'Ese valor no lo tengo — ¿te sirve 22, 47, 100, 330 ohms, 5.6 k o 10 k?'});
+    renderChips(OHM_CHIPS, pickOhm);
+    return;
+  }
+  if(m.length === 1){
+    say('Listo — esta es la tuya.');
+    return showResult(fichaFor(m[0]));
+  }
+  if(f.ohm == null){
+    f.step = 1;
+    setSteps(1, 2);
+    botSay($('#bot-text'), '¿De cuántos ohms la necesitas? Dime el valor y te la encuentro.', () => {});
+    renderChips(OHM_CHIPS, pickOhm);
+    return;
+  }
+  if(!f.w && m.length > 1){
+    f.step = 2;
+    setSteps(2, 2);
+    botSay($('#bot-text'), 'De ' + ohmTxt(f.ohm) + ' la tengo en dos potencias. ¿Cuánta corriente va a aguantar tu circuito?', () => {});
+    renderChips([
+      {k:'wmed', ic:'i-bolt', l:'½ watt', s:'proyectos escolares y electrónica básica'},
+      {k:'w1',   ic:'i-bolt', l:'1 watt', s:'circuitos que calientan más'},
+      {k:'wns',  ic:'i-chat', l:'No estoy seguro', s:'las comparo en pantalla'}
+    ], o => {
+      if(o.k === 'wns') return showVoiceMatches(m, 'Resistencia de ' + ohmTxt(f.ohm));
+      f.w = o.k === 'wmed' ? '½' : '1';
+      resistStep();
+    });
+    return;
+  }
+  // ≤4 y sin pregunta útil pendiente → ahora sí, productos (final del diálogo)
+  showVoiceMatches(m, 'Resistencia de ' + ohmTxt(f.ohm));
 }
 
 /* ---- Afinación por categoría: una pregunta antes de mostrar producto ---- */
@@ -2335,18 +2508,38 @@ function voiceRefineCat(cat, raw){
       say('Listo, esto es lo que necesitas.');
       showResult(fichaFor(o.skus[0]));
     }else{
-      say('Esto es lo que tengo — elige el tuyo.');
       showVoiceMatches(o.skus, raw);
     }
   }, true);
   track('voice_refine', cat);
 }
+/* Coincidencias SIN scroll infinito: máximo 4 a la vez, en tandas que se
+   REEMPLAZAN. El usuario siempre sabe dónde va (x–y de N) y siempre tiene
+   salida: siguiente tanda, decirlo otra vez con su voz, o un asesor. */
+const VM_PER = 4;
+let vmState = null;
 function showVoiceMatches(skus, raw){
+  vmState = {skus: skus.slice(), raw, page: 0};
+  if(skus.length > VM_PER) say('Tengo ' + skus.length + ' que coinciden — te enseño ' + VM_PER + ' a la vez. Dime si ves el tuyo.');
+  else say('Esto es lo que tengo — elige el tuyo.');
+  renderVMPage();
+  track('voice_matches', skus.length);
+}
+function renderVMPage(){
+  const skus = vmState.skus, raw = vmState.raw, tot = skus.length;
+  const pages = Math.ceil(tot / VM_PER), pg = vmState.page;
   flow = {type:'browse', step:2};
   $('#browse-title').textContent = '“' + raw + '”';
   const box = $('#browse-list');
   box.innerHTML = '';
-  skus.forEach(sku => {
+  const from = pg * VM_PER, to = Math.min(from + VM_PER, tot);
+  if(pages > 1){
+    const h = document.createElement('div');
+    h.className = 'browse-sub';
+    h.textContent = 'Coincidencias ' + (from + 1) + '–' + to + ' de ' + tot;
+    box.appendChild(h);
+  }
+  skus.slice(from, to).forEach(sku => {
     const p = P[sku];
     const r = document.createElement('button');
     r.className = 'prow';
@@ -2354,14 +2547,26 @@ function showVoiceMatches(skus, raw){
     r.addEventListener('click', () => { track('voice_match_pick', sku); showResult(fichaFor(sku)); });
     box.appendChild(r);
   });
+  if(pages > 1){
+    const nx = document.createElement('button');
+    nx.className = 'prow nofind';
+    if(pg + 1 < pages){
+      const n = Math.min(VM_PER, tot - to);
+      nx.innerHTML = `<div class="ppic"><svg><use href="#i-search"/></svg></div><div><div class="pnm">Ninguno de estos</div><div class="ploc">Ver ${n === 1 ? 'la siguiente opción' : 'las siguientes ' + n}</div></div>`;
+      nx.addEventListener('click', () => { vmState.page++; track('vm_next', vmState.page + 1); renderVMPage(); });
+    }else{
+      nx.innerHTML = `<div class="ppic"><svg><use href="#i-search"/></svg></div><div><div class="pnm">Ninguno de estos</div><div class="ploc">Volver a las primeras opciones</div></div>`;
+      nx.addEventListener('click', () => { vmState.page = 0; track('vm_wrap', tot); renderVMPage(); });
+    }
+    box.appendChild(nx);
+  }
   const nf = document.createElement('button');
   nf.className = 'prow nofind';
   nf.innerHTML = `<div class="ppic"><svg><use href="#i-mic"/></svg></div><div><div class="pnm">No es ninguno de estos</div><div class="ploc">Dímelo otra vez con tu voz</div></div>`;
   nf.addEventListener('click', () => openVoiceSmart());
-  box.appendChild(nf);
+  box.appendChild(nf); // la salida humana ya vive SIEMPRE en la barra inferior
   go('s-browse');
   box.scrollTop = 0;
-  track('voice_matches', skus.length);
 }
 
 window.voiceReady = true; // renderChips ya puede invocar la capa de voz
@@ -2482,6 +2687,11 @@ function handleRemoteText(text){
       const ctx = chipCtx;
       stopChipListen();
       setTimeout(() => ctx.onPick(m), 400);
+    }else if(flow && flow.type === 'resist' && resParseVals(text)){
+      userEcho('“' + text + '”');
+      pubPhone({t:'ok', x:'Va — mira el kiosko.'});
+      stopChipListen();
+      resistParse(text);
     }else if(chipFreeRoute){
       stopChipListen();
       routeVoice(text);
@@ -2574,7 +2784,13 @@ const CHIP_SYN = {
   bocina:['bocina','bocinas','altavoz'],
   j:['junto','al lado','a un lado','pegado','pegados'],
   m:['otro mueble','mueble','cerca','dos metros','tres metros'],
-  c:['otra habitacion','otro cuarto','lejos','otro piso','habitacion','cinco metros']
+  c:['otra habitacion','otro cuarto','lejos','otro piso','habitacion','cinco metros'],
+  r22:['22','veintidos'], r47:['47','cuarenta y siete'], r100:['100','cien'],
+  r330:['330','trescientos treinta'], r5k6:['5.6','5 punto 6','cinco punto seis','5600'],
+  r10k:['10 mil','diez mil','10k','10 k','10000','10 kilo'],
+  rns:['otro valor','no lo se','no se','ni idea'],
+  wmed:['medio','media','1/2'], w1:['un watt','1 watt','de uno','un wat'],
+  wns:['no estoy seguro','no se','no lo se','compara']
 };
 let clRec = null, clListening = false, clSimTimer = null, clRetries = 0, clWait = null, chipCtx = null, chipFreeRoute = false;
 
@@ -2650,6 +2866,11 @@ function realChipListen(opts, onPick){
       pillSay('Entendí: ' + m.l);
       userEcho('\u201C' + heard + '\u201D');
       setTimeout(() => { hidePill(); onPick(m); }, 500);
+    }else if(heard && flow && flow.type === 'resist' && resParseVals(heard)){
+      // valor dicho libre ("de 3300 ohms") dentro del embudo de resistencias
+      stopChipListen();
+      userEcho('“' + heard + '”');
+      return resistParse(heard);
     }else if(heard && chipFreeRoute){
       stopChipListen();
       return routeVoice(heard);
@@ -2792,6 +3013,7 @@ function goBack(){
   if(currentScreen === 's-chat' && flow){
     if(flow.type === 'connect' && flow.step > 1) return connectStep(flow.step - 1);
     if(flow.type === 'problem' && flow.step > 1) return problemStep(flow.step - 1);
+    if(flow.type === 'resist' && flow.step > 1){ flow.ohm = null; flow.w = null; return resistStep(); }
     return goHome();
   }
   if(currentScreen === 's-browse') return startBrowse();
@@ -2805,6 +3027,7 @@ function goBack(){
     if(flow && flow.type === 'connect') return flow.a && flow.b ? connectStep(3) : startConnect();
     if(flow && flow.type === 'problem') return flow.problem ? problemStep(2) : startProblem();
     if(flow && flow.type === 'refine')  return startBrowse();
+    if(flow && flow.type === 'resist')  return startResist({}, null);
     return goHome();
   }
   if(currentScreen === 's-info') return startWarranty();
