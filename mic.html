@@ -198,7 +198,7 @@ $('#cam-in').addEventListener('change', e => {
     const d = c.toDataURL('image/jpeg', 0.72);
     try{
       client.publish(topic('p2k'), JSON.stringify({t:'img', d, ph:pid}));
-      fb('ok', 'Foto enviada — mírala en el kiosko.');
+      fb('ok', 'Foto enviada — Stebot la está analizando.');
     }catch(err){ fb('miss', 'No se pudo enviar la foto — intenta otra vez.'); }
   };
   img.onerror = () => { URL.revokeObjectURL(url); fb('miss', 'No pude leer esa imagen.'); };

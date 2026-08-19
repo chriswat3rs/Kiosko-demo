@@ -979,6 +979,7 @@ body.display-mode .frame-caption{display:none}
     <button id="db-off">Sin red</button>
     <button id="db-err">Error del bot</button>
     <button id="db-nom">Sin resultados</button>
+    <button id="db-imgrej">Foto rechazada</button>
     <button id="db-display">Modo display</button>
     <button id="db-reset">Reiniciar demo</button>
   </div>
@@ -2361,6 +2362,11 @@ botSay = function(el, text, cb){
   }
   return botSayOrig(el, text, cb);
 };
+$('#db-imgrej').addEventListener('click', () => {
+  imgReject = !imgReject;
+  $('#db-imgrej').classList.toggle('on', imgReject);
+  $('#db-imgrej').textContent = imgReject ? 'Foto rechazada: ON' : 'Foto rechazada';
+});
 $('#db-tts').addEventListener('click', () => {
   ttsOn = !ttsOn;
   if(!ttsOn){ try{ speechSynthesis.cancel(); }catch(e){} }
@@ -3223,13 +3229,35 @@ function userEchoImg(dataUrl){
   im.style.display = 'block';
   $('#user-echo').style.display = 'flex';
 }
-/* Foto tomada en el teléfono → aparece EN el display y el bot conversa
-   sobre ella. En el demo el bot pregunta el contexto (sin fingir visión);
-   en producción la imagen entra a la misma tubería del bot de WhatsApp
-   (que sí reconoce productos) con la Ref del kiosko de retorno. */
+/* ============ FOTO DESDE EL TELÉFONO · COMPUERTA DE MODERACIÓN ============
+   REGLA DE ORO: la imagen NO toca la pantalla pública hasta tener veredicto.
+   1) El teléfono manda la foto; el kiosko la retiene en memoria, EN SILENCIO.
+   2) Análisis: en producción, la visión del bot decide — ¿hay un producto
+      de electrónica? Rostros, personas, contenido no apto o simplemente
+      una selfie enviada por error → RECHAZADA.
+   3) Aprobada → aparece en el display y el bot conversa sobre ella.
+      Rechazada → se DESCARTA sin mostrarse jamás, y el aviso llega SOLO
+      al teléfono (privado): nadie en la tienda ve el error de nadie.
+   En el demo el análisis se simula (1.4 s, siempre aprueba); el botón
+   "Foto rechazada" de la barra demo fuerza el otro veredicto para
+   demostrar ambos caminos a stakeholders. */
+let imgReject = false;
 function handleRemoteImage(dataUrl){
   armIdle();
   track('image_query', 'foto desde teléfono · ' + Math.round(dataUrl.length / 1024) + ' KB');
+  pubPhone({t:'ok', x:'Recibí tu foto — la estoy analizando…'});
+  // el kiosko guarda SILENCIO durante el análisis: si el veredicto es
+  // rechazo, la pantalla pública nunca se entera de que hubo una foto
+  setTimeout(() => {
+    if(imgReject){
+      track('image_query_rejected', 'sin producto detectado / contenido no apto');
+      pubPhone({t:'miss', x:'No encontré un producto de electrónica en tu foto. Intenta con otra donde el producto se vea completo — o descríbemelo con tu voz.'});
+      return; // la imagen se descarta sin haberse mostrado
+    }
+    showApprovedImage(dataUrl);
+  }, 1400);
+}
+function showApprovedImage(dataUrl){
   flow = {type:'refine', step:1};
   $('#chat-crumb').textContent = 'Buscar un producto';
   $('#chat-title').textContent = 'Tu foto';
