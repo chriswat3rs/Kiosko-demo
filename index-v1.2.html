@@ -218,10 +218,11 @@ body.display-mode .frame-caption{display:none}
 .mq-card{
   width:310px;margin-right:30px;background:#fff;border-radius:26px;padding:22px 20px 18px;
   display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;
-  box-shadow:0 18px 40px rgba(0,15,50,.35);
 }
-.mq-card:nth-child(odd){transform:rotate(-2.5deg)}
-.mq-card:nth-child(even){transform:rotate(2deg)}
+/* Sombra POR card y direccional según su inclinación (blur contenido:
+   con 30px de separación, un blur grande fundía las sombras en una banda) */
+.mq-card:nth-child(odd){transform:rotate(-2.5deg);box-shadow:-7px 14px 22px rgba(0,15,50,.30)}
+.mq-card:nth-child(even){transform:rotate(2deg);box-shadow:7px 14px 22px rgba(0,15,50,.30)}
 .mq-card img{width:100%;height:165px;object-fit:contain}
 .mq-card .n{font-size:23px;font-weight:700;color:var(--ink);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mq-card .p{font-size:33px;font-weight:800;color:var(--blue)}
@@ -1265,7 +1266,7 @@ body.display-mode .frame-caption{display:none}
         </section>
 
         <!-- TELÉFONO COMO MICRÓFONO (V1.2) -->
-        <div class="toast" id="toast"></div>
+        <div class="toast" id="ptoast"></div>
 
         <div class="cover" id="ov-pair">
           <div class="vcard">
@@ -3049,7 +3050,7 @@ function connectPair(){
   }catch(e){ setPairStatus('err'); }
 }
 function showToast(msg){
-  const el = $('#toast');
+  const el = $('#ptoast'); // aviso propio — el id #toast pertenece al toast de sesión
   if(!el) return;
   el.textContent = msg;
   el.classList.add('on');
