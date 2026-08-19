@@ -2340,13 +2340,17 @@ function say(txt, onEnd){
     };
     __utter = u; // referencia viva (defensa 1)
     speechSynthesis.cancel();
-    setTimeout(() => { try{ speechSynthesis.speak(u); }catch(e){ u.onend(); } }, 60); // defensa 2
+    setTimeout(() => {
+      try{ speechSynthesis.resume(); speechSynthesis.speak(u); }catch(e){ u.onend(); }
+    }, 60); // defensa 2: speak diferido tras cancel, despegando cualquier pausa fantasma
   }catch(e){ if(onEnd) onEnd(); }
 }
 if(window.speechSynthesis){
-  setInterval(() => { // defensa 3
-    try{ if(speechSynthesis.speaking){ speechSynthesis.pause(); speechSynthesis.resume(); } }catch(e){}
-  }, 8000);
+  /* Defensa 3 — SOLO resume(): es no-op si el motor no está pausado y
+     despega el estado "pausado" fantasma de Chrome. El truco clásico de
+     pause()+resume() (para el corte de 15 s en Windows) ENMUDECE el motor
+     en macOS y Android WebView de forma permanente — jamás usarlo aquí. */
+  setInterval(() => { try{ speechSynthesis.resume(); }catch(e){} }, 5000);
 }
 /* El bot LEE sus preguntas en modo voz (texto plano, sin HTML) */
 const botSayOrig = botSay;
