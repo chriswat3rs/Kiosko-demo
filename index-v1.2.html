@@ -3004,7 +3004,8 @@ function openPair(){
   $('#pair-code').textContent = pairCode;
   const box = $('#pair-qr');
   box.innerHTML = '';
-  const url = MIC_PAGE + '?c=' + pairCode;
+  // rompe-caché diario: los teléfonos siempre bajan el mic.html más reciente
+  const url = MIC_PAGE + '?c=' + pairCode + '&v=' + Math.floor(Date.now() / 86400000);
   if(typeof QRCode !== 'undefined') new QRCode(box, {text:url, width:380, height:380, correctLevel:QRCode.CorrectLevel.M});
   else box.innerHTML = '<div class="qr-fallback"></div>';
   setPairStatus('wait');
