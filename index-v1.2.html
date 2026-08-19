@@ -1769,8 +1769,44 @@ function addBrowseNotFound(box, cat){
   const nf = document.createElement('button');
   nf.className = 'prow nofind';
   nf.innerHTML = `<div class="ppic"><svg><use href="#i-person"/></svg></div><div><div class="pnm">No encuentro lo que busco</div><div class="ploc">Te ayudamos en persona</div></div>`;
-  nf.addEventListener('click', () => searchNotFound(`Cliente busca ${cat.l.toLowerCase()} y no encontró lo que quería`));
+  nf.addEventListener('click', () => rescueFlow(`Cliente busca ${cat.l.toLowerCase()} y no encontró lo que quería`));
   box.appendChild(nf);
+}
+/* Escalera de rescate: antes del asesor se agotan TODAS las posibilidades.
+   El bot ofrece los caminos que quedan (voz — con el teléfono como micrófono
+   si hace falta —, contar la meta, categorías) y el asesor cierra la fila.
+   Si el usuario regresa por segunda vez, el bot lo reconoce y le acerca
+   al asesor sin hacerlo dar vueltas. */
+let rescueCount = 0;
+function rescueFlow(msg){
+  rescueCount++;
+  track('rescue_open', msg + ' · intento ' + rescueCount);
+  flow = {type:'refine', step:1};
+  $('#chat-crumb').textContent = 'Buscar un producto';
+  $('#chat-title').textContent = 'Sigamos buscando';
+  go('s-chat');
+  $('#chat-voicehint').style.display = 'none';
+  setSteps(0, 0);
+  const again = rescueCount > 1;
+  botSay($('#bot-text'), again
+    ? 'Ya le intentamos por varios caminos. Un asesor te lo consigue en persona — o dímelo una vez más, con otras palabras.'
+    : 'Aún tengo maneras de encontrarlo. Dímelo con tu voz y con tus palabras, o cuéntame para qué lo quieres.', () => {});
+  if(pairOn) pubPhone({t:'ask', x: again ? 'Dímelo una vez más con otras palabras — o pide un asesor en la pantalla.' : 'Dime con tus palabras qué buscas, o para qué lo quieres.'});
+  const opts = [
+    {ic:'i-mic',    l:'Decirlo con mi voz', s:'con tus propias palabras', syn:['voz','decirlo','microfono','hablar'], act:'voice'},
+    {ic:'i-chat',   l:'Contarte para qué lo quiero', s:'te llevo por lo que quieres lograr', syn:['para que','contarte','lograr'], act:'goal'},
+    {ic:'i-box',    l:'Ver todas las categorías', syn:['categorias','ver todo','explorar'], act:'browse'},
+    {ic:'i-person', l:'Hablar con un asesor', s:'te atendemos en persona', syn:['asesor','persona','humano','vendedor'], act:'human'}
+  ];
+  if(again) opts.unshift(opts.pop()); // segunda vuelta: el asesor encabeza
+  renderChips(opts, o => {
+    track('rescue_pick', o.act);
+    if(o.act === 'voice')  return openVoiceSmart();
+    if(o.act === 'goal')   return browseGoal();
+    if(o.act === 'browse') return startBrowse();
+    searchNotFound(msg);
+  }, true);
+  chipFreeRoute = true; // una frase libre aquí también busca
 }
 function searchNotFound(msg){
   track('demanda_no_atendida', msg);
@@ -3427,7 +3463,7 @@ function startSession(){
   track('session_start');
   voiceMode = false; voiceSource = null;
   myList = [];
-  vmState = null; lastResult = null; // cada sesión olvida el contexto anterior
+  vmState = null; lastResult = null; rescueCount = 0; // cada sesión olvida el contexto anterior
   userEcho(null);
   endPhoneSession();
   closePair();
