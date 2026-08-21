@@ -155,6 +155,30 @@ body.display-mode .frame-caption{display:none}
 #bb-asesor.outline{background:#E7F1FE}
 .ab-btn.primary{background:var(--grad);border:none;color:#fff;box-shadow:0 12px 26px rgba(0,70,190,.30)}
 .ab-hide{display:none!important}
+/* Chip de lista: el estado de la sesión, siempre a la vista */
+.ab-count{
+  background:var(--blue);color:#fff;border-radius:999px;min-width:46px;height:46px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;
+  padding:0 12px;margin-left:4px;
+}
+.ab-btn.outline .ab-count{background:var(--blue);color:#fff}
+.ab-btn.primary .ab-count{background:#ffffff2e;color:#fff}
+/* Píldora de escucha GLOBAL: la voz deja de vivir dentro de una pantalla */
+#glisten{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:196px;z-index:60;
+  display:none;align-items:center;gap:18px;padding:20px 34px;border-radius:999px;
+  background:#fff;border:2.5px solid var(--blue);box-shadow:0 14px 34px rgba(0,70,190,.20);
+  font-size:27px;font-weight:700;color:var(--blue);max-width:900px;
+}
+#glisten.on{display:flex}
+/* Cantidad dentro de la lista */
+.qty-ctl{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.qty-ctl button{
+  width:60px;height:60px;border-radius:16px;border:2px solid #ffffff55;background:#ffffff1a;
+  color:#fff;font-size:34px;font-weight:800;font-family:var(--sans);cursor:pointer;line-height:1;
+}
+.qty-ctl button:active{transform:scale(.94);background:#ffffff33}
+.qty-ctl .qv{min-width:46px;text-align:center;font-size:34px;font-weight:800;color:#fff}
 
 /* ================= ATTRACT ================= */
 .cover{position:absolute;inset:0;z-index:40;display:none;flex-direction:column}
@@ -1147,6 +1171,25 @@ body.display-mode .frame-caption{display:none}
             </div>
           </section>
 
+          <!-- PASE A CAJA · la lista de la sesión -->
+          <section class="screen" id="s-pase">
+            <div class="hero">
+              <div class="crumb" id="pase-crumb">Tu lista</div>
+              <h2 id="pase-title" style="font-size:52px">Llévalos del pasillo<br>o dilos en caja</h2>
+            </div>
+            <div class="bot-area">
+              <div class="bubble">
+                <div class="who"><img class="avatar" id="pase-avatar" alt=""><b>Stebot · Asistente Steren</b><span class="dot-on"></span></div>
+                <span id="pase-bot"></span>
+              </div>
+            </div>
+            <div class="asesor-body">
+              <div class="list-label"><svg><use href="#i-fwd"/></svg>Tus códigos · dilos en caja</div>
+              <div class="codes-card" id="pase-list"></div>
+              <div class="photo-tip"><svg><use href="#i-cam"/></svg><span>O tómale una foto a esta pantalla — llévala contigo.</span></div>
+            </div>
+          </section>
+
           <!-- DETALLE DE PRODUCTO -->
           <section class="screen" id="s-detail">
             <div class="hero">
@@ -1235,8 +1278,11 @@ body.display-mode .frame-caption{display:none}
           <button class="nav-chip" id="bb-home"><svg><use href="#i-home"/></svg>Inicio</button>
           <div class="ab-spacer"></div>
           <button class="ab-btn outline" id="ab-phone"><svg><use href="#i-wa"/></svg><span id="ab-phone-label">Enviar a mi celular</span></button>
+          <button class="ab-btn outline ab-hide" id="ab-list"><svg><use href="#i-box"/></svg><span>Mi lista</span><span class="ab-count" id="ab-list-n">0</span></button>
+          <button class="ab-btn primary ab-hide" id="ab-want"><svg><use href="#i-check"/></svg><span>Lo quiero</span></button>
           <button class="ab-btn outline" id="bb-asesor"><svg><use href="#i-person"/></svg><span id="asesor-label">Hablar con asesor</span></button>
         </div>
+        <div id="glisten"><span class="clw"><i></i><i></i><i></i><i></i><i></i></span><span id="gl-txt">Te escucho.</span></div>
 
         <!-- ======== COBERTORAS ======== -->
 
@@ -1361,13 +1407,14 @@ body.display-mode .frame-caption{display:none}
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-const money = n => '$' + (n < 1 ? n.toFixed(2) : n.toLocaleString('es-MX'));
+const money = n => '$' + (n % 1 ? n.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}) : n.toLocaleString('es-MX'));
 /* ---------------- IDENTIDAD DEL KIOSKO (config por sucursal) ----------------
    El id viaja en cada evento y en el mensaje del QR → permite atribuir
    conversaciones de WhatsApp y métricas a un display concreto. */
 const KIOSK = {id:'KIOSKO-CENTRO-01', store:'Tienda Centro', ver:'1.2-voz'};
 let sid = '-';
-let myList = []; // lista acumulada de la sesión (multi-búsqueda)
+let myList = []; // [{sku, qty}] · el ÚNICO estado de la sesión: voz, toque y teléfono
+                 // escriben aquí y leen de aquí. Visible siempre en la barra.
 const EVENTS = [];
 const track = (ev, data) => {
   EVENTS.push({t:new Date().toISOString(), kiosko:KIOSK.id, ver:KIOSK.ver, sid, ev, data:(data === undefined ? '' : data)});
@@ -1861,7 +1908,9 @@ const COVERS = ['s-attract','ov-timeout'];
 function go(id){
   const cs = $('#chat-voicehint');
   if(cs) cs.style.display = 'none';
-  if(id !== 's-chat' && typeof stopChipListen === 'function') stopChipListen();
+  // La escucha GLOBAL sobrevive al cambio de pantalla; la de chips no.
+  if(id !== 's-chat' && typeof stopChipListen === 'function' &&
+     !(listenUI && listenUI.pill === '#glisten')) stopChipListen();
   COVERS.forEach(c => { if(c !== id) $('#'+c).classList.remove('active'); });
   if(COVERS.includes(id)){
     $('#'+id).classList.add('active');
@@ -1870,6 +1919,7 @@ function go(id){
   }
   currentScreen = id;
   configureBar(id);
+  if(typeof renderListChip === 'function') renderListChip();
   track('screen_view', id);
 }
 
@@ -1879,12 +1929,13 @@ const BARCFG = {
   's-home':  {back:0, home:0, phone:0},
   's-chat':  {back:1, home:1, phone:0},
   's-think': {back:0, home:0, phone:0},
-  's-result':{back:1, home:1, phone:0, asesor:['primary','Lo quiero','i-check']},
+  's-result':{back:1, home:1, phone:0, want:1, noAsesor:1},
   's-info':  {back:1, home:1, phone:0},
   's-browse':{back:1, home:1, phone:0},
   's-qr':    {back:1, home:1, phone:0},
   's-asesor':{back:1, home:1, phone:0, noAsesor:1},
-  's-detail':{back:1, home:1, phone:0, asesor:['primary','Lo quiero','i-check']}
+  's-detail':{back:1, home:1, phone:0, want:1, noAsesor:1},
+  's-pase':  {back:1, home:1, phone:0}
 };
 function configureBar(id){
   const cfg = BARCFG[id];
@@ -1905,6 +1956,7 @@ function configureBar(id){
   $('#asesor-label').textContent = ac[1];
   as.querySelector('use').setAttribute('href', '#' + (ac[2] || 'i-person'));
   as.classList.toggle('ab-hide', !!cfg.noAsesor);
+  $('#ab-want').classList.toggle('ab-hide', !cfg.want);
 }
 
 /* ---------------- BOT: streaming de texto ---------------- */
@@ -2147,13 +2199,109 @@ function showResult(res){
   res.extras.forEach(sku => { html += sugRow(sku, 'comp'); });
   $('#res-blocks').innerHTML = html;
   $('#res-note').textContent = 'Precios de lista · confirma existencia en tienda.' +
-    (voiceMode ? ' Sigue hablando para buscar otra cosa.' : '');
+    (voiceMode ? ' Di “lo quiero” para agregarlo — o pide otra cosa.' : '');
   $('#res-scroll').scrollTop = 0;
   go('s-result');
   track('result_shown', res.ctx);
-  if(pairOn) pubPhone({t:'ask', x:'Listo \u2014 mira la pantalla. \u00BFBuscas algo m\u00E1s? D\u00EDmelo cuando quieras.'});
+  if(pairOn) pubPhone({t:'ask', x:'Listo \u2014 m\u00EDralo en la pantalla. Di \u201Clo quiero\u201D para agregarlo, o pide otra cosa.'});
 }
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* =====================================================================
+   MI LISTA · un objeto, un verbo, un cierre
+   El usuario nunca "cae" en una lista: la construye diciendo o tocando
+   "Lo quiero". Cada agregado confirma en un segundo y devuelve la
+   conversación a "¿algo más?" — acumular no debe costar navegación.
+   ===================================================================== */
+const listUnits = () => myList.reduce((a, r) => a + r.qty, 0);
+const listTotal = () => myList.reduce((a, r) => a + P[r.sku].p * r.qty, 0);
+function renderListChip(){
+  const el = $('#ab-list');
+  if(!el) return;
+  const n = listUnits();
+  $('#ab-list-n').textContent = n;
+  el.classList.toggle('ab-hide', !n || currentScreen === 's-pase' || !BARCFG[currentScreen]);
+}
+function currentSku(){
+  if(currentScreen === 's-detail' && curDetailSku) return curDetailSku;
+  if(lastResult && lastResult.main) return lastResult.main;
+  return null;
+}
+const shortName = sku => P[sku].n.split(' · ')[0];
+function addToList(sku, qty){
+  if(!sku || !P[sku]) return false;
+  qty = Math.max(1, Math.min(20, qty || 1));
+  const row = myList.find(r => r.sku === sku);
+  if(row) row.qty += qty; else myList.push({sku, qty});
+  const total = row ? row.qty : qty;
+  renderListChip();
+  track('add_to_list', sku + ' x' + qty);
+  const msg = total > 1
+    ? 'Van ' + total + ' · ' + shortName(sku) + ' en tu lista.'
+    : shortName(sku) + ' va en tu lista.';
+  showToast(msg + '  ¿Algo más?');
+  say(msg + ' ¿Buscas algo más?');
+  if(pairOn) pubPhone({t:'ok', x: msg + ' Dime qué más necesitas — o pide ir a caja.'});
+  // Sigue escuchando: acumular no debe costar un toque extra
+  if(voiceMode) setTimeout(() => freeListen('Te escucho — ¿algo más?'), 700);
+  return true;
+}
+function setQty(sku, q){
+  const i = myList.findIndex(r => r.sku === sku);
+  if(i < 0) return;
+  if(q <= 0){ myList.splice(i, 1); track('list_remove', sku); }
+  else { myList[i].qty = Math.min(20, q); }
+  renderListChip();
+  if(myList.length) showPase(true); else goHome();
+}
+/* Escucha GLOBAL: la voz deja de vivir dentro de una pantalla */
+function freeListen(msg){
+  if(!voiceMode || !session) return;
+  startChipListen([], () => {}, {pill:'#glisten', txt:'#gl-txt', noSim:true});
+  chipFreeRoute = true; // cualquier frase entra al motor completo
+  if(msg) pillSay(msg);
+}
+/* El cierre: la lista lleva a caja. El asesor vuelve a ser ayuda humana. */
+function showPase(silent){
+  if(!myList.length){
+    showToast('Aún no tienes nada en tu lista — dime qué buscas.');
+    say('Tu lista está vacía. Dime qué buscas.');
+    if(voiceMode) freeListen('Te escucho — ¿qué buscas?');
+    return;
+  }
+  armIdle();
+  sessionHadResult = true;
+  const av = document.querySelector('#s-asesor .avatar');
+  if(av) $('#pase-avatar').src = av.src;
+  let html = '';
+  myList.forEach(r => {
+    const p = P[r.sku];
+    html += `<div class="code-row"><div class="ck"><div class="skubig">${r.sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div>` +
+      `<div class="qty-ctl"><button data-sku="${r.sku}" data-d="-1">−</button><span class="qv">${r.qty}</span><button data-sku="${r.sku}" data-d="1">+</button></div>` +
+      `<div class="cpr">${money(p.p * r.qty)}</div></div>`;
+  });
+  html += `<div class="code-total"><div class="tl">Total estimado<small>Precios de lista · confirma en caja</small></div><div class="cpr">${money(listTotal())}</div></div>`;
+  $('#pase-list').innerHTML = html;
+  $('#pase-list').style.display = 'flex';
+  $('#pase-list').querySelectorAll('.qty-ctl button').forEach(b => {
+    b.addEventListener('click', () => {
+      const row = myList.find(r => r.sku === b.dataset.sku);
+      if(row) setQty(b.dataset.sku, row.qty + parseInt(b.dataset.d, 10));
+    });
+  });
+  const nProd = myList.length, nUds = listUnits();
+  $('#pase-crumb').textContent = 'Tu lista · ' + nProd + (nProd === 1 ? ' producto' : ' productos') +
+    (nUds > nProd ? ' · ' + nUds + ' piezas' : '');
+  go('s-pase');
+  if(!silent){
+    botSay($('#pase-bot'), nProd > 1
+      ? 'Estos son tus ' + nProd + '. Dilos en caja o tómales foto — y si falta algo, dímelo.'
+      : 'Ese es. Dilo en caja o tómale foto — y si falta algo, dímelo.');
+    if(pairOn) pubPhone({t:'ask', x:'Tu lista está lista. ¿Agregamos algo más?'});
+    if(voiceMode) setTimeout(() => freeListen('Te escucho — ¿algo más?'), 1200);
+  }
+  track('pase_shown', listUnits() + ' u · ' + Math.round(listTotal()));
+}
 
 /* =====================================================================
    HANDOFF AL VENDEDOR
@@ -2163,23 +2311,14 @@ function showHandoff(customCtx){
   const ctxMsg = (typeof customCtx === 'string') ? customCtx : null;
   if(currentScreen !== 's-asesor') asesorFrom = currentScreen;
   const box = $('#ho-list');
-  if(lastResult){
-    $('#ho-context').style.display = 'none'; // el usuario ya sabe qué pidió — cero relectura
+  if(myList.length){
+    // NUNCA se agrega nada aquí: solo se muestra lo que el cliente ya dijo "lo quiero".
+    $('#ho-context').style.display = 'none';
     $('#ho-listtag').style.display = 'flex';
     let total = 0, html = '';
-    // Solo lo que el cliente confirmó: desde la ficha de un complemento, ese producto;
-    // en los demás casos, el principal + lo funcionalmente necesario. Nunca sugerencias.
-    let rows;
-    if(currentScreen === 's-detail' && curDetailSku && curDetailSku !== lastResult.main &&
-       !lastResult.needs.some(n => n.sku === curDetailSku)){
-      rows = [{sku: curDetailSku}];
-    }else{
-      rows = [{sku:lastResult.main}, ...lastResult.needs.filter(n => !n.opt || n.added).map(n => ({sku:n.sku}))];
-    }
-    rows.forEach(r => { if(myList.indexOf(r.sku) < 0) myList.push(r.sku); });
-    myList.forEach(sku => {
-      const p = P[sku]; total += p.p;
-      html += `<div class="code-row"><div class="ck"><div class="skubig">${sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div><div class="cpr">${money(p.p)}</div></div>`;
+    myList.forEach(r => {
+      const p = P[r.sku]; total += p.p * r.qty;
+      html += `<div class="code-row"><div class="ck"><div class="skubig">${r.sku}${r.qty > 1 ? ' ×' + r.qty : ''}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div><div class="cpr">${money(p.p * r.qty)}</div></div>`;
     });
     html += `<div class="code-total"><div class="tl">Total estimado<small>Precios de lista · confirma en caja</small></div><div class="cpr">${money(total)}</div></div>`;
     box.innerHTML = html;
@@ -2194,13 +2333,13 @@ function showHandoff(customCtx){
     box.style.display = 'none';
     $('#ho-phototip').style.display = 'none';
   }
-  $('#asesor-crumb').textContent = lastResult ? 'Ya casi es tuyo' : 'Ayuda de una persona';
-  $('#asesor-title').innerHTML = lastResult ? 'Tómalo del pasillo<br>o pídelo en caja' : 'Ellos te<br>atienden hoy';
+  $('#asesor-crumb').textContent = myList.length ? 'Ya casi es tuyo' : 'Ayuda de una persona';
+  $('#asesor-title').innerHTML = myList.length ? 'Tómalo del pasillo<br>o pídelo en caja' : 'Ellos te<br>atienden hoy';
   $('#asesor-vendors').innerHTML = VENDORS.map(v =>
     `<div class="vchip"><span class="vava">${v.i}</span><div><b>${v.n}</b><small>${v.r}</small></div></div>`).join('');
   go('s-asesor');
-  if(!lastResult) $('#ab-phone').classList.add('ab-hide');
-  botSay($('#asesor-bot'), lastResult
+  if(!myList.length) $('#ab-phone').classList.add('ab-hide');
+  botSay($('#asesor-bot'), myList.length
     ? (myList.length > 1
         ? 'Tu lista va creciendo. ¿Buscas algo más? Dímelo — o dilos en caja y listo.'
         : 'Ellos te ayudan — o di los códigos en caja y listo.')
@@ -2487,6 +2626,29 @@ function routeVoice(raw){
   closeVoice();
   track('voice_search', raw);
   userEcho('\u201C' + raw + '\u201D');
+
+  // 1.1) COMPRA: "lo quiero" · "dame dos" · "ya es todo" · "mi lista".
+  //      Mismo verbo por voz que por toque, con la misma confirmación.
+  if(has('mi lista','que llevo','qué llevo','que tengo','mis productos','ver mi lista')) return showPase();
+  if(has('ya es todo','eso es todo','es todo','ya termine','ya terminé','ya acabe','vamos a caja',
+         'a la caja','ir a caja','ya nada mas','ya nada más','ya estuvo','ya con eso')) return showPase();
+  const addSaid = has('lo quiero','la quiero','los quiero','las quiero','me lo llevo','me la llevo',
+                      'agregalo','agrégalo','agregala','agrégala','agregar','añadelo','añádelo','anadelo',
+                      'apuntalo','apúntalo','ponlo','lo llevo','la llevo','ese quiero','quiero ese','quiero esa',
+                      'dame','me das','llevame ese','ese mismo');
+  // Guarda: "dame una resistencia de 100 ohms" es BÚSQUEDA, no un agregado.
+  const namesProduct = Object.keys(KMAP).some(fk => KMAP[fk].words.some(w => q.indexOf(w) >= 0)) ||
+    Object.keys(P).some(sku => {
+      const hay = vnorm(P[sku].n + ' ' + P[sku].cat);
+      return q.split(/[^a-z0-9]+/).filter(w => w.length > 3).some(w => hay.indexOf(w) >= 0);
+    });
+  if(addSaid && !namesProduct){
+    const sku = currentSku();
+    if(sku){ addToList(sku, parseQty(q)); return; }
+    say('¿Cuál quieres? Dime qué buscas y te lo enseño.');
+    if(!voiceMode) return startBrowse();
+    return freeListen('Te escucho — dime qué buscas.');
+  }
 
   // 1.2) CONTINUACIÓN CONTEXTUAL: el bot recuerda qué acaba de enseñar.
   //      "más opciones", "otro modelo", "más barato"… siguen la conversación
@@ -2913,6 +3075,14 @@ function voiceRefineCat(cat, raw){
   }, true);
   track('voice_refine', cat);
 }
+/* Cantidad hablada: "dame dos", "quiero 3" */
+const NUMW = {un:1, uno:1, una:1, dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9, diez:10};
+function parseQty(q){
+  const md = q.match(/\b(\d{1,2})\b/);
+  if(md){ const n = parseInt(md[1], 10); if(n >= 1 && n <= 20) return n; }
+  for(const w in NUMW){ if(new RegExp('\\b' + w + '\\b').test(q)) return NUMW[w]; }
+  return 1;
+}
 /* ¿Desde dónde continúa la conversación? El producto en pantalla manda;
    si no hay, la última lista de coincidencias. */
 function ctxAlternates(){
@@ -3284,6 +3454,11 @@ function showApprovedImage(dataUrl){
 }
 
 $('#chat-voicehint').addEventListener('click', () => { track('voicehint_tap'); openVoiceSmart(); });
+$('#ab-want').addEventListener('click', () => {
+  const sku = currentSku();
+  if(sku){ track('want_tap', sku); addToList(sku, 1); }
+});
+$('#ab-list').addEventListener('click', () => { track('list_tap', listUnits()); showPase(); });
 
 /* ---- Home conversacional: en modo voz, Stebot escucha desde el home ---- */
 const HOME_OPTS = [
@@ -3557,6 +3732,7 @@ function startSession(){
   track('session_start');
   voiceMode = false; voiceSource = null;
   myList = [];
+  renderListChip();
   vmState = null; lastResult = null; rescueCount = 0; // cada sesión olvida el contexto anterior
   userEcho(null);
   endPhoneSession();
@@ -3630,7 +3806,7 @@ $$('.intent').forEach(b => b.addEventListener('click', () => {
 
 // Micro-encuesta de satisfacción (1 toque, al cierre)
 function shouldSurvey(){
-  return session && sessionHadResult && !surveyed && ['s-qr','s-asesor','s-detail','s-result'].includes(currentScreen);
+  return session && sessionHadResult && !surveyed && ['s-qr','s-asesor','s-detail','s-result','s-pase'].includes(currentScreen);
 }
 let surveyNext = null;
 function askSurvey(next){
