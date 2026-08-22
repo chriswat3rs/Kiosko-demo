@@ -1303,6 +1303,7 @@ body.display-mode .frame-caption{display:none}
           <button class="ab-btn outline" id="ab-phone"><svg><use href="#i-wa"/></svg><span id="ab-phone-label">Enviar a mi celular</span></button>
           <button class="ab-btn outline ab-hide" id="ab-list"><svg><use href="#i-box"/></svg><span>Mi lista</span><span class="ab-count" id="ab-list-n">0</span></button>
           <button class="ab-btn primary ab-hide" id="ab-want"><svg><use href="#i-check"/></svg><span>Lo quiero</span></button>
+          <button class="ab-btn primary ab-hide" id="ab-done"><svg><use href="#i-check"/></svg><span id="ab-done-t">Ya tengo todo</span></button>
           <button class="ab-btn outline" id="bb-asesor"><svg><use href="#i-person"/></svg><span id="asesor-label">Hablar con asesor</span></button>
         </div>
         <div id="glisten"><span class="clw"><i></i><i></i><i></i><i></i><i></i></span><span id="gl-txt">Te escucho.</span></div>
@@ -1958,7 +1959,7 @@ const BARCFG = {
   's-qr':    {back:1, home:1, phone:0},
   's-asesor':{back:1, home:1, phone:0, noAsesor:1},
   's-detail':{back:1, home:1, phone:0, want:1, noAsesor:1},
-  's-pase':  {back:1, home:1, phone:0}
+  's-pase':  {back:1, home:1, phone:0, done:1}
 };
 function configureBar(id){
   const cfg = BARCFG[id];
@@ -1980,6 +1981,7 @@ function configureBar(id){
   as.querySelector('use').setAttribute('href', '#' + (ac[2] || 'i-person'));
   as.classList.toggle('ab-hide', !!cfg.noAsesor);
   $('#ab-want').classList.toggle('ab-hide', !cfg.want);
+  $('#ab-done').classList.toggle('ab-hide', !cfg.done);
 }
 
 /* ---------------- BOT: streaming de texto ---------------- */
@@ -2270,14 +2272,22 @@ function addToList(sku, qty){
   if(voiceMode) setTimeout(() => freeListen('Te escucho — ¿algo más?'), 700);
   return true;
 }
-function setQty(sku, q){
+function setQty(sku, q, fromPhone){
   const i = myList.findIndex(r => r.sku === sku);
   if(i < 0) return;
-  if(q <= 0){ myList.splice(i, 1); track('list_remove', sku); }
+  if(q <= 0){ myList.splice(i, 1); track(fromPhone ? 'list_remove_phone' : 'list_remove', sku); }
   else { myList[i].qty = Math.min(20, q); }
   renderListChip();
   pubList();
-  if(myList.length) showPase(true); else goHome();
+  armIdle();
+  if(fromPhone){
+    // El display avisa el cambio: quien mira la pantalla entiende qué pasó
+    showToast(q <= 0 ? 'Quitaste ' + shortName(sku) + ' desde tu teléfono.'
+                     : shortName(sku) + ' · ahora van ' + Math.min(20, q) + '.');
+  }
+  if(currentScreen === 's-pase'){
+    if(myList.length) showPase(true); else goHome();
+  }else if(!myList.length && !fromPhone){ goHome(); }
 }
 /* Escucha GLOBAL: la voz deja de vivir dentro de una pantalla */
 function freeListen(msg){
@@ -2285,6 +2295,39 @@ function freeListen(msg){
   startChipListen([], () => {}, {pill:'#glisten', txt:'#gl-txt', noSim:true});
   chipFreeRoute = true; // cualquier frase entra al motor completo
   if(msg) pillSay(msg);
+}
+/* CIERRE REAL · "Ya tengo todo"
+   Libera el kiosko para el siguiente cliente y deja la lista VIVA en el
+   teléfono (mensaje `done`, distinto de `end`: `end` mata la sesión del
+   teléfono; `done` la despide con su lista en la mano).
+   Sin teléfono emparejado la lista se perdería, así que el primer toque
+   avisa y el segundo cierra. */
+let phoneDone = false, doneArmed = 0;
+function finishSession(){
+  if(!myList.length) return;
+  if(!pairOn){
+    const now = Date.now();
+    if(now - doneArmed > 6000){
+      doneArmed = now;
+      $('#ab-done-t').textContent = 'Sí, cerrar';
+      showToast('Tu lista se borra al cerrar. Escanea el código para llevártela — o toca otra vez.');
+      say('Tu lista se borra al cerrar. ¿Seguro?');
+      setTimeout(() => { $('#ab-done-t').textContent = 'Ya tengo todo'; }, 6200);
+      return;
+    }
+  }
+  track('session_done', listUnits() + ' u · ' + Math.round(listTotal()));
+  if(pairOn){
+    phoneDone = true;
+    pubPhone({t:'done', total: listTotal(), items: myList.map(r => {
+      const p = P[r.sku];
+      return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty};
+    })});
+  }
+  const close = () => endSession(phoneDone
+    ? '¡Listo! Tu lista sigue en tu teléfono.'
+    : '¡Listo! Gracias por tu visita.');
+  if(shouldSurvey()) askSurvey(close); else close();
 }
 /* "Llévatela en tu teléfono": el QR sustituye a la foto de la pantalla.
    Sirve igual al usuario de VOZ (ya emparejado: la lista simplemente
@@ -2338,6 +2381,7 @@ function showPase(silent){
   });
   const nProd = myList.length, nUds = listUnits();
   renderPaseTake();
+  if(!silent){ doneArmed = 0; $('#ab-done-t').textContent = 'Ya tengo todo'; }
   $('#pase-crumb').textContent = 'Tu lista · ' + nProd + (nProd === 1 ? ' producto' : ' productos') +
     (nUds > nProd ? ' · ' + nUds + ' piezas' : '');
   go('s-pase');
@@ -2680,7 +2724,11 @@ function routeVoice(raw){
   // 1.1) COMPRA: "lo quiero" · "dame dos" · "ya es todo" · "mi lista".
   //      Mismo verbo por voz que por toque, con la misma confirmación.
   if(has('mi lista','que llevo','qué llevo','que tengo','mis productos','ver mi lista')) return showPase();
-  if(has('ya es todo','eso es todo','es todo','ya termine','ya terminé','ya acabe','vamos a caja',
+  if(myList.length && (has('ya tengo todo','ya me voy','cierra','cerrar sesion','cerrar sesión','termina','terminar',
+      'listo gracias','ya termine','ya terminé','ya acabe','ya acabé','ya me llevo esto') ||
+      (currentScreen === 's-pase' && has('ya es todo','eso es todo','es todo','ya estuvo','ya con eso'))))
+    return finishSession();
+  if(has('ya es todo','eso es todo','es todo','vamos a caja',
          'a la caja','ir a caja','ya nada mas','ya nada más','ya estuvo','ya con eso')) return showPase();
   const addSaid = has('lo quiero','la quiero','los quiero','las quiero','me lo llevo','me la llevo',
                       'agregalo','agrégalo','agregala','agrégala','agregar','añadelo','añádelo','anadelo',
@@ -3304,6 +3352,7 @@ function connectPair(){
       }
       if(d.t === 'bye' && pairOn && ph === pairPid) return phoneLost();
       if(d.t === 'text' && d.x && pairOn && ph === pairPid) handleRemoteText(String(d.x).slice(0, 200));
+      if(d.t === 'qty' && d.sku && pairOn && ph === pairPid) setQty(String(d.sku), parseInt(d.q, 10) || 0, true);
       if(d.t === 'img' && d.d && pairOn && ph === pairPid && String(d.d).indexOf('data:image/') === 0) handleRemoteImage(d.d);
     });
     pairClient.on('error', () => { if(!pairOn) setPairStatus('err'); });
@@ -3329,12 +3378,13 @@ function phoneLost(){
 }
 function endPhoneSession(){
   if(pairClient){
-    try{ if(pairOn) pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'end'})); }catch(e){}
+    try{ if(pairOn && !phoneDone) pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'end'})); }catch(e){}
     try{ pairClient.end(false); }catch(e){}
     pairClient = null;
   }
   pairOn = false;
   pairPid = null;
+  phoneDone = false; doneArmed = 0;
 }
 function pubPhone(obj){
   if(pairClient && pairOn){ try{ pairClient.publish(pairTopic('k2p'), JSON.stringify(obj)); }catch(e){} }
@@ -3538,6 +3588,7 @@ $('#ab-want').addEventListener('click', () => {
   if(sku){ track('want_tap', sku); addToList(sku, 1); }
 });
 $('#ab-list').addEventListener('click', () => { track('list_tap', listUnits()); showPase(); });
+$('#ab-done').addEventListener('click', () => { track('done_tap', listUnits()); finishSession(); });
 
 /* ---- Home conversacional: en modo voz, Stebot escucha desde el home ---- */
 const HOME_OPTS = [
@@ -3798,6 +3849,7 @@ function endSession(msg){
   $('#ov-survey').classList.remove('active');
   $('#sv-stay').style.display = 'none';
   session = null; flow = null; lastResult = null;
+  myList = []; vmState = null; renderListChip(); // el kiosko no guarda la lista de nadie
   go('s-attract');
   if(msg) toast(msg);
   track('session_end');
