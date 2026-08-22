@@ -171,6 +171,22 @@ body.display-mode .frame-caption{display:none}
   font-size:27px;font-weight:700;color:var(--blue);max-width:900px;
 }
 #glisten.on{display:flex}
+/* Llévate tu lista: el QR sustituye a la foto de la pantalla */
+.take-card{
+  background:#fff;border:2.5px solid var(--blue);border-radius:24px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:30px;padding:26px 32px;margin-top:6px;
+}
+.take-card .take-qr{
+  width:216px;height:216px;flex-shrink:0;border-radius:16px;overflow:hidden;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.take-card .take-qr img,.take-card .take-qr canvas{width:100%;height:100%;display:block}
+.take-card .take-qr .qr-fallback{width:100%;height:100%}
+.take-card.done .take-qr{width:104px;height:104px;background:var(--green-s);color:var(--green)}
+.take-card.done .take-qr svg{width:64px;height:64px}
+.take-card .tk-t{font-size:34px;font-weight:800;line-height:1.2}
+.take-card .tk-s{font-size:26px;color:var(--ink-2);margin-top:8px;line-height:1.35}
+.photo-tip.minor{opacity:.72}
 /* Cantidad dentro de la lista */
 .qty-ctl{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .qty-ctl button{
@@ -1186,7 +1202,14 @@ body.display-mode .frame-caption{display:none}
             <div class="asesor-body">
               <div class="list-label"><svg><use href="#i-fwd"/></svg>Tus códigos · dilos en caja</div>
               <div class="codes-card" id="pase-list"></div>
-              <div class="photo-tip"><svg><use href="#i-cam"/></svg><span>O tómale una foto a esta pantalla — llévala contigo.</span></div>
+              <div class="take-card" id="pase-take">
+                <div class="take-qr" id="pase-qr"></div>
+                <div>
+                  <div class="tk-t" id="pase-take-t">Llévatela en tu teléfono</div>
+                  <div class="tk-s" id="pase-take-s">Escanea y tu lista aparece ahí — con códigos y pasillo. Desde ahí puedes seguir pidiendo.</div>
+                </div>
+              </div>
+              <div class="photo-tip minor"><svg><use href="#i-cam"/></svg><span>¿Sin teléfono a la mano? Tómale una foto a esta pantalla.</span></div>
             </div>
           </section>
 
@@ -2235,6 +2258,7 @@ function addToList(sku, qty){
   if(row) row.qty += qty; else myList.push({sku, qty});
   const total = row ? row.qty : qty;
   renderListChip();
+  pubList();
   track('add_to_list', sku + ' x' + qty);
   const msg = total > 1
     ? 'Van ' + total + ' · ' + shortName(sku) + ' en tu lista.'
@@ -2252,6 +2276,7 @@ function setQty(sku, q){
   if(q <= 0){ myList.splice(i, 1); track('list_remove', sku); }
   else { myList[i].qty = Math.min(20, q); }
   renderListChip();
+  pubList();
   if(myList.length) showPase(true); else goHome();
 }
 /* Escucha GLOBAL: la voz deja de vivir dentro de una pantalla */
@@ -2260,6 +2285,28 @@ function freeListen(msg){
   startChipListen([], () => {}, {pill:'#glisten', txt:'#gl-txt', noSim:true});
   chipFreeRoute = true; // cualquier frase entra al motor completo
   if(msg) pillSay(msg);
+}
+/* "Llévatela en tu teléfono": el QR sustituye a la foto de la pantalla.
+   Sirve igual al usuario de VOZ (ya emparejado: la lista simplemente
+   aparece) y al de TOQUE (escanea aquí y cae en la misma vista, con
+   micrófono y teclado para seguir pidiendo). */
+function renderPaseTake(){
+  const card = $('#pase-take'), box = $('#pase-qr');
+  if(!card) return;
+  if(pairOn){
+    card.classList.add('done');
+    box.innerHTML = '<svg><use href="#i-check"/></svg>';
+    $('#pase-take-t').textContent = 'Tu lista ya está en tu teléfono';
+    $('#pase-take-s').textContent = 'Ahí tienes los códigos y el pasillo — y puedes seguir pidiendo por voz.';
+    return;
+  }
+  card.classList.remove('done');
+  const url = ensurePairChannel('lista');
+  box.innerHTML = '';
+  if(typeof QRCode !== 'undefined') new QRCode(box, {text:url, width:216, height:216, correctLevel:QRCode.CorrectLevel.M});
+  else box.innerHTML = '<div class="qr-fallback"></div>';
+  $('#pase-take-t').textContent = 'Llévatela en tu teléfono';
+  $('#pase-take-s').textContent = 'Escanea y tu lista aparece ahí — con códigos y pasillo. Desde ahí puedes seguir pidiendo.';
 }
 /* El cierre: la lista lleva a caja. El asesor vuelve a ser ayuda humana. */
 function showPase(silent){
@@ -2290,13 +2337,16 @@ function showPase(silent){
     });
   });
   const nProd = myList.length, nUds = listUnits();
+  renderPaseTake();
   $('#pase-crumb').textContent = 'Tu lista · ' + nProd + (nProd === 1 ? ' producto' : ' productos') +
     (nUds > nProd ? ' · ' + nUds + ' piezas' : '');
   go('s-pase');
   if(!silent){
-    botSay($('#pase-bot'), nProd > 1
-      ? 'Estos son tus ' + nProd + '. Dilos en caja o tómales foto — y si falta algo, dímelo.'
-      : 'Ese es. Dilo en caja o tómale foto — y si falta algo, dímelo.');
+    botSay($('#pase-bot'), pairOn
+      ? (nProd > 1 ? 'Estos son tus ' + nProd + ' — ya están en tu teléfono. Tómalos del pasillo o dilos en caja.'
+                   : 'Ese es — ya está en tu teléfono. Tómalo del pasillo o dilo en caja.')
+      : (nProd > 1 ? 'Estos son tus ' + nProd + '. Escanea el código y llévatelos en tu teléfono — y si falta algo, dímelo.'
+                   : 'Ese es. Escanea el código y llévatelo en tu teléfono — y si falta algo, dímelo.'));
     if(pairOn) pubPhone({t:'ask', x:'Tu lista está lista. ¿Agregamos algo más?'});
     if(voiceMode) setTimeout(() => freeListen('Te escucho — ¿algo más?'), 1200);
   }
@@ -3168,8 +3218,26 @@ const PAIR_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 let pairClient = null, pairCode = '', pairOn = false, voiceSource = null, pairPid = null;
 const pairTopic = sub => 'steren-kiosko-demo/' + pairCode + '/' + sub;
 
+/* El teléfono no es "el micrófono": es TU SESIÓN en el bolsillo.
+   La lista viaja por el mismo canal, en vivo, y aterriza en la misma
+   vista donde el usuario ya habla y escribe. */
+let pairIntent = 'voz'; // 'voz' (escanea para hablar) | 'lista' (escanea para llevársela)
+function ensurePairChannel(intent){
+  pairIntent = intent || 'voz';
+  if(!pairCode) pairCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+  if(!pairClient) connectPair();
+  return MIC_PAGE + '?c=' + pairCode + '&v=' + Math.floor(Date.now() / 86400000);
+}
+function pubList(){
+  if(!pairOn) return;
+  pubPhone({t:'list', total: listTotal(), items: myList.map(r => {
+    const p = P[r.sku];
+    return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty};
+  })});
+}
 function openPair(){
   armIdle();
+  pairIntent = 'voz';
   pairCode = Math.random().toString(36).slice(2, 8).toUpperCase();
   $('#pair-code').textContent = pairCode;
   const box = $('#pair-qr');
@@ -3211,11 +3279,22 @@ function connectPair(){
           pairPid = ph;
           voiceSource = 'telefono';
           setPairStatus('ok');
-          track('pair_connected');
+          track('pair_connected', pairIntent);
           try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
-          setTimeout(() => { closePair(); openVoice(); }, 900);
+          if(pairIntent === 'lista'){
+            // Escaneó desde el pase: su lista aparece en su teléfono y ahí sigue la conversación
+            setTimeout(() => {
+              pubList();
+              renderPaseTake();
+              showToast('Tu lista está en tu teléfono — desde ahí puedes seguir pidiendo.');
+              say('Listo, tu lista está en tu teléfono. Desde ahí puedes seguir pidiendo.');
+            }, 400);
+          }else{
+            setTimeout(() => { closePair(); openVoice(); pubList(); }, 900);
+          }
         }else if(ph === pairPid){
           try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
+          setTimeout(pubList, 300);
         }else{
           // segundo teléfono con el mismo código: sesión ocupada
           track('pair_busy');
