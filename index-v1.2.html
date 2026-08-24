@@ -175,28 +175,28 @@ body.display-mode .frame-caption{display:none}
    El display transmite la plática humano↔bot, como un chat. El usuario
    no despega la vista de la pantalla: su teléfono es solo el micrófono. */
 .talk-thread{
-  flex:1;overflow-y:auto;padding:26px 56px 30px;display:flex;flex-direction:column;gap:22px;
+  flex:1;overflow-y:auto;padding:34px 56px 40px;display:flex;flex-direction:column;gap:30px;
 }
-.tb,.tu{max-width:78%;border-radius:28px;padding:26px 32px;font-size:34px;line-height:1.35;animation:rise .3s ease backwards}
+.tb,.tu{max-width:80%;border-radius:32px;padding:34px 40px;font-size:35px;line-height:1.5;animation:rise .3s ease backwards}
 .tb{background:#fff;border:2.5px solid var(--line);box-shadow:var(--shadow);align-self:flex-start;border-bottom-left-radius:10px;color:var(--ink);font-weight:600}
 .tu{background:var(--grad);color:#fff;align-self:flex-end;border-bottom-right-radius:10px;font-weight:700;box-shadow:0 10px 26px rgba(0,70,190,.26)}
-.tb .twho{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.tb .twho{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .tb .twho img{width:44px;height:44px;border-radius:50%;object-fit:cover}
 .tb .twho b{font-size:20px;font-weight:800;color:var(--blue);letter-spacing:.06em;text-transform:uppercase}
 /* Tarjeta de producto DENTRO del hilo — el bot "manda" el producto */
 .tcard{
-  align-self:flex-start;max-width:86%;background:#fff;border:2.5px solid var(--line);border-radius:26px;
-  box-shadow:var(--shadow);padding:22px;display:flex;gap:22px;align-items:center;animation:rise .3s ease backwards;
+  align-self:flex-start;max-width:88%;background:#fff;border:2.5px solid var(--line);border-radius:30px;
+  box-shadow:var(--shadow);padding:28px;display:flex;gap:28px;align-items:center;animation:rise .3s ease backwards;
 }
 .tcard .tpic{width:150px;height:150px;border-radius:18px;border:2px solid var(--line-2);background:#fff;
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--blue)}
 .tcard .tpic img{max-width:88%;max-height:88%;object-fit:contain}
 .tcard .tpic svg{width:74px;height:74px}
 .tcard .tinfo{flex:1;min-width:0}
-.tcard .tn{font-size:31px;font-weight:800;line-height:1.22}
-.tcard .tl{font-size:24px;color:var(--ink-2);margin-top:6px}
-.tcard .tp{font-size:40px;font-weight:800;color:var(--blue);margin-top:8px}
-.tcard .tacts{display:flex;gap:12px;margin-top:16px}
+.tcard .tn{font-size:31px;font-weight:800;line-height:1.3}
+.tcard .tl{font-size:24px;color:var(--ink-2);margin-top:10px}
+.tcard .tp{font-size:40px;font-weight:800;color:var(--blue);margin-top:12px}
+.tcard .tacts{display:flex;gap:14px;margin-top:22px}
 .tcard .tacts button{
   height:78px;padding:0 28px;border-radius:20px;font-family:var(--sans);font-size:26px;font-weight:800;
   cursor:pointer;display:flex;align-items:center;gap:10px;transition:.12s;
@@ -207,15 +207,15 @@ body.display-mode .frame-caption{display:none}
 .tcard .tacts .tv{background:#fff;border:2.5px solid var(--line);color:var(--ink-2)}
 .tcard .tacts button svg{width:32px;height:32px}
 /* Respuestas rápidas: sugerencias, no un menú */
-.tquick{display:flex;flex-wrap:wrap;gap:14px;align-self:flex-start;max-width:92%;animation:rise .3s ease backwards}
+.tquick{display:flex;flex-wrap:wrap;gap:18px;align-self:flex-start;max-width:94%;animation:rise .3s ease backwards}
 .tquick button{
-  background:#E7F1FE;border:2.5px solid #BFD9F8;color:var(--blue);border-radius:999px;
-  padding:18px 30px;font-family:var(--sans);font-size:27px;font-weight:700;cursor:pointer;transition:.12s;
-  display:flex;align-items:center;gap:12px;text-align:left;line-height:1.25;
+  background:#E7F1FE;border:2.5px solid #BFD9F8;color:var(--blue);border-radius:36px;
+  padding:24px 34px;font-family:var(--sans);font-size:27px;font-weight:700;cursor:pointer;transition:.12s;
+  display:flex;align-items:center;gap:16px;text-align:left;line-height:1.35;
 }
 .tquick button:active{transform:scale(.96);background:#D7E8FC}
 .tquick button svg{width:34px;height:34px;flex-shrink:0}
-.tquick button small{display:block;font-size:21px;font-weight:500;color:var(--ink-2)}
+.tquick button small{display:block;font-size:21px;font-weight:500;color:var(--ink-2);margin-top:4px}
 .ttyping{align-self:flex-start;background:#fff;border:2.5px solid var(--line);border-radius:28px;
   border-bottom-left-radius:10px;padding:28px 34px;box-shadow:var(--shadow)}
 /* Llévate tu lista: el QR sustituye a la foto de la pantalla */
@@ -1689,18 +1689,155 @@ const PROBLEMS = [
 ];
 
 /* ---------------- BUSCAR PRODUCTO (explorador de catálogo) ---------------- */
-const BROWSE = [
-  {id:'bocinas', l:'Bocinas y audio', ic:'i-speaker', skus:['BOC-970','BSD-120','AUD-7625','POD-165','255-258','299-400']},
-  {id:'cables',  l:'Cables',          ic:'i-cable',   skus:['299-502','295-503','299-830','295-600','USB-3102','400-200N']},
-  {id:'adapt',   l:'Adaptadores',     ic:'i-adapter', skus:['USB-4724','USB-471','USB-456']},
-  {id:'wifi',    l:'Wi-Fi y redes',   ic:'i-wifi',    skus:['COM-8300','MESH-200+']},
-  {id:'energia', l:'Energía',         ic:'i-bolt',    skus:['905-3107','NB-900','REG-1050','ELI-12-2','ELI-12-5','ELI-MULTI']},
-  {id:'soportes',l:'Soportes',        ic:'i-mount',   skus:['STV-105','COM-083']},
-  {id:'smart',   l:'Smart Home',      ic:'i-bulb',    skus:['SHOME-120','SHOME-127','CCTV-213']},
-  {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W','CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH']},
-  {id:'pilas', l:'Pilas y baterías', ic:'i-batt', fams:['pilas'], skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500']},
-  {id:'otro',    l:'Busco otra cosa', ic:'i-chat',    other:true}
+/* =====================================================================
+   TAXONOMÍA REAL DE STEREN · el mapa único de voz y toque
+   No inventamos navegación: usamos el árbol de categorías del catálogo.
+   Cada subcategoría trae los sinónimos con los que la gente la nombra,
+   los productos del demo que le corresponden y su pasillo. Lo que aún
+   no tiene ficha cargada se responde con honestidad y ubicación —
+   nunca con un "no encontré eso".
+   ===================================================================== */
+const TAX = [
+  {id:'smart', l:'Smart Home', ic:'i-bulb', subs:[
+    {l:'Focos inteligentes', syn:['foco inteligente','focos inteligentes','foco wifi','foco smart','foco led wifi'], skus:['SHOME-120'], loc:'Pasillo 5'},
+    {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127'], loc:'Pasillo 5'},
+    {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[], loc:'Pasillo 5'},
+    {l:'Contactos inteligentes', syn:['contacto inteligente','contactos inteligentes','enchufe smart'], skus:[], loc:'Pasillo 5'},
+    {l:'Cámaras de seguridad Wi-Fi', syn:['camara wifi','camara de seguridad','camara smart','camara ip'], skus:['CCTV-213'], loc:'Pasillo 5'},
+    {l:'Sistemas de seguridad inteligente', syn:['sistema de seguridad','kit de alarma inteligente','sensor de puerta'], skus:[], loc:'Pasillo 5'},
+    {l:'Asistentes de voz', syn:['alexa','asistente de voz','google home','bocina inteligente'], skus:[], loc:'Pasillo 5'},
+    {l:'Repetidores Wi-Fi', syn:['repetidor','repetidores','extensor de wifi','amplificador de wifi'], skus:['COM-8300','MESH-200+'], loc:'Pasillo 7'}
+  ]},
+  {id:'audio', l:'Audio', ic:'i-speaker', subs:[
+    {l:'Audífonos', syn:['audifonos','auriculares','diadema','headphones','audifono'], skus:['AUD-7625'], loc:'Pasillo 6'},
+    {l:'Bocinas', syn:['bocina','bocinas','altavoz','parlante','bafle bluetooth'], skus:['BOC-970','BSD-120'], loc:'Pasillo 6'},
+    {l:'Bafles con amplificador', syn:['bafle','bafles','bafle amplificado','sonido para fiesta'], skus:[], loc:'Pasillo 6'},
+    {l:'Micrófonos', syn:['microfono','microfonos','mic para cantar','microfono inalambrico'], skus:[], loc:'Pasillo 6'},
+    {l:'Luces para fiesta', syn:['luces para fiesta','luz de fiesta','esfera de luces','luces disco'], skus:[], loc:'Pasillo 6'},
+    {l:'Receptores y transmisores inalámbricos', syn:['transmisor bluetooth','receptor bluetooth','transmisor de audio'], skus:['POD-165'], loc:'Pasillo 6'},
+    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','fm bluetooth'], skus:[], loc:'Pasillo 6'},
+    {l:'Cables de audio', syn:['cable de audio','cable auxiliar','cable 3.5','cable optico','plug a plug'], skus:['255-258','299-400'], loc:'Pasillo 6'},
+    {l:'Adaptadores de audio', syn:['adaptador de audio','adaptador 3.5','convertidor de audio'], skus:['USB-456'], loc:'Pasillo 6'},
+    {l:'Grabadoras de voz', syn:['grabadora','grabadora de voz'], skus:[], loc:'Pasillo 6'},
+    {l:'Megáfonos', syn:['megafono','altavoz de mano','perifoneo'], skus:[], loc:'Pasillo 6'},
+    {l:'Amplificadores de audio', syn:['amplificador','amplificadores','ampli'], skus:[], loc:'Pasillo 6'},
+    {l:'Conectores de audio', syn:['conector de audio','plug','jack','conectores'], skus:[], loc:'Pasillo 6'}
+  ]},
+  {id:'compu', l:'Computación', ic:'i-monitor', subs:[
+    {l:'Equipo y cables de red', syn:['cable de red','ethernet','utp','switch de red','cable rj45'], skus:[], loc:'Pasillo 7'},
+    {l:'Mouse y teclados', syn:['mouse','teclado','raton','teclado inalambrico'], skus:[], loc:'Pasillo 7'},
+    {l:'Memorias USB y SD', syn:['memoria usb','usb','memoria sd','micro sd','memoria'], skus:[], loc:'Pasillo 7'},
+    {l:'Accesorios para laptop', syn:['accesorio de laptop','base para laptop','soporte de laptop','enfriador'], skus:['COM-083'], loc:'Pasillo 3'},
+    {l:'Accesorios USB', syn:['hub usb','accesorio usb','multipuerto'], skus:['USB-471'], loc:'Pasillo 4'},
+    {l:'Reguladores y No Breaks', syn:['regulador','no break','nobreak','ups','respaldo de energia'], skus:['REG-1050','NB-900'], loc:'Pasillo 2'},
+    {l:'Cables USB', syn:['cable usb','usb c','cable de carga','cable tipo c'], skus:['USB-3102'], loc:'Pasillo 4'},
+    {l:'Cables VGA', syn:['vga','cable vga'], skus:[], loc:'Pasillo 4'},
+    {l:'Adaptadores para disco duro', syn:['adaptador de disco','disco duro','sata'], skus:[], loc:'Pasillo 7'},
+    {l:'Cableado estructurado', syn:['cableado estructurado','patch panel','jack de red'], skus:[], loc:'Pasillo 7'},
+    {l:'Lectores de código de barras', syn:['lector de codigo','codigo de barras','escaner'], skus:[], loc:'Pasillo 7'}
+  ]},
+  {id:'cables', l:'Cables', ic:'i-cable', subs:[
+    {l:'Cables HDMI y video', syn:['hdmi','cable hdmi','cable de video','displayport','cable para tele'], skus:['299-502','295-503','299-830','295-600'], loc:'Pasillo 4'},
+    {l:'Cables de carga y datos', syn:['cable de carga','cable de datos','cargador de celular','usb c'], skus:['USB-3102'], loc:'Pasillo 4'},
+    {l:'Adaptadores de video', syn:['adaptador hdmi','usb c a hdmi','adaptador de video','convertidor'], skus:['USB-4724','USB-471'], loc:'Pasillo 4'},
+    {l:'Organizadores de cables', syn:['organizador de cables','espiral','canaleta','ordenar cables'], skus:['400-200N'], loc:'Pasillo 4'}
+  ]},
+  {id:'tel', l:'Telefonía y tablets', ic:'i-phone', subs:[
+    {l:'Power banks', syn:['power bank','powerbank','bateria portatil','pila portatil','cargador portatil'], skus:[], loc:'Pasillo 2'},
+    {l:'Cargadores USB', syn:['cargador','cargadores','cargador usb','eliminador de celular'], skus:[], loc:'Pasillo 2'},
+    {l:'Cables y adaptadores para celular', syn:['cable de celular','adaptador de celular','cable lightning'], skus:['USB-3102','USB-456'], loc:'Pasillo 4'},
+    {l:'Soportes para celular', syn:['soporte de celular','porta celular','sujetador de celular','base de celular'], skus:[], loc:'Pasillo 3'},
+    {l:'Memorias USB y SD', syn:['memoria de celular','micro sd para celular'], skus:[], loc:'Pasillo 7'},
+    {l:'Audífonos', syn:['audifonos de celular','manos libres'], skus:['AUD-7625'], loc:'Pasillo 6'}
+  ]},
+  {id:'tv', l:'TV y video', ic:'i-tv', subs:[
+    {l:'Soportes para pantalla', syn:['soporte de pantalla','soporte para tele','base de tv','montaje de tv'], skus:['STV-105'], loc:'Pasillo 3'},
+    {l:'Cables para TV', syn:['cable para tv','hdmi para tele','coaxial'], skus:['299-502','299-830'], loc:'Pasillo 4'},
+    {l:'Antenas', syn:['antena','antena de tv','antena aerea'], skus:[], loc:'Pasillo 3'},
+    {l:'Controles remoto', syn:['control remoto','control de tv','control universal'], skus:[], loc:'Pasillo 3'}
+  ]},
+  {id:'cctv', l:'Videovigilancia y seguridad', ic:'i-cam', subs:[
+    {l:'Cámaras CCTV', syn:['camara cctv','camara de vigilancia','camara para negocio'], skus:['CCTV-213'], loc:'Pasillo 5'},
+    {l:'Grabadores CCTV (DVR)', syn:['dvr','grabador','nvr','grabadora de camaras'], skus:[], loc:'Pasillo 5'},
+    {l:'Cables y accesorios CCTV', syn:['cable de camara','accesorio cctv','fuente para camara'], skus:['ELI-12-5'], loc:'Pasillo 5'},
+    {l:'Alarmas y sirenas', syn:['alarma','sirena','alarma para casa'], skus:[], loc:'Pasillo 5'},
+    {l:'Video porteros e intercomunicadores', syn:['video portero','intercomunicador','timbre con camara'], skus:[], loc:'Pasillo 5'},
+    {l:'Cajas de seguridad', syn:['caja fuerte','caja de seguridad'], skus:[], loc:'Pasillo 9'},
+    {l:'Radios intercomunicadores', syn:['radio','radios','walkie talkie','intercomunicador portatil'], skus:[], loc:'Pasillo 9'},
+    {l:'Detectores de billetes', syn:['detector de billetes','contadora de billetes'], skus:[], loc:'Pasillo 9'}
+  ]},
+  {id:'ilum', l:'Iluminación', ic:'i-bulb', subs:[
+    {l:'Focos LED', syn:['foco','focos','foco led','bombilla'], skus:['SHOME-120'], loc:'Pasillo 5'},
+    {l:'Reflectores LED', syn:['reflector','reflectores','lampara de exterior'], skus:[], loc:'Pasillo 5'},
+    {l:'Series y tiras LED', syn:['serie de luces','tira led','luces navidenas'], skus:['SHOME-127'], loc:'Pasillo 5'},
+    {l:'Lámparas y linternas', syn:['lampara','linterna','lamparas','luz de mano'], skus:[], loc:'Pasillo 5'},
+    {l:'Lámparas con lupa', syn:['lampara con lupa','lupa con luz'], skus:[], loc:'Pasillo 9'},
+    {l:'Accesorios para focos', syn:['socket','portalamparas','accesorio de foco'], skus:[], loc:'Pasillo 5'}
+  ]},
+  {id:'energia', l:'Energía', ic:'i-bolt', subs:[
+    {l:'Pilas y cargadores', syn:['pila','pilas','bateria','baterias','pila recargable'], fam:'pilas', skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500'], loc:'Pasillo 2'},
+    {l:'Eliminadores y fuentes de poder', syn:['eliminador','eliminadores','fuente de poder','fuente de voltaje'], fam:'fuente', skus:['ELI-12-2','ELI-12-5','ELI-MULTI'], loc:'Pasillo 2'},
+    {l:'Tiras multicontactos', syn:['multicontacto','regleta','tira de contactos','extension con contactos'], skus:['905-3107'], loc:'Pasillo 2'},
+    {l:'Reguladores y No Breaks', syn:['regulador de voltaje','no break','ups'], skus:['REG-1050','NB-900'], loc:'Pasillo 2'},
+    {l:'Extensiones eléctricas', syn:['extension','extensiones','cable de extension'], skus:[], loc:'Pasillo 2'},
+    {l:'Protectores para electrodomésticos', syn:['protector','protector de voltaje','protector de refrigerador'], skus:[], loc:'Pasillo 2'},
+    {l:'Clavijas, convertidores y ladrones', syn:['clavija','ladron','convertidor de contacto'], skus:[], loc:'Pasillo 2'},
+    {l:'Inversores para auto', syn:['inversor','inversor de corriente','corriente en el carro'], skus:[], loc:'Pasillo 10'},
+    {l:'Temporizadores', syn:['temporizador','timer','apagado automatico'], skus:[], loc:'Pasillo 2'},
+    {l:'Transformadores', syn:['transformador','transformadores'], skus:[], loc:'Pasillo 8'},
+    {l:'Fusibles y portafusibles', syn:['fusible','fusibles','portafusible'], skus:[], loc:'Pasillo 8'},
+    {l:'Power banks', syn:['power bank','bateria portatil'], skus:[], loc:'Pasillo 2'}
+  ]},
+  {id:'herr', l:'Herramientas', ic:'i-bolt', subs:[
+    {l:'Cautines y accesorios', syn:['cautin','cautines','soldar','soldadura','estano','desoldar'], fam:'soldar', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH'], loc:'Pasillo 9'},
+    {l:'Multímetros', syn:['multimetro','multimetros','tester','medir voltaje'], skus:[], loc:'Pasillo 9'},
+    {l:'Equipo de medición', syn:['equipo de medicion','osciloscopio','medidor'], skus:[], loc:'Pasillo 9'},
+    {l:'Pinzas y ponchadoras', syn:['pinza','pinzas','ponchadora','crimpadora'], skus:[], loc:'Pasillo 9'},
+    {l:'Juegos de desarmadores', syn:['desarmador','desarmadores','destornillador'], skus:[], loc:'Pasillo 9'},
+    {l:'Probadores de cable', syn:['probador de cable','generador de tono','pollo'], skus:[], loc:'Pasillo 9'},
+    {l:'Limpiadores', syn:['limpiador','limpia contactos','aire comprimido'], skus:[], loc:'Pasillo 9'},
+    {l:'Aislantes y caimanes', syn:['cinta aislante','aislante','caiman','caimanes'], skus:[], loc:'Pasillo 9'}
+  ]},
+  {id:'casa', l:'Casa y oficina', ic:'i-home', subs:[
+    {l:'Básculas digitales', syn:['bascula','basculas','pesar'], skus:[], loc:'Pasillo 9'},
+    {l:'Timbres inalámbricos', syn:['timbre','timbres','timbre inalambrico'], skus:[], loc:'Pasillo 9'},
+    {l:'Control de plagas', syn:['control de plagas','ahuyentador','repelente de plagas'], skus:[], loc:'Pasillo 9'},
+    {l:'Termómetros digitales', syn:['termometro','termometros'], skus:[], loc:'Pasillo 9'},
+    {l:'Relojes', syn:['reloj','relojes','despertador'], skus:[], loc:'Pasillo 9'},
+    {l:'Gadgets', syn:['gadget','gadgets','novedades'], skus:[], loc:'Pasillo 9'},
+    {l:'Cámaras deportivas', syn:['camara deportiva','gopro','camara de accion'], skus:[], loc:'Pasillo 9'},
+    {l:'Deportes', syn:['deporte','deportes','fitness'], skus:[], loc:'Pasillo 9'}
+  ]},
+  {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], subs:[
+    {l:'Potenciómetros y resistencias', syn:['resistencia','resistencias','resistor','potenciometro'], fam:'resist', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W'], loc:'Pasillo 8'},
+    {l:'Capacitores', syn:['capacitor','capacitores','condensador'], skus:[], loc:'Pasillo 8'},
+    {l:'Circuitos integrados', syn:['circuito integrado','integrado','chip','ci'], skus:[], loc:'Pasillo 8'},
+    {l:'Protoboards', syn:['protoboard','proto','tabla de pruebas','board'], skus:[], loc:'Pasillo 8'},
+    {l:'Placas y accesorios para proyectos', syn:['placa','placas','arduino','modulo','raspberry'], skus:[], loc:'Pasillo 8'},
+    {l:'Kits educativos', syn:['kit','kits','kit educativo','kit para armar'], skus:[], loc:'Pasillo 8'},
+    {l:'Placas fenólicas', syn:['placa fenolica','fenolica','baquelita'], skus:[], loc:'Pasillo 8'},
+    {l:'Ventiladores', syn:['ventilador','fan','ventiladores'], skus:[], loc:'Pasillo 8'},
+    {l:'Cautines y soldadura', syn:['cautin','soldadura para proyectos'], fam:'soldar', skus:['CAU-30','SOL-17'], loc:'Pasillo 9'}
+  ]},
+  {id:'auto', l:'Automotriz', ic:'i-bolt', subs:[
+    {l:'Inversores para auto', syn:['inversor para auto','corriente en el coche'], skus:[], loc:'Pasillo 10'},
+    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','bluetooth para el carro','musica en el coche'], skus:[], loc:'Pasillo 10'},
+    {l:'Cargadores USB para auto', syn:['cargador de auto','cargador de coche','cargador de encendedor','cargador para el carro','cargador para el coche','cargador para el auto'], skus:[], loc:'Pasillo 10'},
+    {l:'Accesorios automotrices', syn:['accesorio automotriz','soporte de celular para auto'], skus:[], loc:'Pasillo 10'},
+    {l:'Fusibles automotrices', syn:['fusible de auto','fusible automotriz'], skus:[], loc:'Pasillo 10'}
+  ]},
+  {id:'estud', l:'Línea estudiantil', ic:'i-chip', subs:[
+    {l:'Kits para armar', syn:['kit para armar','proyecto escolar','kit escolar'], skus:[], loc:'Pasillo 8'},
+    {l:'Sensores para proyectos', syn:['sensor','sensores','sensor de movimiento'], skus:[], loc:'Pasillo 8'},
+    {l:'Motores para proyectos', syn:['motor','motores','servomotor','motor a pasos'], skus:[], loc:'Pasillo 8'},
+    {l:'Placas de programación', syn:['placa de programacion','arduino','esp32','microcontrolador'], skus:[], loc:'Pasillo 8'},
+    {l:'Switches y relevadores', syn:['switch','relevador','relay','interruptor'], skus:[], loc:'Pasillo 8'},
+    {l:'Optoelectrónica', syn:['led','diodo','optoacoplador','display de 7 segmentos'], skus:[], loc:'Pasillo 8'},
+    {l:'Electrónica digital y analógica', syn:['electronica digital','electronica analogica','compuerta'], skus:[], loc:'Pasillo 8'},
+    {l:'Conectores y terminales', syn:['conector','terminal','terminales','bornera'], skus:[], loc:'Pasillo 8'}
+  ]}
 ];
+/* Fichas: complementos curados y notas por producto */
 const FICHA = {
   'BOC-970': {extras:['POD-165'],  note:'Con el transmisor Bluetooth también le mandas el audio de tu TV.'},
   'BSD-120': {extras:['299-400'],  note:'Se conecta a tu TV por Bluetooth, óptico o auxiliar.'},
@@ -1728,6 +1865,7 @@ function fichaFor(sku){
   const extras = (f.extras || VCOMP[p.cat] || []).filter(k => k !== sku && similar.indexOf(k) < 0).slice(0, 1);
   return {ctx: p.n, main: sku, needs: f.needs || [], extras, similar, note: f.note || null};
 }
+/* El índice: las categorías REALES de Steren */
 function startBrowse(){
   flow = {type:'browse', step:1};
   $('#chat-crumb').textContent = 'Buscar un producto';
@@ -1742,56 +1880,11 @@ function startBrowse(){
   renderChips(BROWSE.map(cat => ({ic:cat.ic, l:cat.l, cat})), o => {
     if(o.cat.other){
       track('voice_from_browse');
-      // En modo toque no se fuerza la voz: se llega por lo que quieres LOGRAR
       return voiceMode ? openVoiceSmart() : browseGoal();
     }
     openBrowseCat(o.cat);
   });
   chipFreeRoute = true; // en este turno, una frase libre va al buscador
-}
-/* Tocar una categoría NO abre un muro: abre la MISMA pregunta de
-   diagnóstico que hace la voz. La lista completa queda como salida
-   secundaria ("Ver todo"). El diálogo es el camino, con voz o con toque. */
-const CAT2REF = {bocinas:'Bocinas', cables:'Cables', adapt:'Adaptadores', wifi:'Conectividad', energia:'Energía', smart:'Smart Home'};
-function browseRefine(cat, R){
-  flow = {type:'refine', step:1, cat};
-  $('#chat-crumb').textContent = 'Buscar un producto';
-  $('#chat-title').textContent = cat.l;
-  go('s-chat');
-  $('#chat-voicehint').style.display = 'none';
-  setSteps(0, 0);
-  botSay($('#bot-text'), R.q, () => {});
-  renderChips([
-    ...R.opts.map(o => ({ic:o.ic, l:o.l, s:o.s, skus:o.skus, fam:o.fam})),
-    {ic:'i-box', l:'Ver todo', s:cat.l, all:1}
-  ], o => {
-    if(o.all) return openBrowseList(cat);
-    if(o.fam) return startFunnel(o.fam, {}, null, 'browse');
-    if(o.skus.length === 1){
-      botLine('Listo, esto es lo que necesitas.');
-      return showResult(fichaFor(o.skus[0]));
-    }
-    showVoiceMatches(o.skus, cat.l + ' · ' + o.l, true);
-  }, true);
-  track('browse_refine', cat.id);
-}
-/* Categoría con varias familias del mapa → una pregunta, no un muro */
-function famSelector(cat){
-  flow = {type:'refine', step:1, cat};
-  $('#chat-crumb').textContent = 'Buscar un producto';
-  $('#chat-title').textContent = cat.l;
-  go('s-chat');
-  $('#chat-voicehint').style.display = 'none';
-  setSteps(0, 0);
-  botSay($('#bot-text'), '¿Qué necesitas para tu proyecto?', () => {});
-  renderChips([
-    ...cat.fams.map(fk => ({ic:KMAP[fk].ic || 'i-bolt', l:KMAP[fk].label, fk})),
-    {ic:'i-box', l:'Ver todo', s:cat.l, all:1}
-  ], o => {
-    if(o.all) return openBrowseList(cat);
-    startFunnel(o.fk, {}, null, 'browse');
-  }, true);
-  track('fam_selector', cat.id);
 }
 /* "Busco otra cosa" con toque: índice por metas, no por taxonomía —
    el camino a lo que no sabes nombrar. */
@@ -1806,43 +1899,105 @@ function browseGoal(){
   renderChips([
     {ic:'i-cable',  l:'Conectar dos aparatos', act:'connect'},
     {ic:'i-wifi',   l:'Solucionar un problema en casa', act:'problem'},
-    {ic:'i-bolt',   l:'Armar un proyecto de electrónica', s:'resistencias y componentes', act:'resist'},
+    {ic:'i-chip',   l:'Armar un proyecto de electrónica', s:'resistencias y componentes', act:'project'},
     {ic:'i-mic',    l:'Decirlo con mi voz', act:'voice'},
     {ic:'i-person', l:'Que me ayude una persona', act:'human'}
   ], o => {
     if(o.act === 'connect') return startConnect();
     if(o.act === 'problem') return startProblem();
-    if(o.act === 'resist')  return openBrowseCat(BROWSE.find(c => c.id === 'electronica'));
+    if(o.act === 'project')  return openBrowseCat(TAX.find(c => c.id === 'electronica'));
     if(o.act === 'voice')   return openVoiceSmart();
     lastResult = null;
     showHandoff('Cliente no encontró cómo nombrar lo que busca');
   }, true);
   track('browse_goal');
 }
-const SUBCATS = {
-  bocinas: [{l:'Bocinas', skus:['BOC-970','BSD-120']}, {l:'Audífonos', skus:['AUD-7625']}, {l:'Accesorios de audio', skus:['POD-165','255-258','299-400']}],
-  cables:  [{l:'Video', skus:['299-502','295-503','299-830','295-600']}, {l:'Carga y datos', skus:['USB-3102']}, {l:'Organización', skus:['400-200N']}],
-  adapt:   [{l:'Video', skus:['USB-4724','USB-471']}, {l:'Audio', skus:['USB-456']}],
-  wifi:    [{l:'Repetidores', skus:['COM-8300']}, {l:'Sistemas mesh', skus:['MESH-200+']}],
-  electronica: [{l:'Resistencias ½ watt', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2']},
-                {l:'Resistencias 1 watt', skus:['R100-1W','R330-1W','R5K6-1W','R10K-1W']},
-                {l:'Cautines', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45']},
-                {l:'Soldadura y pasta', skus:['SOL-17','SOL-50','SOL-100','PAS-25']},
-                {l:'Accesorios', skus:['CAU-BASE','DES-CH']}],
-  pilas: [{l:'Alcalinas', skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2']},
-          {l:'De botón', skus:['CR2016','CR2025-6','CR1632']},
-          {l:'Recargables', skus:['LIPO-1000','LI-14500']}],
-  energia: [{l:'Protección', skus:['905-3107','NB-900','REG-1050']},
-            {l:'Eliminadores y fuentes', skus:['ELI-12-2','ELI-12-5','ELI-MULTI']}]
-};
+/* La navegación táctil recorre el MISMO árbol */
+const BROWSE = TAX.concat([{id:'otro', l:'Busco otra cosa', ic:'i-chat', other:true}]);
+TAX.forEach(c => { if(!c.skus) c.skus = [].concat(...c.subs.map(s => s.skus)).filter((v, i, a) => a.indexOf(v) === i); });
+const SUBCATS = {};
+TAX.forEach(c => { SUBCATS[c.id] = c.subs.filter(s => s.skus.length).map(s => ({l:s.l, skus:s.skus})); });
+/* Icono por subcategoría — el grid se lee de un vistazo */
+const ICO = [
+  [/audifon|manos libres/, 'i-headset'],
+  [/bocina|bafle|megafono|amplificador|trompeta/, 'i-speaker'],
+  [/microfono|grabadora/, 'i-mic'],
+  [/foco|lampara|linterna|reflector|serie|tira led|luces|optoelectr/, 'i-bulb'],
+  [/cable|cableado|extension/, 'i-cable'],
+  [/adaptador|conector|terminal|convertidor|clavija/, 'i-adapter'],
+  [/camara|dvr|cctv|video portero/, 'i-cam'],
+  [/wi-fi|wifi|red|repetidor|asistente/, 'i-wifi'],
+  [/pila|bateria|power bank|cargador/, 'i-batt'],
+  [/resistencia|capacitor|circuito|placa|protoboard|sensor|motor|kit|electronica|switch|ventilador|fenolic/, 'i-chip'],
+  [/regulador|no break|inversor|transformador|fusible|temporizador|multicontacto|protector|eliminador|fuente/, 'i-nobreak'],
+  [/soporte|base|montaje/, 'i-mount'],
+  [/pantalla|tv|antena|control remoto/, 'i-tv'],
+  [/mouse|teclado|memoria|laptop|usb|disco|lector|vga/, 'i-monitor'],
+  [/celular|tablet/, 'i-phone'],
+  [/alarma|sirena|caja|seguridad|radio|billete|apagador|contacto intelig/, 'i-shield'],
+  [/cautin|soldadura|pinza|desarmador|multimetro|medicion|probador|limpiador|aislante|herramienta/, 'i-bolt'],
+  [/timbre|bascula|termometro|reloj|plaga|gadget|deporte/, 'i-home']
+];
+function icFor(label, fallback){
+  const s = vnorm(label);
+  for(const [re, ic] of ICO) if(re.test(s)) return ic;
+  return fallback || 'i-box';
+}
+/* Reconocimiento por voz sobre el árbol completo */
+function taxFind(q){
+  let best = null, score = 0;
+  TAX.forEach(c => c.subs.forEach(s => {
+    (s.syn || []).forEach(w => {
+      if(q.indexOf(w) >= 0 && w.length > score){ score = w.length; best = {cat:c, sub:s}; }
+    });
+  }));
+  return best;
+}
 function openBrowseCat(cat){
-  if(cat.fams){ // categoría respaldada por el mapa de conocimiento → embudo
-    if(cat.fams.length === 1) return startFunnel(cat.fams[0], {}, null, 'browse');
-    return famSelector(cat);
+  if(!cat.subs) return openBrowseList(cat);
+  flow = {type:'refine', step:1, cat};
+  $('#chat-crumb').textContent = 'Buscar un producto';
+  $('#chat-title').textContent = cat.l;
+  go('s-chat');
+  $('#chat-voicehint').style.display = 'none';
+  setSteps(0, 0);
+  botSay($('#bot-text'), '¿Qué buscas de ' + cat.l + '?', () => {});
+  const opts = cat.subs.map(s => ({ic:icFor(s.l, cat.ic), l:s.l, sub:s}));
+  if(cat.skus.length) opts.push({ic:'i-box', l:'Ver todo lo de ' + cat.l, all:1});
+  renderChips(opts, o => { if(o.all) return openBrowseList(cat); openSub(o.sub, cat); });
+  track('browse_cat', cat.id);
+}
+/* Una subcategoría del árbol real: embudo, productos, o respuesta honesta */
+function openSub(sub, cat){
+  track('browse_sub', cat.id + ' · ' + sub.l);
+  if(sub.fam) return startFunnel(sub.fam, {}, null, 'browse');
+  if(sub.skus.length){
+    botLine('Esto tengo de ' + sub.l.toLowerCase() + '.');
+    return showVoiceMatches(sub.skus, sub.l, true);
   }
-  const rk = CAT2REF[cat.id];
-  if(rk && VREFINE[rk]) return browseRefine(cat, VREFINE[rk]);          // pregunta antes que muro
-  openBrowseList(cat);                                                  // categorías chicas → lista directa
+  return subAvailable(sub, cat);
+}
+/* Lo que la tienda SÍ maneja pero el demo aún no tiene en ficha:
+   nunca "no encontré eso" — sí lo tenemos, y está en tal pasillo. */
+function subAvailable(sub, cat){
+  track('sin_ficha', cat.l + ' · ' + sub.l);
+  flow = {type:'refine', step:1, cat};
+  $('#chat-crumb').textContent = cat.l;
+  $('#chat-title').textContent = sub.l;
+  go('s-chat');
+  $('#chat-voicehint').style.display = 'none';
+  setSteps(0, 0);
+  botSay($('#bot-text'), 'Sí manejamos ' + sub.l.toLowerCase() + ' — están en ' + sub.loc +
+    ', sección ' + cat.l + '. ¿Te acompaña un asesor o seguimos buscando?', () => {});
+  renderChips([
+    {ic:'i-person', l:'Que me acompañe un asesor', act:'human'},
+    {ic:cat.ic, l:'Ver más de ' + cat.l, act:'cat'},
+    {ic:'i-search', l:'Buscar otra cosa', act:'other'}
+  ], o => {
+    if(o.act === 'human'){ lastResult = null; return showHandoff('Cliente busca ' + sub.l + ' · ' + cat.l); }
+    if(o.act === 'cat') return openBrowseCat(cat);
+    return voiceMode ? openVoiceSmart() : startBrowse();
+  }, true);
 }
 function openBrowseList(cat){
   flow = {type:'browse', step:2, cat, list:1};
@@ -3023,6 +3178,18 @@ function routeVoice(raw){
     if(fv) return funnelApply(fv); // respuesta suelta dentro del embudo ("de 100 ohms")
   }
 
+  // 2.8) TAXONOMÍA STEREN: cualquier subcategoría del catálogo real.
+  //      El bot reconoce el universo completo, tenga ficha o no.
+  const tx = taxFind(q);
+  if(tx){
+    if(tx.sub.fam) return startFunnel(tx.sub.fam, parseFamVals(tx.sub.fam, q), raw);
+    if(tx.sub.skus.length){
+      botLine('Esto tengo de ' + tx.sub.l.toLowerCase() + '.');
+      return showVoiceMatches(tx.sub.skus, tx.sub.l, true);
+    }
+    return subAvailable(tx.sub, tx.cat);
+  }
+
   // 3) Búsqueda en catálogo: ANTES de mostrar productos, una pregunta de
   //    afinación por categoría. Los productos son el final del diálogo.
   const stop = ['quiero','busco','necesito','para','una','unos','unas','que','con','los','las','del','tengo','comprar','ando','buscando','algo'];
@@ -3366,7 +3533,7 @@ let vmState = null;
 function showVoiceMatches(skus, raw, plain, backFn){
   vmState = {skus: skus.slice(), raw, page: 0, plain: !!plain, backFn: backFn || null};
   if(skus.length > VM_PER) botLine('Tengo ' + skus.length + ' que coinciden — te enseño ' + VM_PER + ' a la vez. Dime si ves el tuyo.');
-  else botLine('Esto es lo que tengo — elige el tuyo.');
+  else if(!plain) botLine('Esto es lo que tengo — elige el tuyo.'); // con título propio, el bot ya lo presentó
   renderVMPage();
   track('voice_matches', skus.length);
 }
