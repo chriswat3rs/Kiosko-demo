@@ -38,18 +38,31 @@ main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:
 }
 .fb.ok{color:var(--green)}
 .fb.miss{color:var(--amber)}
+/* Durante la conversación el teléfono es UN BOTÓN. La plática se sigue
+   en el display: dos pantallas compitiendo fue lo que perdió a la gente. */
+.micstage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.hintline{font-size:15px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.4;padding:0 10px}
+.hintline b{color:var(--blue)}
+.minirow{display:flex;justify-content:center;gap:12px}
+.minirow button{
+  height:50px;padding:0 18px;border-radius:14px;background:#fff;border:1.5px solid var(--line);
+  color:var(--ink-2);font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;gap:9px;
+}
+.minirow button:active{background:var(--line-2)}
+.minirow button svg{width:22px;height:22px;color:var(--blue)}
 .micwrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding-bottom:6px}
-#dock{flex-shrink:0;padding:8px 20px 14px;background:var(--bg);display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line)}
+#dock{flex-shrink:0;padding:8px 20px 14px;background:var(--bg);display:flex;flex-direction:column;gap:12px}
 #mic{
-  width:118px;height:118px;border-radius:50%;border:none;cursor:pointer;
+  width:188px;height:188px;border-radius:50%;border:none;cursor:pointer;
   background:var(--grad);color:#fff;box-shadow:0 12px 30px rgba(0,70,190,.35);
   display:flex;align-items:center;justify-content:center;transition:.15s;
 }
 #mic:active{transform:scale(.94)}
 #mic.rec{background:var(--red);box-shadow:0 0 0 10px rgba(194,44,44,.15),0 12px 30px rgba(194,44,44,.35);animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-#mic svg{width:56px;height:56px}
-.miclbl{font-size:15px;font-weight:700;color:var(--ink-2);text-align:center;line-height:1.35}
+#mic svg{width:86px;height:86px}
+.miclbl{font-size:19px;font-weight:800;color:var(--ink);text-align:center;line-height:1.35}
 #live{min-height:26px;font-size:17px;font-weight:700;color:var(--ink);text-align:center;font-style:italic;padding:0 8px}
 .txtrow{display:flex;gap:10px;flex-shrink:0}
 .txtrow input{
@@ -121,9 +134,20 @@ footer{padding:10px 20px 16px;font-size:12px;color:#8A99AC;text-align:center;lin
   </div>
 
   <div id="talkui" class="hide" style="display:contents">
-    <div class="ask">
-      <div class="k" id="ask-k">Stebot pregunta</div>
-      <div class="q" id="ask">Dime qué necesitas — por ejemplo: “quiero un cable”.</div>
+    <div class="ask hide" id="ask-card">
+      <div class="k" id="ask-k">Stebot</div>
+      <div class="q" id="ask">Dime qué necesitas.</div>
+    </div>
+    <div class="micstage" id="micstage">
+      <div class="hintline" id="hintline">Toca y habla — <b>la conversación va en la pantalla</b></div>
+      <div id="live"></div>
+      <button id="mic" aria-label="Hablar">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="25" y="8" width="14" height="26" rx="7"/><path d="M17 28a15 15 0 0 0 30 0M32 44v10M23 56h18"/>
+        </svg>
+      </button>
+      <div class="miclbl" id="miclbl">Toca para hablar</div>
+      <div class="fb" id="fb"></div>
     </div>
     <div class="done-note hide" id="done-note">Listo — muéstrala en caja o toma los productos del pasillo.</div>
     <div class="mylist hide" id="mylist">
@@ -131,28 +155,17 @@ footer{padding:10px 20px 16px;font-size:12px;color:#8A99AC;text-align:center;lin
       <div id="ml-rows"></div>
       <div class="ml-f">Dilos en caja o tómalos del pasillo · precios de lista</div>
     </div>
-    <div class="fb" id="fb"></div>
   </div>
 </main>
 <div id="dock" class="hide">
-    <div class="micwrap">
-      <div id="live"></div>
-      <button id="mic" aria-label="Hablar">
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="25" y="8" width="14" height="26" rx="7"/><path d="M17 28a15 15 0 0 0 30 0M32 44v10M23 56h18"/>
-        </svg>
-      </button>
-      <div class="miclbl" id="miclbl">Toca y habla — o mándale una foto.</div>
-    </div>
-    <div class="txtrow">
-      <button id="cam" aria-label="Adjuntar foto" title="Adjuntar foto">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
-          <path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/>
-        </svg>
-      </button>
-      <input type="file" id="cam-in" accept="image/*" style="display:none">
-      <input id="txt" placeholder="O escríbelo aquí…" autocomplete="off">
+    <div class="txtrow hide" id="txtrow">
+      <input id="txt" placeholder="Escríbelo aquí…" autocomplete="off">
       <button id="send">Enviar</button>
+    </div>
+    <div class="minirow" id="minirow">
+      <button id="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>Teclado</button>
+      <button id="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg>Foto</button>
+      <input type="file" id="cam-in" accept="image/*" style="display:none">
     </div>
 </div>
 <footer>Demo · Kiosco Interactivo Steren. Esta página no guarda datos; la sesión se borra al cerrar.</footer>
@@ -194,6 +207,7 @@ function start(c){
     if(d.t === 'busy' && d.ph === pid){
       blocked = true;
       setSt('err', 'Kiosko ocupado');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide'); $('#dock').classList.add('hide');
       $('#ask').textContent = 'Este kiosko ya está en sesión con otro teléfono. Espera a que termine y escanea de nuevo.';
       fb('miss', '');
     }
@@ -202,6 +216,7 @@ function start(c){
       finished = true; blocked = true;
       renderList(d);
       setSt('ok', 'Tu lista');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide');
       $('#ask-k').textContent = 'Stebot · Steren';
       $('#ask').textContent = 'Gracias por tu visita.';
       $('#done-note').textContent = 'Tu lista se queda aquí — muéstrala en caja o toma los productos del pasillo.';
@@ -214,13 +229,15 @@ function start(c){
       if(finished) return; // ya nos despedimos bien: no la mates
       blocked = true;
       setSt('', 'Sesión terminada');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide'); $('#dock').classList.add('hide');
       $('#ask').textContent = 'La sesión del kiosko terminó. Escanea el QR de la pantalla para empezar otra.';
       fb('', '');
       try{ client.end(true); }catch(e){}
     }
     if(blocked) return;
     if(d.t === 'list'){ renderList(d); }
-    if(d.t === 'ask' && d.x){ $('#ask').textContent = d.x; fb('', ''); }
+    // La pregunta del bot NO se repite aquí: vive en el display.
+    if(d.t === 'ask'){ fb('', ''); }
     if(d.t === 'ok' && d.x){ fb('ok', d.x); }
     if(d.t === 'miss' && d.x){ fb('miss', d.x); }
   });
@@ -301,7 +318,7 @@ function sendText(x){
 /* ---- Voz en el teléfono (Web Speech API; con respaldo de texto) ---- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false;
-if(!SR){ $('#miclbl').textContent = 'Tu navegador no tiene dictado — escribe abajo y funciona igual.'; }
+if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el teclado de abajo.'; $('#miclbl').textContent = 'Usa el teclado'; }
 $('#mic').addEventListener('click', () => {
   if(!SR){ $('#txt').focus(); return; }
   if(listening){ try{ rec.stop(); }catch(e){} return; }
@@ -310,7 +327,7 @@ $('#mic').addEventListener('click', () => {
   let heard = '';
   listening = true;
   $('#mic').classList.add('rec');
-  $('#miclbl').textContent = 'Te escucho… toca de nuevo para terminar.';
+  $('#miclbl').textContent = 'Te escucho… toca para terminar';
   rec.onresult = e => {
     let fin = '', mid = '';
     for(let i = 0; i < e.results.length; i++){
@@ -323,10 +340,15 @@ $('#mic').addEventListener('click', () => {
   rec.onend = () => {
     listening = false;
     $('#mic').classList.remove('rec');
-    $('#miclbl').textContent = 'Toca y habla — o mándale una foto.';
+    $('#miclbl').textContent = 'Toca para hablar';
     if(heard) sendText(heard);
   };
   try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); }
+});
+$('#kb').addEventListener('click', () => {
+  const r = $('#txtrow');
+  r.classList.toggle('hide');
+  if(!r.classList.contains('hide')) $('#txt').focus();
 });
 $('#send').addEventListener('click', () => { sendText($('#txt').value); $('#txt').value = ''; });
 $('#txt').addEventListener('keydown', e => { if(e.key === 'Enter'){ sendText($('#txt').value); $('#txt').value = ''; } });

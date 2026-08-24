@@ -171,6 +171,53 @@ body.display-mode .frame-caption{display:none}
   font-size:27px;font-weight:700;color:var(--blue);max-width:900px;
 }
 #glisten.on{display:flex}
+/* ================= HILO DE CONVERSACIÓN (modo voz) =================
+   El display transmite la plática humano↔bot, como un chat. El usuario
+   no despega la vista de la pantalla: su teléfono es solo el micrófono. */
+.talk-thread{
+  flex:1;overflow-y:auto;padding:26px 56px 30px;display:flex;flex-direction:column;gap:22px;
+}
+.tb,.tu{max-width:78%;border-radius:28px;padding:26px 32px;font-size:34px;line-height:1.35;animation:rise .3s ease backwards}
+.tb{background:#fff;border:2.5px solid var(--line);box-shadow:var(--shadow);align-self:flex-start;border-bottom-left-radius:10px;color:var(--ink);font-weight:600}
+.tu{background:var(--grad);color:#fff;align-self:flex-end;border-bottom-right-radius:10px;font-weight:700;box-shadow:0 10px 26px rgba(0,70,190,.26)}
+.tb .twho{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.tb .twho img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.tb .twho b{font-size:20px;font-weight:800;color:var(--blue);letter-spacing:.06em;text-transform:uppercase}
+/* Tarjeta de producto DENTRO del hilo — el bot "manda" el producto */
+.tcard{
+  align-self:flex-start;max-width:86%;background:#fff;border:2.5px solid var(--line);border-radius:26px;
+  box-shadow:var(--shadow);padding:22px;display:flex;gap:22px;align-items:center;animation:rise .3s ease backwards;
+}
+.tcard .tpic{width:150px;height:150px;border-radius:18px;border:2px solid var(--line-2);background:#fff;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--blue)}
+.tcard .tpic img{max-width:88%;max-height:88%;object-fit:contain}
+.tcard .tpic svg{width:74px;height:74px}
+.tcard .tinfo{flex:1;min-width:0}
+.tcard .tn{font-size:31px;font-weight:800;line-height:1.22}
+.tcard .tl{font-size:24px;color:var(--ink-2);margin-top:6px}
+.tcard .tp{font-size:40px;font-weight:800;color:var(--blue);margin-top:8px}
+.tcard .tacts{display:flex;gap:12px;margin-top:16px}
+.tcard .tacts button{
+  height:78px;padding:0 28px;border-radius:20px;font-family:var(--sans);font-size:26px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;gap:10px;transition:.12s;
+}
+.tcard .tacts button:active{transform:scale(.96)}
+.tcard .tacts .tw{background:var(--grad);color:#fff;border:none;box-shadow:0 8px 20px rgba(0,70,190,.28)}
+.tcard .tacts .tw.added{background:var(--green);box-shadow:none}
+.tcard .tacts .tv{background:#fff;border:2.5px solid var(--line);color:var(--ink-2)}
+.tcard .tacts button svg{width:32px;height:32px}
+/* Respuestas rápidas: sugerencias, no un menú */
+.tquick{display:flex;flex-wrap:wrap;gap:14px;align-self:flex-start;max-width:92%;animation:rise .3s ease backwards}
+.tquick button{
+  background:#E7F1FE;border:2.5px solid #BFD9F8;color:var(--blue);border-radius:999px;
+  padding:18px 30px;font-family:var(--sans);font-size:27px;font-weight:700;cursor:pointer;transition:.12s;
+  display:flex;align-items:center;gap:12px;text-align:left;line-height:1.25;
+}
+.tquick button:active{transform:scale(.96);background:#D7E8FC}
+.tquick button svg{width:34px;height:34px;flex-shrink:0}
+.tquick button small{display:block;font-size:21px;font-weight:500;color:var(--ink-2)}
+.ttyping{align-self:flex-start;background:#fff;border:2.5px solid var(--line);border-radius:28px;
+  border-bottom-left-radius:10px;padding:28px 34px;box-shadow:var(--shadow)}
 /* Llévate tu lista: el QR sustituye a la foto de la pantalla */
 .take-card{
   background:#fff;border:2.5px solid var(--blue);border-radius:24px;box-shadow:var(--shadow);
@@ -1187,6 +1234,14 @@ body.display-mode .frame-caption{display:none}
             </div>
           </section>
 
+          <!-- HILO DE CONVERSACIÓN · el display transmite la plática -->
+          <section class="screen" id="s-talk">
+            <div class="hero" style="padding-bottom:6px">
+              <div class="crumb" id="talk-crumb">Hablando con Stebot</div>
+            </div>
+            <div class="talk-thread" id="talk-thread"></div>
+          </section>
+
           <!-- PASE A CAJA · la lista de la sesión -->
           <section class="screen" id="s-pase">
             <div class="hero">
@@ -1713,7 +1768,7 @@ function browseRefine(cat, R){
     if(o.all) return openBrowseList(cat);
     if(o.fam) return startFunnel(o.fam, {}, null, 'browse');
     if(o.skus.length === 1){
-      say('Listo, esto es lo que necesitas.');
+      botLine('Listo, esto es lo que necesitas.');
       return showResult(fichaFor(o.skus[0]));
     }
     showVoiceMatches(o.skus, cat.l + ' · ' + o.l, true);
@@ -1930,10 +1985,11 @@ let typeTimer = null;
 const COVERS = ['s-attract','ov-timeout'];
 
 function go(id){
+  if(id === 's-chat' && threadOn) id = 's-talk'; // en voz, la conversación es el hilo
   const cs = $('#chat-voicehint');
   if(cs) cs.style.display = 'none';
   // La escucha GLOBAL sobrevive al cambio de pantalla; la de chips no.
-  if(id !== 's-chat' && typeof stopChipListen === 'function' &&
+  if(id !== 's-chat' && id !== 's-talk' && typeof stopChipListen === 'function' &&
      !(listenUI && listenUI.pill === '#glisten')) stopChipListen();
   COVERS.forEach(c => { if(c !== id) $('#'+c).classList.remove('active'); });
   if(COVERS.includes(id)){
@@ -1952,6 +2008,7 @@ const BARCFG = {
   's-mode':  {back:0, home:0, phone:0},
   's-home':  {back:0, home:0, phone:0},
   's-chat':  {back:1, home:1, phone:0},
+  's-talk':  {back:1, home:1, phone:0},
   's-think': {back:0, home:0, phone:0},
   's-result':{back:1, home:1, phone:0, want:1, noAsesor:1},
   's-info':  {back:1, home:1, phone:0},
@@ -1984,6 +2041,90 @@ function configureBar(id){
   $('#ab-done').classList.toggle('ab-hide', !cfg.done);
 }
 
+/* =====================================================================
+   HILO DE CONVERSACIÓN · el display transmite la plática humano↔bot
+   Hallazgo de usabilidad: quien entra por voz se pierde entre dos
+   pantallas. La solución es que el DISPLAY lleve la conversación (como
+   un chat) y el teléfono sea solo el micrófono. Los productos llegan
+   DENTRO del hilo: el bot te los "manda", no te cambia de pantalla.
+   ===================================================================== */
+let threadOn = false;
+/* Lo que el bot dice: se escucha SIEMPRE y, en el hilo, también se lee */
+function botLine(text){ if(threadOn) tBot(text); say(text); }
+const talkBox = () => $('#talk-thread');
+function talkReset(){ const b = talkBox(); if(b) b.innerHTML = ''; }
+function talkScroll(){ const b = talkBox(); if(b) b.scrollTop = b.scrollHeight; }
+function talkAdd(el){ const b = talkBox(); if(!b) return; b.appendChild(el); talkScroll(); }
+function talkClearQuick(){ $$('#talk-thread .tquick').forEach(q => q.remove()); }
+let botAvatarSrc = '';
+function tBot(text){
+  if(!text) return;
+  talkClearQuick();
+  const d = document.createElement('div');
+  d.className = 'tb';
+  if(!botAvatarSrc){ const a = document.querySelector('#s-asesor .avatar'); botAvatarSrc = a ? a.src : ''; }
+  d.innerHTML = '<div class="twho">' + (botAvatarSrc ? '<img src="' + botAvatarSrc + '" alt="">' : '') +
+    '<b>Stebot</b></div><div class="ttxt"></div>';
+  d.querySelector('.ttxt').textContent = text;
+  talkAdd(d);
+}
+function tUser(text){
+  if(!text) return;
+  talkClearQuick();
+  const d = document.createElement('div');
+  d.className = 'tu';
+  d.textContent = text;
+  talkAdd(d);
+}
+function tCard(sku){
+  const p = P[sku];
+  if(!p) return;
+  const d = document.createElement('div');
+  d.className = 'tcard';
+  d.innerHTML = '<div class="tpic"><img src="' + p.img + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+    '<svg style="display:none"><use href="#' + p.ic + '"/></svg></div>' +
+    '<div class="tinfo"><div class="tn"></div><div class="tl"></div><div class="tp"></div>' +
+    '<div class="tacts"><button class="tw"><svg><use href="#i-check"/></svg>Lo quiero</button>' +
+    '<button class="tv">Ver más</button></div></div>';
+  d.querySelector('.tn').textContent = p.n;
+  d.querySelector('.tl').textContent = p.loc;
+  d.querySelector('.tp').textContent = money(p.p);
+  const wb = d.querySelector('.tw');
+  wb.addEventListener('click', () => {
+    if(wb.classList.contains('added')) return;
+    wb.classList.add('added');
+    wb.innerHTML = '<svg><use href="#i-check"/></svg>En tu lista';
+    track('want_card', sku);
+    addToList(sku, 1);
+  });
+  d.querySelector('.tv').addEventListener('click', () => { lastResult = fichaFor(sku); showDetail(sku); });
+  talkAdd(d);
+}
+function tQuick(opts, onPick){
+  talkClearQuick();
+  const d = document.createElement('div');
+  d.className = 'tquick';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.innerHTML = '<svg><use href="#' + (o.ic || 'i-box') + '"/></svg><span>' + o.l +
+      (o.s ? '<small>' + o.s + '</small>' : '') + '</span>';
+    b.addEventListener('click', () => {
+      track('chip_tap', o.l);
+      tUser(o.l);
+      if(typeof stopChipListen === 'function') stopChipListen();
+      onPick(o);
+    });
+    d.appendChild(b);
+  });
+  talkAdd(d);
+  if(typeof startChipListen === 'function' && window.voiceReady) startChipListen(opts, onPick);
+}
+function talkStart(){
+  threadOn = true;
+  talkReset();
+  go('s-talk');
+}
+
 /* ---------------- BOT: streaming de texto ---------------- */
 function botSay(el, text, cb){
   clearInterval(typeTimer);
@@ -2006,6 +2147,7 @@ function botSay(el, text, cb){
 }
 
 function renderChips(opts, onPick, rowMode){
+  if(threadOn) return tQuick(opts, onPick);
   const box = $('#chips');
   box.className = 'chips' + (rowMode ? ' one-col' : '') + (!rowMode && opts.length > 8 ? ' dense' : '');
   box.innerHTML = '';
@@ -2215,6 +2357,19 @@ function sugRow(sku, rel){
 function showResult(res){
   lastResult = res;
   sessionHadResult = true;
+  if(threadOn){
+    // El producto llega al hilo, como lo mandaría un vendedor por WhatsApp
+    if(currentScreen !== 's-talk') go('s-talk');
+    tCard(res.main);
+    res.needs.forEach(n => {
+      tBot(n.why);
+      tCard(n.sku);
+    });
+    track('result_shown', res.ctx);
+    if(pairOn) pubPhone({t:'ok', x:'Míralo en la pantalla — di “lo quiero” para agregarlo.'});
+    setTimeout(() => freeListen('Te escucho — di “lo quiero” o pide otra cosa.'), 700);
+    return;
+  }
   const browsing = flow && flow.type === 'browse';
   $('#res-crumb').textContent = browsing ? 'Buscar un producto · ficha' : '¡Listo! Encontré tu solución';
   $('#res-context').textContent = cap(res.ctx);
@@ -2589,6 +2744,13 @@ if(window.speechSynthesis){
 /* El bot LEE sus preguntas en modo voz (texto plano, sin HTML) */
 const botSayOrig = botSay;
 botSay = function(el, text, cb){
+  if(threadOn && el && el.id === 'bot-text'){
+    tBot(text);
+    say(text);
+    if(typeof pubPhone === 'function') pubPhone({t:'ask', x:text});
+    if(cb) setTimeout(cb, 60);
+    return;
+  }
   if(voiceMode && el && el.id === 'bot-text'){
     say(text);
     if(typeof pubPhone === 'function') pubPhone({t:'ask', x:text});
@@ -2771,7 +2933,7 @@ function routeVoice(raw){
       track('ctx_more', (wantsCheap ? 'barato' : wantsPricey ? 'caro' : 'mas') + ' · ' + ctx.raw);
       return showVoiceMatches(skus, ctx.raw, ctx.plain);
     }
-    say('Claro — ¿de qué producto? Dímelo o toca una categoría.');
+    botLine('Claro — ¿de qué producto? Dímelo o toca una categoría.');
     return startBrowse();
   }
 
@@ -2781,7 +2943,7 @@ function routeVoice(raw){
   const B = has('tele','tv','television','pantalla') ? 'tv' : has('monitor') ? 'monitor' : null;
   if(A && B && computeConnect(A, B, 'm')){
     if(distStated){
-      say('Listo, esto es lo que necesitas.');
+      botLine('Listo, esto es lo que necesitas.');
       return showResult(computeConnect(A, B, dist));
     }
     flow = {type:'connect', step:3, a:A, b:B};
@@ -2821,13 +2983,13 @@ function routeVoice(raw){
     const p = PROBLEMS.find(x => x.ic === 'i-wifi');
     const opt = has('piso','toda','fondo','grande','varios') ? p.opts[1]
               : has('cuarto','cerca','pared') ? p.opts[0] : optByWords(p);
-    if(opt){ say('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
+    if(opt){ botLine('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
     return askProblem(p);
   }
   if(has('luz','apagon','apagones','voltaje','regulador','no break','nobreak','picos','se apaga')){
     const p = PROBLEMS.find(x => x.ic === 'i-bolt');
     const opt = optByWords(p);
-    if(opt){ say('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
+    if(opt){ botLine('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
     return askProblem(p);
   }
 
@@ -2836,7 +2998,7 @@ function routeVoice(raw){
   //      falte, se pregunta. Nunca un muro de resultados.
   // 2.6) Metas de servicio: garantías y asesor humano, dichas con voz
   if(has('garantia', 'garantias', 'devolucion', 'devolver', 'soporte', 'factura', 'poliza')){
-    say('Va — garantías y soporte.');
+    botLine('Va — garantías y soporte.');
     return startWarranty();
   }
   if(has('asesor', 'un vendedor', 'un empleado', 'una persona', 'humano')){
@@ -2855,7 +3017,7 @@ function routeVoice(raw){
       return startFunnel(fk, pre, raw);
     }
   }
-  if(flow && flow.type === 'funnel' && currentScreen === 's-chat'){
+  if(flow && flow.type === 'funnel' && (currentScreen === 's-chat' || currentScreen === 's-talk')){
     if(wantAll) return showVoiceMatches(famMatches(flow.fam, flow.vals), KMAP[flow.fam].label, true);
     const fv = parseFamVals(flow.fam, q);
     if(fv) return funnelApply(fv); // respuesta suelta dentro del embudo ("de 100 ohms")
@@ -2872,7 +3034,7 @@ function routeVoice(raw){
   }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
   if(scored.length){
     if(scored.length === 1){
-      say('Listo, esto encontré.');
+      botLine('Listo, esto encontré.');
       return showResult(fichaFor(scored[0].sku));
     }
     const cat = P[scored[0].sku].cat;
@@ -3096,7 +3258,7 @@ function funnelStep(){
   }
   if(!m.length) m = famProducts(flow.fam);
   if(m.length === 1){
-    say('Listo — esto es lo que necesitas.');
+    botLine('Listo — esto es lo que necesitas.');
     return showResult(fichaFor(m[0]));
   }
   const ask = nextAttr(F, vals, m);
@@ -3114,7 +3276,7 @@ function renderFunnelQ(F, a, msgOverride){
   renderChips(a.opts.map(o => ({ic:o.ic || 'i-box', l:o.l, s:o.s, syn:o.syn, fo:o})), pick => {
     const o = pick.fo;
     if(o.v == null){
-      say('Va — te enseño lo que hay y eliges viendo.');
+      botLine('Va — te enseño lo que hay y eliges viendo.');
       return showVoiceMatches(famMatches(flow.fam, flow.vals), F.label, true);
     }
     flow.vals[a.key] = o.v;
@@ -3165,7 +3327,7 @@ function voiceRefineCat(cat, raw){
   renderChips(R.opts.map(o => ({ic:o.ic, l:o.l, s:o.s, skus:o.skus, fam:o.fam})), o => {
     if(o.fam) return startFunnel(o.fam, {}, null);
     if(o.skus.length === 1){
-      say('Listo, esto es lo que necesitas.');
+      botLine('Listo, esto es lo que necesitas.');
       showResult(fichaFor(o.skus[0]));
     }else{
       showVoiceMatches(o.skus, raw);
@@ -3203,14 +3365,29 @@ const VM_PER = 4;
 let vmState = null;
 function showVoiceMatches(skus, raw, plain, backFn){
   vmState = {skus: skus.slice(), raw, page: 0, plain: !!plain, backFn: backFn || null};
-  if(skus.length > VM_PER) say('Tengo ' + skus.length + ' que coinciden — te enseño ' + VM_PER + ' a la vez. Dime si ves el tuyo.');
-  else say('Esto es lo que tengo — elige el tuyo.');
+  if(skus.length > VM_PER) botLine('Tengo ' + skus.length + ' que coinciden — te enseño ' + VM_PER + ' a la vez. Dime si ves el tuyo.');
+  else botLine('Esto es lo que tengo — elige el tuyo.');
   renderVMPage();
   track('voice_matches', skus.length);
 }
 function renderVMPage(){
   const skus = vmState.skus, raw = vmState.raw, tot = skus.length;
   const pages = Math.ceil(tot / VM_PER), pg = vmState.page;
+  if(threadOn){
+    if(currentScreen !== 's-talk') go('s-talk');
+    const from = pg * VM_PER, to = Math.min(from + VM_PER, tot);
+    skus.slice(from, to).forEach(sku => tCard(sku));
+    const opts = [];
+    if(pages > 1) opts.push({ic:'i-search', l: pg + 1 < pages ? 'Ver otras opciones' : 'Volver a las primeras', act:'next'});
+    opts.push({ic:'i-person', l:'Que me ayude una persona', act:'human'});
+    tQuick(opts, o => {
+      if(o.act === 'next'){ vmState.page = (pg + 1) % pages; return renderVMPage(); }
+      lastResult = null;
+      showHandoff('Cliente vio ' + tot + ' coincidencias de “' + raw + '” y pidió asesor');
+    });
+    track('voice_matches_thread', tot);
+    return;
+  }
   flow = {type:'browse', step:2};
   $('#browse-title').textContent = vmState.plain ? raw : '“' + raw + '”';
   const box = $('#browse-list');
@@ -3393,7 +3570,7 @@ function handleRemoteText(text){
   armIdle();
   track('voice_remote_text', text);
   // Turno de chips activo → mapear la frase a una opción (sin clics)
-  if(chipCtx && currentScreen === 's-chat'){
+  if(chipCtx && (currentScreen === 's-chat' || currentScreen === 's-talk')){
     const m = matchChip(text, chipCtx.opts);
     if(m){
       pillSay('Entendí: ' + m.l);
@@ -3514,6 +3691,7 @@ function openVoiceSmart(){
 
 /* ---- Eco del usuario (fluidez conversacional en el kiosko) ---- */
 function userEcho(txt){
+  if(threadOn){ if(txt) tUser(txt); return; }
   const el = $('#user-echo');
   if(!el) return;
   $('#ue-img').style.display = 'none';
@@ -3630,6 +3808,8 @@ $('#mode-voice').addEventListener('click', () => {
   voiceMode = true;
   setHeroCTA();
   track('mode_choice', 'voz');
+  threadOn = true;
+  talkReset();
   go('s-home');
   botSay($('#home-bot'), 'Dime qué necesitas — te escucho.');
   openPair();
@@ -3862,6 +4042,7 @@ function startSession(){
   sid = 'S' + Date.now().toString(36);
   track('session_start');
   voiceMode = false; voiceSource = null;
+  threadOn = false; talkReset();
   myList = [];
   renderListChip();
   vmState = null; lastResult = null; rescueCount = 0; // cada sesión olvida el contexto anterior
@@ -3884,7 +4065,7 @@ function goHome(){
   homeListen();
 }
 function goBack(){
-  if(currentScreen === 's-chat' && flow){
+  if((currentScreen === 's-chat' || currentScreen === 's-talk') && flow){
     if(flow.type === 'connect' && flow.step > 1) return connectStep(flow.step - 1);
     if(flow.type === 'problem' && flow.step > 1) return problemStep(flow.step - 1);
     if(flow.type === 'funnel'){
