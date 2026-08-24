@@ -2408,7 +2408,7 @@ const PROBLEMS = [
    nunca con un "no encontré eso".
    ===================================================================== */
 const TAX = [
-  {id:'smart', l:'Smart Home', ic:'i-assistant', subs:[
+  {id:'smart', l:'Smart Home', ic:'i-assistant', syn:['smart home','casa inteligente','domotica','automatizacion','cosas inteligentes','hogar inteligente'], subs:[
     {l:'Focos inteligentes', syn:['foco inteligente','focos inteligentes','foco wifi','foco smart','foco led wifi'], skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24'], loc:'Pasillo 5'},
     {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127'], loc:'Pasillo 5'},
     {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[], loc:'Pasillo 5'},
@@ -2418,7 +2418,7 @@ const TAX = [
     {l:'Asistentes de voz', syn:['alexa','asistente de voz','google home','bocina inteligente'], skus:[], loc:'Pasillo 5'},
     {l:'Repetidores Wi-Fi', syn:['repetidor','repetidores','extensor de wifi','amplificador de wifi'], skus:['COM-8300','MESH-200+'], loc:'Pasillo 7'}
   ]},
-  {id:'audio', l:'Audio', ic:'i-speaker', subs:[
+  {id:'audio', l:'Audio', ic:'i-speaker', syn:['audio','sonido','musica','equipo de sonido','para escuchar'], subs:[
     {l:'Audífonos', syn:['audifonos','auriculares','diadema','headphones','audifono'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800'], ask:{q:'¿Cómo los prefieres?', opts:[{l:'De diadema', s:'los que van sobre las orejas', ic:'i-headset', skus:['AUD-7625','AUD-2540','AUD-7655','AUD-AE700']},{l:'Chiquitos, sin cables', s:'tipo FreePods', ic:'i-headset', skus:['AUD-7420','AUD-7120','AUD-AE200','AUD-AE600','AUD-AE800']},{l:'Que aíslen el ruido', s:'cancelación activa (ANC)', ic:'i-mic', skus:['AUD-2540','AUD-AE600','AUD-AE700','AUD-AE800']}]}, loc:'Pasillo 6'},
     {l:'Bocinas', syn:['bocina','bocinas','altavoz','parlante','bafle bluetooth'], skus:['BOC-9030','BOC-9020','BOC-940','BOC-980','BOC-970','BOOM-300','BSD-120','BOC-095','BOC-066','SPK-BT700'], ask:{q:'¿Dónde la vas a usar?', opts:[{l:'Para llevarla a todos lados', s:'chica y resistente', ic:'i-speaker', skus:['BOC-9030','BOC-9020','BOC-940']},{l:'Fiesta o exterior', s:'que se oiga fuerte', ic:'i-party', skus:['BOC-980','BOC-970','BOOM-300','SPK-BT700']},{l:'Para la tele', s:'barra de sonido', ic:'i-tv', skus:['BSD-120']},{l:'Para la computadora', s:'de escritorio', ic:'i-monitor', skus:['BOC-095','BOC-066']}]}, loc:'Pasillo 6'},
     {l:'Bafles con amplificador', syn:['bafle','bafles','bafle amplificado','sonido para fiesta'], skus:[], loc:'Pasillo 6'},
@@ -2433,7 +2433,7 @@ const TAX = [
     {l:'Amplificadores de audio', syn:['amplificador','amplificadores','ampli'], skus:[], loc:'Pasillo 6'},
     {l:'Conectores de audio', syn:['conector de audio','plug','jack','conectores'], skus:[], loc:'Pasillo 6'}
   ]},
-  {id:'compu', l:'Computación', ic:'i-monitor', subs:[
+  {id:'compu', l:'Computación', ic:'i-monitor', syn:['computacion','computadora','compu','para mi pc','accesorios de computadora','escritorio'], subs:[
     {l:'Equipo y cables de red', syn:['cable de red','ethernet','utp','switch de red','cable rj45'], skus:[], loc:'Pasillo 7'},
     {l:'Mouse y teclados', syn:['mouse','teclado','raton','teclado inalambrico'], skus:['MOU-1000','MOU-BT','MOU-VERT','TEC-LUZ','TEC-BT','KIT-TM'], ask:{q:'¿Qué necesitas?', opts:[{l:'Solo mouse', ic:'i-keyboard', skus:['MOU-1000','MOU-BT','MOU-VERT']},{l:'Solo teclado', ic:'i-keyboard', skus:['TEC-LUZ','TEC-BT']},{l:'Los dos', s:'en juego', ic:'i-laptop', skus:['KIT-TM']}]}, loc:'Pasillo 7'},
     {l:'Memorias USB y SD', syn:['memoria usb','usb','memoria sd','micro sd','memoria'], skus:[], loc:'Pasillo 7'},
@@ -2446,13 +2446,13 @@ const TAX = [
     {l:'Cableado estructurado', syn:['cableado estructurado','patch panel','jack de red'], skus:[], loc:'Pasillo 7'},
     {l:'Lectores de código de barras', syn:['lector de codigo','codigo de barras','escaner'], skus:[], loc:'Pasillo 7'}
   ]},
-  {id:'cables', l:'Cables', ic:'i-cable', subs:[
+  {id:'cables', l:'Cables', ic:'i-cable', syn:['cables','cable','cableado','conexiones','para conectar'], subs:[
     {l:'Cables HDMI y video', syn:['hdmi','cable hdmi','cable de video','displayport','cable para tele'], skus:['299-502','295-503','299-830','295-600'], loc:'Pasillo 4'},
     {l:'Cables de carga y datos', syn:['cable de carga','cable de datos','cargador de celular','usb c'], skus:['USB-3102'], loc:'Pasillo 4'},
     {l:'Adaptadores de video', syn:['adaptador hdmi','usb c a hdmi','adaptador de video','convertidor'], skus:['USB-4724','USB-471'], loc:'Pasillo 4'},
     {l:'Organizadores de cables', syn:['organizador de cables','espiral','canaleta','ordenar cables'], skus:['400-200N'], loc:'Pasillo 4'}
   ]},
-  {id:'tel', l:'Telefonía y tablets', ic:'i-phone', subs:[
+  {id:'tel', l:'Telefonía y tablets', ic:'i-phone', syn:['telefonia','celular','telefono','tablet','accesorios de celular','para mi celular'], subs:[
     {l:'Power banks', syn:['power bank','powerbank','bateria portatil','pila portatil','cargador portatil'], skus:['PWB-5000','PWB-20000'], loc:'Pasillo 2'},
     {l:'Cargadores USB', syn:['cargador','cargadores','cargador usb','eliminador de celular'], skus:['CAR-PD65','CAR-GAN45','CAR-PD100','CAR-GAN100','CAR-LAP45','CAR-LAP90'], ask:{q:'¿Qué vas a cargar?', opts:[{l:'Mi celular', s:'carga rápida', ic:'i-phone', skus:['CAR-PD65','CAR-GAN45']},{l:'Mi laptop', s:'de más potencia', ic:'i-laptop', skus:['CAR-LAP45','CAR-LAP90','CAR-PD100']},{l:'Varias cosas a la vez', s:'doble salida', ic:'i-strip', skus:['CAR-GAN100','CAR-PD100']}]}, loc:'Pasillo 2'},
     {l:'Cables y adaptadores para celular', syn:['cable de celular','adaptador de celular','cable lightning'], skus:['USB-3102','USB-456'], loc:'Pasillo 4'},
@@ -2460,13 +2460,13 @@ const TAX = [
     {l:'Memorias USB y SD', syn:['memoria de celular','micro sd para celular'], skus:[], loc:'Pasillo 7'},
     {l:'Audífonos', syn:['audifonos de celular','manos libres'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800'], loc:'Pasillo 6'}
   ]},
-  {id:'tv', l:'TV y video', ic:'i-tv', subs:[
+  {id:'tv', l:'TV y video', ic:'i-tv', syn:['tv y video','television','televisiones','pantallas','para la tele','video'], subs:[
     {l:'Soportes para pantalla', syn:['soporte de pantalla','soporte para tele','base de tv','montaje de tv'], skus:['STV-105'], loc:'Pasillo 3'},
     {l:'Cables para TV', syn:['cable para tv','hdmi para tele','coaxial'], skus:['299-502','299-830'], loc:'Pasillo 4'},
     {l:'Antenas', syn:['antena','antena de tv','antena aerea'], skus:[], loc:'Pasillo 3'},
     {l:'Controles remoto', syn:['control remoto','control de tv','control universal'], skus:[], loc:'Pasillo 3'}
   ]},
-  {id:'cctv', l:'Videovigilancia y seguridad', ic:'i-cam', subs:[
+  {id:'cctv', l:'Videovigilancia y seguridad', ic:'i-cam', syn:['videovigilancia','seguridad','vigilancia','proteccion','vigilar','cuidar mi casa'], subs:[
     {l:'Cámaras CCTV', syn:['camara cctv','camara de vigilancia','camara para negocio'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}, loc:'Pasillo 5'},
     {l:'Grabadores CCTV (DVR)', syn:['dvr','grabador','nvr','grabadora de camaras'], skus:[], loc:'Pasillo 5'},
     {l:'Cables y accesorios CCTV', syn:['cable de camara','accesorio cctv','fuente para camara'], skus:['ELI-12-5'], loc:'Pasillo 5'},
@@ -2476,7 +2476,7 @@ const TAX = [
     {l:'Radios intercomunicadores', syn:['radio','radios','walkie talkie','intercomunicador portatil'], skus:[], loc:'Pasillo 9'},
     {l:'Detectores de billetes', syn:['detector de billetes','contadora de billetes'], skus:[], loc:'Pasillo 9'}
   ]},
-  {id:'ilum', l:'Iluminación', ic:'i-bulb', subs:[
+  {id:'ilum', l:'Iluminación', ic:'i-bulb', syn:['iluminacion','luz','luces','alumbrado','iluminar'], subs:[
     {l:'Focos LED', syn:['foco','focos','foco led','bombilla'], skus:['FOC-12C','FOC-4X12','FOC-USB5','SHOME-120','FOC-15W','FOC-3X10','FOC-SENS','LAM-T24'], ask:{q:'¿Qué necesitas del foco?', opts:[{l:'Luz normal', s:'blanca o cálida, a buen precio', ic:'i-bulb', skus:['FOC-12C','FOC-4X12','FOC-USB5']},{l:'Que cambie de color', s:'lo controlas desde el celular', ic:'i-assistant', skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24']},{l:'Que prenda solo', s:'con sensor de movimiento', ic:'i-sensor', skus:['FOC-SENS']}]}, loc:'Pasillo 5'},
     {l:'Reflectores LED', syn:['reflector','reflectores','lampara de exterior'], skus:[], loc:'Pasillo 5'},
     {l:'Series y tiras LED', syn:['serie de luces','tira led','luces navidenas'], skus:['SHOME-127'], loc:'Pasillo 5'},
@@ -2484,7 +2484,7 @@ const TAX = [
     {l:'Lámparas con lupa', syn:['lampara con lupa','lupa con luz'], skus:[], loc:'Pasillo 9'},
     {l:'Accesorios para focos', syn:['socket','portalamparas','accesorio de foco'], skus:[], loc:'Pasillo 5'}
   ]},
-  {id:'energia', l:'Energía', ic:'i-bolt', subs:[
+  {id:'energia', l:'Energía', ic:'i-bolt', syn:['energia','corriente','electricidad','luz electrica','contactos','enchufes'], subs:[
     {l:'Pilas y cargadores', syn:['pila','pilas','bateria','baterias','pila recargable'], fam:'pilas', skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500'], loc:'Pasillo 2'},
     {l:'Eliminadores y fuentes de poder', syn:['eliminador','eliminadores','fuente de poder','fuente de voltaje'], fam:'fuente', skus:['ELI-12-2','ELI-12-5','ELI-MULTI'], loc:'Pasillo 2'},
     {l:'Tiras multicontactos', syn:['multicontacto','regleta','tira de contactos','extension con contactos'], skus:['905-3107'], loc:'Pasillo 2'},
@@ -2498,7 +2498,7 @@ const TAX = [
     {l:'Fusibles y portafusibles', syn:['fusible','fusibles','portafusible'], skus:[], loc:'Pasillo 8'},
     {l:'Power banks', syn:['power bank','bateria portatil'], skus:['PWB-5000','PWB-20000'], loc:'Pasillo 2'}
   ]},
-  {id:'herr', l:'Herramientas', ic:'i-screwdriver', subs:[
+  {id:'herr', l:'Herramientas', ic:'i-screwdriver', syn:['herramientas','herramienta','equipo de trabajo','para trabajar'], subs:[
     {l:'Cautines y accesorios', syn:['cautin','cautines','soldar','soldadura','estano','desoldar'], fam:'soldar', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH'], loc:'Pasillo 9'},
     {l:'Multímetros', syn:['multimetro','multimetros','tester','medir voltaje'], skus:['MUL-005','VCD-100','PUN-530'], loc:'Pasillo 9'},
     {l:'Equipo de medición', syn:['equipo de medicion','osciloscopio','medidor'], skus:['PUN-010','PUN-030','VCD-100'], loc:'Pasillo 9'},
@@ -2508,7 +2508,7 @@ const TAX = [
     {l:'Limpiadores', syn:['limpiador','limpia contactos','aire comprimido'], skus:[], loc:'Pasillo 9'},
     {l:'Aislantes y caimanes', syn:['cinta aislante','aislante','caiman','caimanes'], skus:[], loc:'Pasillo 9'}
   ]},
-  {id:'casa', l:'Casa y oficina', ic:'i-home', subs:[
+  {id:'casa', l:'Casa y oficina', ic:'i-home', syn:['casa y oficina','hogar','oficina','cosas para la casa','para mi casa'], subs:[
     {l:'Básculas digitales', syn:['bascula','basculas','pesar'], skus:['BAS-5KG','BAS-CIN','BAS-EQU','BAS-180'], loc:'Pasillo 9'},
     {l:'Timbres inalámbricos', syn:['timbre','timbres','timbre inalambrico'], skus:['TIM-080','TIM-060','TIM-CIN','TIM-2C','TIM-140','TIM-170'], ask:{q:'¿Qué tan lejos queda la campana del botón?', opts:[{l:'Cerca — misma casa', s:'hasta 80 m', ic:'i-home', skus:['TIM-080','TIM-060']},{l:'Lejos — patio o taller', s:'140 a 170 m', ic:'i-flood', skus:['TIM-140','TIM-170']},{l:'Quiero dos campanas', s:'que se oiga en ambos lados', ic:'i-bell', skus:['TIM-2C']},{l:'Sin pilas en el botón', s:'timbre cinético', ic:'i-bolt', skus:['TIM-CIN']}]}, loc:'Pasillo 9'},
     {l:'Control de plagas', syn:['control de plagas','ahuyentador','repelente de plagas'], skus:[], loc:'Pasillo 9'},
@@ -2518,7 +2518,7 @@ const TAX = [
     {l:'Cámaras deportivas', syn:['camara deportiva','gopro','camara de accion'], skus:['CAM-DEP4K'], loc:'Pasillo 9'},
     {l:'Deportes', syn:['deporte','deportes','fitness'], skus:[], loc:'Pasillo 9'}
   ]},
-  {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], subs:[
+  {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], syn:['proyectos de electronica','electronica','componentes','proyectos','armar circuitos'], subs:[
     {l:'Potenciómetros y resistencias', syn:['resistencia','resistencias','resistor','potenciometro'], fam:'resist', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W'], loc:'Pasillo 8'},
     {l:'Capacitores', syn:['capacitor','capacitores','condensador'], skus:[], loc:'Pasillo 8'},
     {l:'Circuitos integrados', syn:['circuito integrado','integrado','chip','ci'], skus:[], loc:'Pasillo 8'},
@@ -2529,14 +2529,14 @@ const TAX = [
     {l:'Ventiladores', syn:['ventilador para gabinete','ventilador de 12 v','fan de gabinete','disipador'], skus:[], loc:'Pasillo 8'},
     {l:'Cautines y soldadura', syn:['cautin','soldadura para proyectos'], fam:'soldar', skus:['CAU-30','SOL-17'], loc:'Pasillo 9'}
   ]},
-  {id:'auto', l:'Automotriz', ic:'i-car', subs:[
+  {id:'auto', l:'Automotriz', ic:'i-car', syn:['automotriz','coche','carro','vehiculo','camioneta','para mi auto','en el coche'], subs:[
     {l:'Inversores para auto', syn:['inversor para auto','corriente en el coche'], skus:[], loc:'Pasillo 10'},
     {l:'Transmisores FM Bluetooth', syn:['transmisor fm','bluetooth para el carro','musica en el coche'], skus:[], loc:'Pasillo 10'},
     {l:'Cargadores USB para auto', syn:['cargador de auto','cargador de coche','cargador de encendedor','cargador para el carro','cargador para el coche','cargador para el auto'], skus:['CAA-10','CAA-18','CAA-2020','CAA-3018','CAA-30E','CAA-RET','CAA-65','CAA-100'], ask:{q:'¿Qué vas a cargar en el coche?', opts:[{l:'Solo mi celular', s:'lo básico y barato', ic:'i-phone', skus:['CAA-10','CAA-18','CAA-2020']},{l:'Dos celulares a la vez', s:'doble salida', ic:'i-strip', skus:['CAA-3018','CAA-65','CAA-30E']},{l:'Mi laptop también', s:'de 65 W para arriba', ic:'i-laptop', skus:['CAA-65','CAA-100']},{l:'Que alcance a los de atrás', s:'con extensor o cable retráctil', ic:'i-cable', skus:['CAA-30E','CAA-RET']}]}, loc:'Pasillo 10'},
     {l:'Accesorios automotrices', syn:['accesorio automotriz','soporte de celular para auto'], skus:['ALC-DIG','OBD-WIFI','ARR-PB','ARR-INF','DASH-2K','GPS-OBD','GPS-VEH'], ask:{q:'¿Qué necesitas resolver del coche?', opts:[{l:'Que no me deje tirado', s:'arrancador y power bank', ic:'i-powerbank', skus:['ARR-PB','ARR-INF']},{l:'Grabar lo que pasa', s:'cámara de tablero', ic:'i-cam', skus:['DASH-2K']},{l:'Saber dónde está', s:'rastreador GPS', ic:'i-pin', skus:['GPS-OBD','GPS-VEH']},{l:'Revisar fallas', s:'escáner y alcoholímetro', ic:'i-scan', skus:['OBD-WIFI','ALC-DIG']}]}, loc:'Pasillo 10'},
     {l:'Fusibles automotrices', syn:['fusible de auto','fusible automotriz'], skus:[], loc:'Pasillo 10'}
   ]},
-  {id:'estud', l:'Línea estudiantil', ic:'i-kit', subs:[
+  {id:'estud', l:'Línea estudiantil', ic:'i-kit', syn:['linea estudiantil','escuela','estudiante','proyecto escolar','robotica','tarea','feria de ciencias'], subs:[
     {l:'Kits para armar', syn:['kit para armar','proyecto escolar','kit escolar'], skus:['KIT-SOL6','KIT-TES','KIT-TOQ','KIT-SOL4','KIT-SH12','KIT-PM5','KIT-BOT'], ask:{q:'¿Para qué es el proyecto?', opts:[{l:'Tarea de la escuela', s:'lo clásico que piden', ic:'i-kit', skus:['KIT-SOL4','KIT-SOL6','KIT-TOQ']},{l:'Feria de ciencias', s:'que impresione', ic:'i-star', skus:['KIT-TES','KIT-SH12']},{l:'Quiero que programe', s:'robótica', ic:'i-board', skus:['KIT-BOT','KIT-PM5']}]}, loc:'Pasillo 8'},
     {l:'Sensores para proyectos', syn:['sensor','sensores','sensor de movimiento'], skus:['SEN-OPT','SEN-DHT','SEN-LIN','SEN-PIR','SEN-ULT','SEN-POL'], ask:{q:'¿Qué quieres que detecte?', opts:[{l:'Movimiento o presencia', ic:'i-sensor', skus:['SEN-PIR','SEN-OPT']},{l:'Distancia u obstáculos', s:'para un robot', ic:'i-motor', skus:['SEN-ULT','SEN-LIN']},{l:'Temperatura o aire', ic:'i-thermo', skus:['SEN-DHT','SEN-POL']}]}, loc:'Pasillo 8'},
     {l:'Motores para proyectos', syn:['motor','motores','servomotor','motor a pasos'], skus:['MOT-MINI','MOT-RED48','BOM-80','MOT-PAS','SRV-18','MOT-D6','MOT-L298','SRV-10'], ask:{q:'¿Qué tiene que hacer el motor?', opts:[{l:'Girar y ya', s:'lo más simple', ic:'i-motor', skus:['MOT-MINI','MOT-RED48','MOT-D6']},{l:'Girar a un ángulo exacto', s:'servomotores', ic:'i-timer', skus:['SRV-18','SRV-10','MOT-PAS']},{l:'Mover agua', s:'bomba', ic:'i-spray', skus:['BOM-80']},{l:'Controlarlo desde una placa', s:'driver de motores', ic:'i-board', skus:['MOT-L298']}]}, loc:'Pasillo 8'},
@@ -2748,16 +2748,51 @@ function icFor(label, fallback){
   for(const [re, ic] of ICO) if(re.test(s)) return ic;
   return fallback || 'i-box';
 }
-/* Reconocimiento por voz sobre el árbol completo */
+/* =====================================================================
+   RECONOCIMIENTO POR VOZ SOBRE EL ÁRBOL
+   Un sinónimo debe coincidir como PALABRA, nunca como pedazo de otra.
+   Con indexOf() a secas, "ci" (circuitos integrados) hacía match dentro
+   de "iluminaCIón" y el bot contestaba de electrónica a quien pedía
+   focos. Lo mismo pasaba con "led", "kit", "chip", "usb"… — 4 de las 14
+   categorías caían en Proyectos de electrónica por accidente.
+   ===================================================================== */
+const _wre = {};
+function saysWord(q, w){
+  let re = _wre[w];
+  if(!re) re = _wre[w] = new RegExp('(^|[^a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)');
+  return re.test(q);
+}
 function taxFind(q){
-  let best = null, score = 0;
+  let best = null, score = 0, stock = -1;
   TAX.forEach(c => c.subs.forEach(s => {
+    const n = (s.skus || []).length + (s.fam ? 99 : 0);
     (s.syn || []).forEach(w => {
-      if(q.indexOf(w) >= 0 && w.length > score){ score = w.length; best = {cat:c, sub:s}; }
+      if(!saysWord(q, w)) return;
+      // Gana el sinónimo más largo. A igual longitud —"cautín" vive en dos
+      // ramas del árbol real, como en el sitio— gana la que tiene MÁS
+      // producto: entre dos respuestas correctas, la más útil.
+      if(w.length > score || (w.length === score && n > stock)){ score = w.length; stock = n; best = {cat:c, sub:s}; }
     });
   }));
   return best;
 }
+/* La gente también habla en grande: "busco iluminación", "algo de audio",
+   "cosas para el coche". Sin esto, quien nombra la CATEGORÍA caía al
+   buscador de texto y recibía cualquier cosa. La subcategoría siempre
+   gana sobre la categoría: es la respuesta más precisa. */
+function taxFindCat(q){
+  let best = null, score = 0;
+  TAX.forEach(c => (c.syn || []).concat([vnorm(c.l)]).forEach(w => {
+    if(w.length > score && saysWord(q, w)){ score = w.length; best = c; }
+  }));
+  return best;
+}
+/* ¿En qué rama vive este SKU? Voz y toque tienen que llegar a la MISMA
+   pregunta: si el buscador de texto encuentra un producto, la charla
+   entra por su subcategoría — no por un camino paralelo. */
+const SKU2SUB = {};
+TAX.forEach(c => c.subs.forEach(s => (s.skus || []).forEach(k => { if(!SKU2SUB[k]) SKU2SUB[k] = {cat:c, sub:s}; })));
+const subOf = sku => SKU2SUB[sku] || null;
 function openBrowseCat(cat){
   lastAsk = null;
   if(!cat.subs) return openBrowseList(cat);
@@ -2768,10 +2803,33 @@ function openBrowseCat(cat){
   $('#chat-voicehint').style.display = 'none';
   setSteps(0, 0);
   botSay($('#bot-text'), '¿Qué buscas de ' + cat.l + '?', () => {});
+  // Por voz, 13 opciones no son una conversación: son un menú leído en
+  // voz alta. En el hilo se ofrecen las subcategorías que SÍ tienen
+  // producto (máx. 6) y una salida a todas — y como la escucha libre
+  // sigue abierta, el usuario puede decir cualquier otra por su nombre.
+  let subs = cat.subs;
+  let recorte = false;
+  if(threadOn){
+    const conStock = cat.subs.filter(s => s.skus.length || s.fam);
+    if(conStock.length > 6){ subs = conStock.slice(0, 6); recorte = true; }
+    else if(conStock.length) subs = conStock;
+  }
+  const opts = subs.map(s => ({ic:icFor(s.l, cat.ic), l:s.l, sub:s}));
+  if(recorte) opts.push({ic:'i-search', l:'Ver todas las de ' + cat.l, more:1});
+  if(cat.skus.length) opts.push({ic:'i-box', l:'Ver todo lo de ' + cat.l, all:1});
+  renderChips(opts, o => {
+    if(o.more){ threadOn ? tBot('Estas son todas.') : null; return openBrowseCatFull(cat); }
+    if(o.all) return openBrowseList(cat);
+    openSub(o.sub, cat);
+  });
+  track('browse_cat', cat.id);
+}
+/* "Ver todas": el árbol completo de la categoría, sin recorte */
+function openBrowseCatFull(cat){
   const opts = cat.subs.map(s => ({ic:icFor(s.l, cat.ic), l:s.l, sub:s}));
   if(cat.skus.length) opts.push({ic:'i-box', l:'Ver todo lo de ' + cat.l, all:1});
   renderChips(opts, o => { if(o.all) return openBrowseList(cat); openSub(o.sub, cat); });
-  track('browse_cat', cat.id);
+  track('browse_cat_full', cat.id);
 }
 /* Una subcategoría del árbol real: embudo, productos, o respuesta honesta */
 function openSub(sub, cat){
@@ -4187,6 +4245,13 @@ function routeVoice(raw){
     }
     return subAvailable(tx.sub, tx.cat);
   }
+  // 2.9) Y si habló en grande — "busco iluminación", "algo de audio" —
+  //      la categoría abre sus subcategorías: la misma rama que el toque.
+  const txc = taxFindCat(q);
+  if(txc){
+    track('voice_cat', txc.id);
+    return openBrowseCat(txc);
+  }
 
   // 3) Búsqueda en catálogo: ANTES de mostrar productos, una pregunta de
   //    afinación por categoría. Los productos son el final del diálogo.
@@ -4202,10 +4267,21 @@ function routeVoice(raw){
       botLine('Listo, esto encontré.');
       return showResult(fichaFor(scored[0].sku));
     }
-    const cat = P[scored[0].sku].cat;
     const fam0 = P[scored[0].sku].fam;
     if(fam0) return startFunnel(fam0, parseFamVals(fam0, q), raw); // familia del mapa → embudo
-    if(VREFINE[cat]) return voiceRefineCat(cat, raw);
+    // El producto que más se parece vive en una rama del árbol: entramos
+    // por ahí para que la conversación siga las MISMAS preguntas que el
+    // toque. (Antes esto caía en VREFINE, un mapa viejo de 3 SKUs por
+    // categoría que contestaba "¿dónde lo vas a usar?" con opciones que
+    // ya no correspondían al catálogo — la incoherencia que se veía.)
+    const rama = subOf(scored[0].sku);
+    if(rama && !wantAll){
+      if(rama.sub.ask && rama.sub.skus.length > 4) return subAsk(rama.sub, rama.cat);
+      if(rama.sub.skus.length > 1){
+        botLine('Eso está en ' + rama.sub.l.toLowerCase() + '. Esto tengo.');
+        return showVoiceMatches(rama.sub.skus, rama.sub.l, true);
+      }
+    }
     return showVoiceMatches(scored.slice(0, 8).map(x => x.sku), raw);
   }
 
@@ -4453,54 +4529,14 @@ function renderFunnelQ(F, a, msgOverride){
   track('funnel_q', flow.fam + '.' + a.key);
 }
 
-/* ---- Afinación por categoría: una pregunta antes de mostrar producto ---- */
-const VREFINE = {
-  'Cables': {q:'¿Para qué es el cable?', opts:[
-    {l:'Video · TV o monitor', ic:'i-tv',      skus:['299-502','295-503','299-830','295-600']},
-    {l:'Carga y datos',        ic:'i-phone',   skus:['USB-3102']},
-    {l:'Audio',                ic:'i-speaker', skus:['255-258','299-400']}]},
-  'Bocinas': {q:'¿Dónde la vas a usar?', opts:[
-    {l:'Fiesta o exterior', ic:'i-speaker', skus:['BOC-970']},
-    {l:'Para la tele',      ic:'i-tv',      skus:['BSD-120','299-400','POD-165']},
-    {l:'Uso personal',      ic:'i-headset', skus:['AUD-7625']}]},
-  'Audio': {q:'¿Dónde lo vas a usar?', opts:[
-    {l:'Fiesta o exterior', ic:'i-speaker', skus:['BOC-970']},
-    {l:'Para la tele',      ic:'i-tv',      skus:['BSD-120','299-400','POD-165']},
-    {l:'Uso personal',      ic:'i-headset', skus:['AUD-7625','255-258']}]},
-  'Adaptadores': {q:'¿Qué quieres adaptar?', opts:[
-    {l:'Video',  ic:'i-monitor', skus:['USB-4724','USB-471']},
-    {l:'Audio',  ic:'i-speaker', skus:['USB-456']}]},
-  'Energía': {q:'¿Qué quieres resolver?', opts:[
-    {l:'Apagones',                 ic:'i-nobreak', skus:['NB-900']},
-    {l:'Variaciones de voltaje',   ic:'i-bolt',    skus:['REG-1050']},
-    {l:'Más contactos protegidos', ic:'i-bolt',    skus:['905-3107']},
-    {l:'Alimentar o cargar un aparato', s:'eliminadores y fuentes', ic:'i-bolt', fam:'fuente'}]},
-  'Conectividad': {q:'¿Dónde falla tu red?', opts:[
-    {l:'En un cuarto',      ic:'i-wifi', skus:['COM-8300']},
-    {l:'En toda la casa',   ic:'i-wifi', skus:['MESH-200+']}]},
-  'Smart Home': {q:'¿Qué quieres hacer en casa?', opts:[
-    {l:'Iluminación', ic:'i-bulb', skus:['SHOME-120','SHOME-127']},
-    {l:'Vigilancia',  ic:'i-cam',  skus:['CCTV-213']}]}
-};
-function voiceRefineCat(cat, raw){
-  const R = VREFINE[cat];
-  flow = {type:'refine', step:1};
-  $('#chat-crumb').textContent = 'Encontremos el tuyo';
-  $('#chat-title').textContent = '“' + raw + '”';
-  go('s-chat');
-  setSteps(0, 0);
-  botSay($('#bot-text'), R.q, () => {});
-  renderChips(R.opts.map(o => ({ic:o.ic, l:o.l, s:o.s, skus:o.skus, fam:o.fam})), o => {
-    if(o.fam) return startFunnel(o.fam, {}, null);
-    if(o.skus.length === 1){
-      botLine('Listo, esto es lo que necesitas.');
-      showResult(fichaFor(o.skus[0]));
-    }else{
-      showVoiceMatches(o.skus, raw);
-    }
-  }, true);
-  track('voice_refine', cat);
-}
+/* ---- VREFINE (retirado) ----
+   Aquí vivía un mapa paralelo de "afinación por categoría": 3 o 4 SKUs
+   por categoría con su propia pregunta. Cuando el catálogo pasó a 197
+   productos y las preguntas se mudaron al árbol (TAX.ask), este mapa
+   quedó contestando con opciones que ya no correspondían al inventario
+   — "¿dónde lo vas a usar?" con tres bocinas viejas. Se elimina: una
+   sola fuente de preguntas para voz y para toque.
+   Ver motor-navegacion-kb.md §2.5 y §10. */
 /* Cantidad hablada: "dame dos", "quiero 3" */
 const NUMW = {un:1, uno:1, una:1, dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9, diez:10};
 function parseQty(q){
@@ -5056,9 +5092,20 @@ function startChipListen(opts, onPick, ui){
   };
   clWait = setTimeout(begin, 400);
 }
-function realChipListen(opts, onPick){
+/* La gente no habla en ráfagas: dice "busco cosas para…", respira, y
+   sigue. El reconocedor corta en el primer silencio; si esa mitad se
+   rutea al motor, el bot contesta a media frase y en el hilo quedan dos
+   burbujas partidas ("Busco cosas para" / "Busco cosas para sonido").
+   Antes de contestar comprobamos que la frase esté TERMINADA. */
+const FRASE_COLGADA = /(^|\s)(para|de|del|con|y|o|que|en|un|una|unos|unas|el|la|los|las|mi|me|al|algo|cosas?)$/;
+function fraseIncompleta(txt){
+  const s = vnorm(txt).trim().replace(/[^a-z0-9\s]/g, '');
+  if(!s) return true;
+  return s.split(/\s+/).length < 2 || FRASE_COLGADA.test(s);
+}
+function realChipListen(opts, onPick, prefijo){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let heard = '';
+  let heard = prefijo || '';
   try{ clRec = new SR(); }catch(e){ return simChipListen(opts, onPick); }
   clRec.lang = 'es-MX'; clRec.interimResults = true; clRec.continuous = false;
   clListening = true;
@@ -5067,7 +5114,8 @@ function realChipListen(opts, onPick){
     for(let i = 0; i < e.results.length; i++){
       if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
     }
-    heard = (fin || mid).trim();
+    const nuevo = (fin || mid).trim();
+    heard = (prefijo ? prefijo + ' ' : '') + nuevo;   // encadena con lo ya dicho
     if(heard) pillSay('“' + heard + '”');
   };
   clRec.onerror = () => { clListening = false; if(!heard) simChipListen(opts, onPick); };
@@ -5087,6 +5135,12 @@ function realChipListen(opts, onPick){
       userEcho('“' + heard + '”');
       return funnelApply(fv);
     }else if(heard && chipFreeRoute){
+      // ¿se quedó a media frase? esperamos el resto en vez de contestar mal
+      if(fraseIncompleta(heard) && clRetries++ < 2){
+        pillSay('“' + heard + '…” — te sigo escuchando');
+        track('voz_frase_incompleta', heard);
+        return setTimeout(() => realChipListen(opts, onPick, heard), 300);
+      }
       stopChipListen();
       return routeVoice(heard);
     }else if(clRetries++ < 2){
