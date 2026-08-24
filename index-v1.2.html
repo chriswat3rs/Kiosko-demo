@@ -153,6 +153,10 @@ body.display-mode .frame-caption{display:none}
 .ab-btn:active{transform:scale(.97)}
 .ab-btn.outline{background:#fff;border:2.5px solid var(--blue);color:var(--blue)}
 #bb-asesor.outline{background:#E7F1FE}
+/* En pantallas de producto la ayuda cede ancho, pero NUNCA desaparece:
+   el usuario tiene que poder pedir una persona desde donde esté. */
+.ab-btn.compact{padding:0 22px;font-size:24px;gap:10px}
+.ab-btn.compact svg{width:40px;height:40px}
 .ab-btn.primary{background:var(--grad);border:none;color:#fff;box-shadow:0 12px 26px rgba(0,70,190,.30)}
 .ab-hide{display:none!important}
 /* Chip de lista: el estado de la sesión, siempre a la vista */
@@ -424,6 +428,58 @@ body.display-mode .frame-caption{display:none}
 .chip:nth-child(11){animation-delay:.75s}.chip:nth-child(12){animation-delay:.82s}
 @keyframes chipIn{to{opacity:1;transform:none}}
 .chip:active{transform:scale(.965);border-color:var(--blue);background:#F0F7FE}
+/* ============ UNA DECISIÓN PRINCIPAL POR PANTALLA ============
+   El mismo lenguaje del pulso de "Toca la pantalla": un anillo que
+   se expande y se desvanece. Aquí va MUCHO más suave — en atracción
+   nadie está mirando; dentro de la sesión el usuario ya está atento y
+   un latido fuerte sería ruido. Sólo un elemento por pantalla lo lleva:
+   si hay dos "principales", no hay ninguno. */
+.chip.pri{
+  border-color:#9FC8F7;background:#F4F9FF;
+  animation:chipIn .3s ease forwards, halo 3.2s ease-out .6s infinite;
+}
+.chip.pri .l{color:#0B3C87}
+.chip.pri svg{color:var(--blue)}
+@keyframes halo{
+  0%{box-shadow:var(--shadow), 0 0 0 0 rgba(0,90,255,.22)}
+  70%{box-shadow:var(--shadow), 0 0 0 26px rgba(0,90,255,0)}
+  100%{box-shadow:var(--shadow), 0 0 0 0 rgba(0,90,255,0)}
+}
+/* Empujón: a los pocos segundos sin tocar, el principal sube la voz
+   dos ciclos y se calla. Guiar no es insistir. */
+.chip.pri.nudge{animation:chipIn .3s ease forwards, halo-fuerte 1.5s ease-out 2}
+@keyframes halo-fuerte{
+  0%{box-shadow:var(--shadow), 0 0 0 0 rgba(0,90,255,.42);transform:scale(1)}
+  45%{transform:scale(1.018)}
+  70%{box-shadow:var(--shadow), 0 0 0 34px rgba(0,90,255,0);transform:scale(1)}
+  100%{box-shadow:var(--shadow), 0 0 0 0 rgba(0,90,255,0)}
+}
+.tquick button.pri{
+  border-color:#9FC8F7;background:#F4F9FF;
+  animation:halo 3.2s ease-out .6s infinite;
+}
+.tquick button.pri.nudge{animation:halo-fuerte 1.5s ease-out 2}
+.mode-card.pri{border-color:#9FC8F7;background:#F4F9FF;animation:halo 3.2s ease-out .8s infinite}
+.mode-card.pri.nudge{animation:halo-fuerte 1.5s ease-out 2}
+.ab-btn.pri{animation:halo-ab 3.2s ease-out .6s infinite}
+.ab-btn.pri.nudge{animation:halo-ab-fuerte 1.5s ease-out 2}
+@keyframes halo-ab{
+  0%{box-shadow:0 0 0 0 rgba(0,90,255,.30)}
+  70%{box-shadow:0 0 0 22px rgba(0,90,255,0)}
+  100%{box-shadow:0 0 0 0 rgba(0,90,255,0)}
+}
+@keyframes halo-ab-fuerte{
+  0%{box-shadow:0 0 0 0 rgba(0,90,255,.50);transform:scale(1)}
+  45%{transform:scale(1.03)}
+  70%{box-shadow:0 0 0 30px rgba(0,90,255,0);transform:scale(1)}
+  100%{box-shadow:0 0 0 0 rgba(0,90,255,0)}
+}
+/* Quien pide menos movimiento, recibe la jerarquía sin la animación */
+@media (prefers-reduced-motion:reduce){
+  .chip.pri,.chip.pri.nudge,.tquick button.pri,.ab-btn.pri,.ab-btn.pri.nudge,.mode-card.pri,.mode-card.pri.nudge{animation:none}
+  .chip.pri{box-shadow:var(--shadow), 0 0 0 5px rgba(0,90,255,.16)}
+  .ab-btn.pri{box-shadow:0 0 0 5px rgba(0,90,255,.22)}
+}
 .chip svg{width:120px;height:120px;color:var(--blue);flex-shrink:0}
 .chip.row svg{width:96px;height:96px}
 .chip .l{font-size:34px;font-weight:700;line-height:1.22}
@@ -765,6 +821,7 @@ body.display-mode .frame-caption{display:none}
 
 /* ================= ASESOR (UI clara del sistema) ================= */
 .asesor-body{flex:1;overflow-y:auto;padding:16px 64px 44px;display:flex;flex-direction:column;gap:22px}
+#s-pase .asesor-body{padding-bottom:20px}
 .vava{
   width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;font-size:27px;font-weight:800;
@@ -799,13 +856,36 @@ body.display-mode .frame-caption{display:none}
   display:flex;align-items:center;justify-content:space-between;gap:24px;
   padding:28px 0;border-bottom:2px solid rgba(255,255,255,.16);
 }
-.code-row .skubig{font-family:var(--mono);font-size:54px;font-weight:700;color:#fff;letter-spacing:.03em;line-height:1}
+.code-row .cpic{
+  width:104px;height:104px;border-radius:18px;background:#fff;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;
+}
+.code-row .cpic img{max-width:100%;max-height:100%;object-fit:contain}
+.code-row .cpic svg{width:56px;height:56px;color:var(--blue)}
+.code-row .ck{flex:1;min-width:0}
+.code-row .skubig{font-family:var(--mono);font-size:48px;font-weight:700;color:#fff;letter-spacing:.03em;line-height:1}
 .code-row .cnm{font-size:27px;color:#E4EEFB;margin-top:8px;line-height:1.25}
 .code-row .cloc{font-size:23px;color:#A9C6EE;margin-top:4px}
 .cpr{font-size:38px;font-weight:800;color:#fff;flex-shrink:0;padding-left:16px}
 .code-total{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0}
 .code-total .tl{font-size:30px;font-weight:800;color:#fff}
 .code-total .tl small{display:block;font-size:22px;color:#A9C6EE;font-weight:400;margin-top:6px}
+/* Total en el encabezado: el precio final se ve antes de desplazar */
+.pase-head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.pase-tot{text-align:right;flex-shrink:0}
+.pase-tot .pt-l{font-size:24px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase}
+.pase-tot .pt-v{font-size:60px;font-weight:800;color:var(--blue);line-height:1.05}
+/* Cancelar pedido: presente y encontrable, nunca compitiendo con el cierre */
+.pase-cancel{
+  display:flex;justify-content:center;padding-top:6px;
+}
+.pase-cancel button{
+  background:none;border:none;font-family:var(--sans);font-size:26px;font-weight:700;
+  color:var(--red);cursor:pointer;padding:18px 30px;border-radius:18px;text-decoration:underline;
+  text-underline-offset:6px;
+}
+.pase-cancel button:active{background:#FDECEC}
+.pase-cancel.armed button{text-decoration:none;background:#FDECEC;border:2.5px solid var(--red)}
 .photo-tip{
   border:2.5px dashed #9DB9DC;border-radius:22px;padding:22px 30px;
   display:flex;align-items:center;gap:18px;color:var(--ink-2);font-size:27px;line-height:1.35;
@@ -1201,7 +1281,7 @@ body.display-mode .frame-caption{display:none}
               </div>
             </div>
             <div class="mode-wrap">
-              <button class="mode-card" id="mode-voice">
+              <button class="mode-card pri" id="mode-voice">
                 <div class="mc-ic"><svg><use href="#i-mic"/></svg></div>
                 <div class="mc-tx">
                   <div class="mc-t">Con mi voz</div>
@@ -1315,7 +1395,11 @@ body.display-mode .frame-caption{display:none}
           <section class="screen" id="s-pase">
             <div class="hero">
               <div class="crumb" id="pase-crumb">Tu lista</div>
-              <h2 id="pase-title" style="font-size:52px">Llévalos del pasillo<br>o dilos en caja</h2>
+              <div class="pase-head">
+                <h2 id="pase-title" style="font-size:52px">Llévalos del pasillo<br>o dilos en caja</h2>
+                <!-- El precio final se ve sin desplazar -->
+                <div class="pase-tot"><div class="pt-l">Total estimado</div><div class="pt-v" id="pase-tot"></div></div>
+              </div>
             </div>
             <div class="bot-area">
               <div class="bubble">
@@ -1334,6 +1418,7 @@ body.display-mode .frame-caption{display:none}
                 </div>
               </div>
               <div class="photo-tip minor"><svg><use href="#i-cam"/></svg><span>¿Sin teléfono a la mano? Tómale una foto a esta pantalla.</span></div>
+              <div class="pase-cancel" id="pase-cancel"><button id="pase-cancel-b">Cancelar pedido y vaciar mi lista</button></div>
             </div>
           </section>
 
@@ -2547,7 +2632,7 @@ function browseGoal(){
   renderChips([
     {ic:'i-cable',  l:'Conectar dos aparatos', act:'connect'},
     {ic:'i-wifi',   l:'Solucionar un problema en casa', act:'problem'},
-    {ic:'i-mic',    l:'Decirlo con mi voz', s:'dime qué buscas y yo lo encuentro', act:'voice'},
+    {ic:'i-mic',    l:'Decirlo con mi voz', s:'dime qué buscas y yo lo encuentro', act:'voice', pri:1},
     {ic:'i-person', l:'Que me ayude una persona', act:'human'}
   ], o => {
     if(o.act === 'connect') return startConnect();
@@ -2746,7 +2831,7 @@ function subAvailable(sub, cat){
   botSay($('#bot-text'), 'Sí manejamos ' + sub.l.toLowerCase() + ' — están en ' + sub.loc +
     ', sección ' + cat.l + '. ¿Te acompaña un asesor o seguimos buscando?', () => {});
   renderChips([
-    {ic:'i-person', l:'Que me acompañe un asesor', act:'human'},
+    {ic:'i-person', l:'Que me acompañe un asesor', act:'human', pri:1},
     {ic:cat.ic, l:'Ver más de ' + cat.l, act:'cat'},
     {ic:'i-search', l:'Buscar otra cosa', act:'other'}
   ], o => {
@@ -2839,6 +2924,7 @@ function rescueFlow(msg){
     {ic:'i-person', l:'Hablar con un asesor', s:'te atendemos en persona', syn:['asesor','persona','humano','vendedor'], act:'human'}
   ];
   if(again) opts.unshift(opts.pop()); // segunda vuelta: el asesor encabeza
+  opts[0].pri = 1;                    // y el que encabeza es el recomendado
   renderChips(opts, o => {
     track('rescue_pick', o.act);
     if(o.act === 'voice')  return openVoiceSmart();
@@ -2922,12 +3008,12 @@ const BARCFG = {
   's-chat':  {back:1, home:1, phone:0},
   's-talk':  {back:1, home:1, phone:0},
   's-think': {back:0, home:0, phone:0},
-  's-result':{back:1, home:1, phone:0, want:1, noAsesor:1},
+  's-result':{back:1, home:1, phone:0, want:1, asesor:['outline compact','Ayuda']},
   's-info':  {back:1, home:1, phone:0},
   's-browse':{back:1, home:1, phone:0},
   's-qr':    {back:1, home:1, phone:0},
   's-asesor':{back:1, home:1, phone:0, noAsesor:1},
-  's-detail':{back:1, home:1, phone:0, want:1, noAsesor:1},
+  's-detail':{back:1, home:1, phone:0, want:1, asesor:['outline compact','Ayuda']},
   's-pase':  {back:1, home:1, phone:0, done:1}
 };
 function configureBar(id){
@@ -2951,6 +3037,7 @@ function configureBar(id){
   as.classList.toggle('ab-hide', !!cfg.noAsesor);
   $('#ab-want').classList.toggle('ab-hide', !cfg.want);
   $('#ab-done').classList.toggle('ab-hide', !cfg.done);
+  refreshPrimary();
 }
 
 /* =====================================================================
@@ -3018,6 +3105,7 @@ function tQuick(opts, onPick){
   d.className = 'tquick';
   opts.forEach(o => {
     const b = document.createElement('button');
+    if(o.pri) b.className = 'pri';
     b.innerHTML = '<svg><use href="#' + (o.ic || 'i-box') + '"/></svg><span>' + o.l +
       (o.s ? '<small>' + o.s + '</small>' : '') + '</span>';
     b.addEventListener('click', () => {
@@ -3029,6 +3117,7 @@ function tQuick(opts, onPick){
     d.appendChild(b);
   });
   talkAdd(d);
+  refreshPrimary();
   if(typeof startChipListen === 'function' && window.voiceReady) startChipListen(opts, onPick);
 }
 function talkStart(){
@@ -3065,14 +3154,49 @@ function renderChips(opts, onPick, rowMode){
   box.innerHTML = '';
   opts.forEach(o => {
     const b = document.createElement('button');
-    b.className = 'chip' + (rowMode ? ' row' : '');
+    b.className = 'chip' + (rowMode ? ' row' : '') + (o.pri ? ' pri' : '');
     b.innerHTML = `<svg><use href="#${o.ic || 'i-box'}"/></svg><div class="txt"><div class="l">${o.l}</div>${o.s ? `<div class="s">${o.s}</div>` : ''}</div>`;
     b.addEventListener('click', () => { track('chip_tap', o.l); if(voiceMode) userEcho(o.l); if(typeof stopChipListen === 'function') stopChipListen(); onPick(o); });
     box.appendChild(b);
   });
+  refreshPrimary();
   if(typeof startChipListen === 'function' && window.voiceReady) startChipListen(opts, onPick);
 }
 
+/* =====================================================================
+   UNA DECISIÓN PRINCIPAL POR PANTALLA
+   En un kiosko el usuario está de pie, con prisa y sin manual. Si todo
+   pesa igual, nada guía. `pri:1` marca el camino recomendado; el resto
+   sigue siendo tocable y del mismo tamaño — la jerarquía se hace con
+   luz, no quitando opciones.
+   La invariante se APLICA, no se confía: si dos elementos la reclaman,
+   sólo el primero la conserva, porque dos principales son ninguno.
+   ===================================================================== */
+let nudgeTimer = null;
+const NUDGE_MS = 11000;
+function clearNudge(){
+  clearTimeout(nudgeTimer);
+  $$('.nudge').forEach(el => el.classList.remove('nudge'));
+}
+function armNudge(){
+  clearNudge();
+  if(!session) return;
+  nudgeTimer = setTimeout(() => {
+    const el = document.querySelector('#screens .screen.active .pri, #actionbar .ab-btn.pri:not(.ab-hide)');
+    if(!el) return;
+    el.classList.add('nudge');       // dos ciclos fuertes y se calla
+    setTimeout(() => el.classList.remove('nudge'), 3400);
+    track('nudge', (el.textContent || '').trim().slice(0, 36));
+  }, NUDGE_MS);
+}
+function refreshPrimary(){
+  const scr = document.querySelector('#screens .screen.active');
+  const enPantalla = scr ? [...scr.querySelectorAll('.chip.pri, .tquick button.pri, .mode-card.pri')] : [];
+  enPantalla.forEach((el, i) => { if(i) el.classList.remove('pri'); });   // gana el primero
+  const barra = ['#ab-want', '#ab-done'].map(s => $(s)).filter(b => b && !b.classList.contains('ab-hide'));
+  barra.forEach((b, i) => b.classList.toggle('pri', !enPantalla.length && i === 0));
+  armNudge();
+}
 function setSteps(n, total){
   const el = $('#chat-steps');
   if(!total){ el.innerHTML = ''; return; }
@@ -3441,7 +3565,9 @@ function showPase(silent){
   let html = '';
   myList.forEach(r => {
     const p = P[r.sku];
-    html += `<div class="code-row"><div class="ck"><div class="skubig">${r.sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div>` +
+    html += `<div class="code-row">` +
+      `<div class="cpic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div>` +
+      `<div class="ck"><div class="skubig">${r.sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div>` +
       `<div class="qty-ctl"><button data-sku="${r.sku}" data-d="-1">−</button><span class="qv">${r.qty}</span><button data-sku="${r.sku}" data-d="1">+</button></div>` +
       `<div class="cpr">${money(p.p * r.qty)}</div></div>`;
   });
@@ -3455,6 +3581,8 @@ function showPase(silent){
     });
   });
   const nProd = myList.length, nUds = listUnits();
+  $('#pase-tot').textContent = money(listTotal());   // el precio final, sin desplazar
+  resetCancel();
   renderPaseTake();
   if(!silent){ doneArmed = 0; $('#ab-done-t').textContent = 'Ya tengo todo'; }
   $('#pase-crumb').textContent = 'Tu lista · ' + nProd + (nProd === 1 ? ' producto' : ' productos') +
@@ -3462,14 +3590,49 @@ function showPase(silent){
   go('s-pase');
   if(!silent){
     botSay($('#pase-bot'), pairOn
-      ? (nProd > 1 ? 'Estos son tus ' + nProd + ' — ya están en tu teléfono. Tómalos del pasillo o dilos en caja.'
+      ? (nProd > 1 ? 'Estos son tus ' + nProd + ' productos — ya están en tu teléfono. Tómalos del pasillo o dilos en caja.'
                    : 'Ese es — ya está en tu teléfono. Tómalo del pasillo o dilo en caja.')
-      : (nProd > 1 ? 'Estos son tus ' + nProd + '. Escanea el código y llévatelos en tu teléfono — y si falta algo, dímelo.'
+      : (nProd > 1 ? 'Estos son tus ' + nProd + ' productos. Escanea el código y llévatelos en tu teléfono — y si falta algo, dímelo.'
                    : 'Ese es. Escanea el código y llévatelo en tu teléfono — y si falta algo, dímelo.'));
     if(pairOn) pubPhone({t:'ask', x:'Tu lista está lista. ¿Agregamos algo más?'});
     if(voiceMode) setTimeout(() => freeListen('Te escucho — ¿algo más?'), 1200);
   }
   track('pase_shown', listUnits() + ' u · ' + Math.round(listTotal()));
+}
+
+/* ---- Cancelar pedido ----
+   Tiene que existir y ser encontrable, pero vaciar la lista es
+   irreversible: el primer toque pregunta, el segundo cumple. Y se
+   desarma solo, para que nadie lo confirme por accidente al volver. */
+let cancelArmed = false, cancelTimer = null;
+function resetCancel(){
+  cancelArmed = false;
+  clearTimeout(cancelTimer);
+  const box = $('#pase-cancel');
+  if(!box) return;
+  box.classList.remove('armed');
+  $('#pase-cancel-b').textContent = 'Cancelar pedido y vaciar mi lista';
+}
+function cancelOrder(){
+  if(!cancelArmed){
+    cancelArmed = true;
+    $('#pase-cancel').classList.add('armed');
+    $('#pase-cancel-b').textContent = 'Toca otra vez para vaciar ' +
+      (myList.length === 1 ? 'tu producto' : 'tus ' + myList.length + ' productos');
+    say('¿Seguro que quieres vaciar tu lista? Tócalo otra vez.');
+    cancelTimer = setTimeout(resetCancel, 6000);
+    track('cancel_armed', listUnits());
+    return;
+  }
+  track('cancel_order', listUnits() + ' u · ' + Math.round(listTotal()));
+  myList = [];
+  renderListChip();
+  pubList();
+  resetCancel();
+  showToast('Lista vacía — empecemos de nuevo.');
+  say('Listo, tu lista quedó vacía. ¿Qué buscas?');
+  if(pairOn) pubPhone({t:'ask', x:'La lista se vació desde el kiosko. Dime qué buscas.'});
+  goHome();
 }
 
 /* =====================================================================
@@ -5030,14 +5193,34 @@ function toast(msg){
   $('#toast').classList.add('show');
   setTimeout(() => $('#toast').classList.remove('show'), 2200);
 }
+/* El kiosko es de todos y de nadie: al cerrar, no queda rastro del
+   cliente anterior — ni en memoria ni en el DOM. Quien llegue después
+   no debe poder ver, ni con la pantalla congelada, lo que buscó otro. */
+function wipeSession(){
+  myList = []; vmState = null; lastResult = null; lastAsk = null;
+  flow = null; curDetailSku = null; rescueCount = 0;
+  galToken++; galUrls = []; galIdx = 0;
+  threadOn = false; talkReset();
+  clearNudge(); resetCancel();
+  if(typeof stopChipListen === 'function') stopChipListen();
+  renderListChip();
+  userEcho(null);
+  ['#chips','#res-blocks','#pase-list','#det-spec','#det-hi','#det-thumbs','#browse-list'].forEach(s => {
+    const el = $(s); if(el) el.innerHTML = '';
+  });
+  ['#det-title','#det-price','#det-sku','#bot-text','#res-context','#pase-tot','#det-galhint'].forEach(s => {
+    const el = $(s); if(el) el.textContent = '';
+  });
+  const pic = $('#det-pic'); if(pic) pic.innerHTML = '';
+}
 function endSession(msg){
   clearInterval(warnInterval); clearTimeout(idleTimer); clearInterval(typeTimer); clearTimeout(svCountdown);
   surveyTimeoutMode = false;
   $('#ov-timeout').classList.remove('active');
   $('#ov-survey').classList.remove('active');
   $('#sv-stay').style.display = 'none';
-  session = null; flow = null; lastResult = null;
-  myList = []; vmState = null; renderListChip(); // el kiosko no guarda la lista de nadie
+  session = null;
+  wipeSession();
   go('s-attract');
   if(msg) toast(msg);
   track('session_end');
@@ -5050,11 +5233,7 @@ function startSession(){
   sid = 'S' + Date.now().toString(36);
   track('session_start');
   voiceMode = false; voiceSource = null;
-  threadOn = false; talkReset();
-  myList = [];
-  renderListChip();
-  vmState = null; lastResult = null; rescueCount = 0; // cada sesión olvida el contexto anterior
-  userEcho(null);
+  wipeSession();   // cada sesión empieza en blanco, pase lo que pase antes
   endPhoneSession();
   closePair();
   go('s-mode');
@@ -5199,6 +5378,8 @@ $('#res-blocks').addEventListener('click', e => {
   if(card) showDetail(card.dataset.sku);
 });
 
+$('#pase-cancel-b').addEventListener('click', cancelOrder);
+
 // Enviar a mi celular (barra de acciones)
 $('#ab-phone').addEventListener('click', showQR);
 
@@ -5207,6 +5388,7 @@ $('#tm-stay').addEventListener('click', cancelWarn);
 $('#kiosk').addEventListener('pointerdown', () => {
   if($('#ov-timeout').classList.contains('active')) return;
   armIdle();
+  armNudge();   // si tocaste, no necesitas que te empujen
 });
 // Desplazar una ficha es señal de vida tan buena como un toque
 ['#det-scroll','#res-scroll','#browse-list','#talk-thread'].forEach(sel => {
