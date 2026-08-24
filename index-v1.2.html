@@ -400,6 +400,14 @@ body.display-mode .frame-caption{display:none}
 .chips.dense .chip svg{width:84px;height:84px}
 .chips.dense .chip .l{font-size:29px}
 .chips.dense .chip .s{font-size:22px}
+/* Fila ancha del home: la salida para quien no sabe cómo se llama */
+.chip.wide{grid-column:1/-1;flex-direction:row;justify-content:flex-start;align-items:center;
+  gap:26px;min-height:128px;padding:0 34px;text-align:left;background:#E7F1FE;border-color:#BFD9F8}
+.chips.dense .chip.wide svg{width:62px;height:62px}
+.chip.wide .l{font-size:31px}
+/* Home compacto en modo toque: el grid es la acción, no el hero */
+#s-home .home-hero.flat{cursor:default}
+#s-home .home-hero.flat .hh-action{display:none}
 .chip{
   background:#fff;border:2.5px solid var(--line);border-radius:28px;box-shadow:var(--shadow);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
@@ -1195,33 +1203,8 @@ body.display-mode .frame-caption{display:none}
               <span class="clw"><i></i><i></i><i></i><i></i><i></i></span>
               <span id="hlp-txt">Te escucho — dime qué necesitas o toca una opción.</span>
             </div>
-            <div class="bento">
-              
-              <button class="intent tile t-row" data-intent="connect">
-                <span class="ticbox tinted"><svg><use href="#i-cable"/></svg></span>
-                <div><div class="tt">Encuentra el cable ideal</div>
-                <div class="ts">Conecta dos aparatos a la primera</div></div>
-                <svg class="tgo"><use href="#i-fwd"/></svg>
-              </button>
-              <button class="intent tile t-row" data-intent="problem">
-                <span class="ticbox tinted"><svg><use href="#i-home"/></svg></span>
-                <div><div class="tt">Soluciona un problema en casa</div>
-                <div class="ts">Wi-Fi que no llega, apagones, voltaje</div></div>
-                <svg class="tgo"><use href="#i-fwd"/></svg>
-              </button>
-              <button class="intent tile t-row" data-intent="project">
-                <span class="ticbox tinted"><svg><use href="#i-chip"/></svg></span>
-                <div><div class="tt">Arma tu proyecto de electrónica</div>
-                <div class="ts">Resistencias, soldadura y componentes</div></div>
-                <svg class="tgo"><use href="#i-fwd"/></svg>
-              </button>
-              <button class="intent tile t-row" data-intent="warranty">
-                <span class="ticbox tinted"><svg><use href="#i-shield"/></svg></span>
-                <div><div class="tt">Garantías y soporte</div>
-                <div class="ts">Cobertura, cambios y devoluciones, sin vueltas</div></div>
-                <svg class="tgo"><use href="#i-fwd"/></svg>
-              </button>
-            </div>
+            <!-- El home ES el catálogo: las categorías reales, a un toque -->
+            <div class="chips dense" id="home-cats"></div>
           </section>
 
           <!-- CHAT (diagnóstico conversacional) -->
@@ -1745,7 +1728,7 @@ const PROBLEMS = [
    nunca con un "no encontré eso".
    ===================================================================== */
 const TAX = [
-  {id:'smart', l:'Smart Home', ic:'i-bulb', subs:[
+  {id:'smart', l:'Smart Home', ic:'i-assistant', subs:[
     {l:'Focos inteligentes', syn:['foco inteligente','focos inteligentes','foco wifi','foco smart','foco led wifi'], skus:['SHOME-120'], loc:'Pasillo 5'},
     {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127'], loc:'Pasillo 5'},
     {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[], loc:'Pasillo 5'},
@@ -1835,7 +1818,7 @@ const TAX = [
     {l:'Fusibles y portafusibles', syn:['fusible','fusibles','portafusible'], skus:[], loc:'Pasillo 8'},
     {l:'Power banks', syn:['power bank','bateria portatil'], skus:[], loc:'Pasillo 2'}
   ]},
-  {id:'herr', l:'Herramientas', ic:'i-bolt', subs:[
+  {id:'herr', l:'Herramientas', ic:'i-screwdriver', subs:[
     {l:'Cautines y accesorios', syn:['cautin','cautines','soldar','soldadura','estano','desoldar'], fam:'soldar', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH'], loc:'Pasillo 9'},
     {l:'Multímetros', syn:['multimetro','multimetros','tester','medir voltaje'], skus:[], loc:'Pasillo 9'},
     {l:'Equipo de medición', syn:['equipo de medicion','osciloscopio','medidor'], skus:[], loc:'Pasillo 9'},
@@ -1866,14 +1849,14 @@ const TAX = [
     {l:'Ventiladores', syn:['ventilador','fan','ventiladores'], skus:[], loc:'Pasillo 8'},
     {l:'Cautines y soldadura', syn:['cautin','soldadura para proyectos'], fam:'soldar', skus:['CAU-30','SOL-17'], loc:'Pasillo 9'}
   ]},
-  {id:'auto', l:'Automotriz', ic:'i-bolt', subs:[
+  {id:'auto', l:'Automotriz', ic:'i-car', subs:[
     {l:'Inversores para auto', syn:['inversor para auto','corriente en el coche'], skus:[], loc:'Pasillo 10'},
     {l:'Transmisores FM Bluetooth', syn:['transmisor fm','bluetooth para el carro','musica en el coche'], skus:[], loc:'Pasillo 10'},
     {l:'Cargadores USB para auto', syn:['cargador de auto','cargador de coche','cargador de encendedor','cargador para el carro','cargador para el coche','cargador para el auto'], skus:[], loc:'Pasillo 10'},
     {l:'Accesorios automotrices', syn:['accesorio automotriz','soporte de celular para auto'], skus:[], loc:'Pasillo 10'},
     {l:'Fusibles automotrices', syn:['fusible de auto','fusible automotriz'], skus:[], loc:'Pasillo 10'}
   ]},
-  {id:'estud', l:'Línea estudiantil', ic:'i-chip', subs:[
+  {id:'estud', l:'Línea estudiantil', ic:'i-kit', subs:[
     {l:'Kits para armar', syn:['kit para armar','proyecto escolar','kit escolar'], skus:[], loc:'Pasillo 8'},
     {l:'Sensores para proyectos', syn:['sensor','sensores','sensor de movimiento'], skus:[], loc:'Pasillo 8'},
     {l:'Motores para proyectos', syn:['motor','motores','servomotor','motor a pasos'], skus:[], loc:'Pasillo 8'},
@@ -1912,6 +1895,29 @@ function fichaFor(sku){
   const extras = (f.extras || VCOMP[p.cat] || []).filter(k => k !== sku && similar.indexOf(k) < 0).slice(0, 1);
   return {ctx: p.n, main: sku, needs: f.needs || [], extras, similar, note: f.note || null};
 }
+/* EL HOME ES EL CATÁLOGO
+   Sin metas inventadas compitiendo con la taxonomía: las categorías
+   reales a un toque, y una sola salida para quien no sabe nombrarlo. */
+function renderHomeCats(){
+  const box = $('#home-cats');
+  if(!box) return;
+  box.className = 'chips dense';
+  box.innerHTML = '';
+  const add = (o, wide) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (wide ? ' wide' : '');
+    b.innerHTML = '<svg><use href="#' + o.ic + '"/></svg><div class="txt"><div class="l">' + o.l + '</div>' +
+      (o.s ? '<div class="s">' + o.s + '</div>' : '') + '</div>';
+    b.addEventListener('click', o.go);
+    box.appendChild(b);
+  };
+  TAX.forEach(c => add({ic:c.ic, l:c.l, go:() => { track('home_cat', c.id); openBrowseCat(c); }}));
+  add({ic:'i-shield', l:'Garantías y soporte', go:() => { track('home_cat', 'garantias'); startWarranty(); }});
+  add({ic:'i-chat', l:'No sé cómo se llama', s:'Cuéntame qué quieres lograr y te llevo',
+       go:() => { track('home_goal'); browseGoal(); }}, true);
+  const hero = $('#hero-main');
+  if(hero) hero.classList.toggle('flat', !voiceMode); // en toque, el grid es la acción
+}
 /* El índice: las categorías REALES de Steren */
 function startBrowse(){
   flow = {type:'browse', step:1};
@@ -1946,8 +1952,7 @@ function browseGoal(){
   renderChips([
     {ic:'i-cable',  l:'Conectar dos aparatos', act:'connect'},
     {ic:'i-wifi',   l:'Solucionar un problema en casa', act:'problem'},
-    {ic:'i-chip',   l:'Armar un proyecto de electrónica', s:'resistencias y componentes', act:'project'},
-    {ic:'i-mic',    l:'Decirlo con mi voz', act:'voice'},
+    {ic:'i-mic',    l:'Decirlo con mi voz', s:'dime qué buscas y yo lo encuentro', act:'voice'},
     {ic:'i-person', l:'Que me ayude una persona', act:'human'}
   ], o => {
     if(o.act === 'connect') return startConnect();
@@ -2273,6 +2278,7 @@ function go(id){
     $$('#screens .screen').forEach(s => s.classList.toggle('active', s.id === id));
   }
   currentScreen = id;
+  if(id === 's-home' && typeof renderHomeCats === 'function') renderHomeCats();
   configureBar(id);
   if(typeof renderListChip === 'function') renderListChip();
   track('screen_view', id);
@@ -4089,7 +4095,7 @@ $('#mode-touch').addEventListener('click', () => {
   setHeroCTA();
   track('mode_choice', 'toque');
   go('s-home');
-  botSay($('#home-bot'), 'Toca una opción y empezamos.');
+  botSay($('#home-bot'), 'Elige una categoría — o toca “No sé cómo se llama”.');
 });
 $('#mode-voice').addEventListener('click', () => {
   voiceMode = true;
@@ -4246,8 +4252,9 @@ function setHeroCTA(){
   $('#hero-cta-ic').setAttribute('href', voiceMode ? '#i-mic' : '#i-search');
 }
 $('#hero-main').addEventListener('click', () => {
-  track('hero_main', voiceMode ? 'voz' : 'toque');
-  if(voiceMode) openVoiceSmart(); else startBrowse();
+  if(!voiceMode) return; // el grid de categorías es la acción
+  track('hero_main', 'voz');
+  openVoiceSmart();
 });
 $('#vc-cancel').addEventListener('click', closeVoice);
 $('#vc-close2').addEventListener('click', closeVoice);
