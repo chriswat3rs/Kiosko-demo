@@ -520,6 +520,45 @@ body.display-mode .frame-caption{display:none}
 .det-pic img{max-width:92%;max-height:92%;object-fit:contain}
 .det-pic svg{width:150px;height:150px}
 .det-info{flex:1;min-width:0}
+/* ---- Galería: verlo antes que leerlo ---- */
+.det-gal{
+  background:#fff;border:2px solid var(--line-2);border-radius:26px;
+  padding:26px;display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+.det-gal .det-pic{width:100%;height:460px;border:none;border-radius:16px;background:#fff}
+.det-gal .det-pic img{max-width:96%;max-height:96%}
+.det-gal .det-pic svg{width:180px;height:180px;opacity:.35}
+.det-thumbs{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.det-thumbs button{
+  width:120px;height:120px;padding:8px;border-radius:16px;background:#fff;
+  border:3px solid var(--line-2);display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.det-thumbs button.on{border-color:var(--blue);box-shadow:0 0 0 5px rgba(0,90,255,.13)}
+.det-thumbs img{max-width:100%;max-height:100%;object-fit:contain}
+.det-galhint{font-size:23px;color:var(--ink-3);text-align:center}
+/* Lo importante en tres datos, para quien no va a leer la tabla */
+.det-hi{display:flex;gap:14px;width:100%}
+.det-hi span{
+  flex:1 1 0;min-width:0;background:#EAF2FE;border:2px solid #C9DFFB;border-radius:18px;
+  padding:16px 18px;display:flex;flex-direction:column;gap:5px;text-align:center;
+}
+.det-hi i{font-style:normal;font-size:21px;font-weight:700;color:#4A6B98;letter-spacing:.02em}
+.det-hi b{font-size:27px;font-weight:800;color:#0B3C87;line-height:1.2}
+/* ---- Ficha técnica: dos columnas, una fila por dato ---- */
+.det-specs .sr{
+  display:flex;gap:24px;align-items:baseline;
+  padding:19px 0;border-bottom:1px solid var(--line-2);
+}
+.det-specs .sr:last-child{border-bottom:none;padding-bottom:0}
+.det-specs .spk{flex:0 0 300px;font-size:25px;font-weight:700;color:var(--ink-2);line-height:1.3}
+.det-specs .spv{flex:1;font-size:28px;color:var(--ink);line-height:1.35}
+.det-askband{
+  border-radius:26px;padding:24px 32px;background:#EAF2FE;border:2px solid #C9DFFB;
+  display:flex;gap:20px;align-items:flex-start;
+}
+.det-askband svg{width:38px;height:38px;color:var(--blue);flex-shrink:0;margin-top:4px}
+.det-askband .aq{font-size:23px;color:var(--ink-2);font-weight:700;margin-bottom:6px}
+.det-askband .aa{font-size:29px;color:var(--ink);line-height:1.35;font-weight:700}
 /* Tarjeta principal de la ficha: mismo lenguaje azul del hero */
 .det-top{background:var(--grad);border-color:transparent;box-shadow:0 16px 36px rgba(0,70,190,.28)}
 .det-pic{border:none;background:#fff}
@@ -1305,8 +1344,15 @@ body.display-mode .frame-caption{display:none}
               <h2 id="det-title" style="font-size:46px">Producto</h2>
             </div>
             <div class="det-scroll" id="det-scroll">
-              <div class="det-top">
+              <!-- VERLO ANTES QUE LEERLO: la foto grande es la que confirma
+                   "sí es esto" o "no es esto" en dos segundos -->
+              <div class="det-gal">
                 <div class="det-pic" id="det-pic"></div>
+                <div class="det-thumbs" id="det-thumbs"></div>
+                <div class="det-galhint" id="det-galhint"></div>
+                <div class="det-hi" id="det-hi"></div>
+              </div>
+              <div class="det-top">
                 <div class="det-info">
                   <div class="det-price" id="det-price"></div>
                   <div class="det-sku" id="det-sku"></div>
@@ -1314,10 +1360,18 @@ body.display-mode .frame-caption{display:none}
                   <div class="det-stock" id="det-stock"></div>
                 </div>
               </div>
-              <div class="det-about">
+              <div class="det-askband" id="det-askband" style="display:none">
+                <svg><use href="#i-check"/></svg>
+                <div><div class="aq" id="det-aq"></div><div class="aa" id="det-aa"></div></div>
+              </div>
+              <div class="det-about" id="det-aboutbox">
                 <div class="det-label" id="det-label">Por qué es para ti</div>
                 <div id="det-why"></div>
                 <div id="det-desc"></div>
+              </div>
+              <div class="det-about det-specs" id="det-specbox">
+                <div class="det-label">Ficha técnica</div>
+                <div id="det-spec"></div>
               </div>
               <div class="det-tipband" id="det-tipband" style="display:none">
                 <span class="vava" id="dt-ava">M</span>
@@ -1662,16 +1716,16 @@ const P = {
   'BAS-180':{n:'Báscula digital personal · hasta 180 kg', p:208.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-scale', st:[14,10], img:RIMG+'20107d209/bascula-digital-hasta-180-kg.jpg'},
   'TIM-080':{n:'Timbre inalámbrico · 80 m de alcance, 36 tonos', p:174, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[18,13], img:RIMG+'214825468/timbre-inalambrico-con-boton-resistente-a-la-lluvia-80-m-de-alcance-36-tonos.jpg'},
   'TIM-060':{n:'Timbre inalámbrico · 60 m de alcance, 50 tonos', p:208.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[16,11], img:RIMG+'23841df94/timbre-inalambrico-con-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
-  'TIM-CIN':{n:'Timbre inalámbrico cinético · sin pilas, 100 m', p:290, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[10,7], img:RIMG+'2316489f7/timbre-inalambrico-cinetico-100-m-de-alcance-52-tonos.jpg'},
-  'TIM-2C':{n:'Timbre inalámbrico de 2 campanas · 60 m, 50 tonos', p:301.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[9,6], img:RIMG+'23865e041/timbre-inalambrico-de-2-campanas-y-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
-  'TIM-140':{n:'Timbre inalámbrico con campana recargable · 140 m', p:336.4, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[8,5], img:RIMG+'236742558/timbre-inalambrico-con-campana-de-bateria-recargable-y-boton-resistente-a-la-lluvia-140-m-de-alcance-32-tonos.jpg'},
-  'TIM-170':{n:'Timbre inalámbrico con contacto en campana · 170 m', p:359.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[7,4], img:RIMG+'238736e22/timbre-inalambrico-con-contacto-en-la-campana-y-boton-resistente-a-la-lluvia-170-m-de-alcance-58-tonos.jpg'},
+  'TIM-CIN':{n:'Timbre inalámbrico cinético · sin pilas, 100 m de alcance, 52 tonos', p:290, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[10,7], img:RIMG+'2316489f7/timbre-inalambrico-cinetico-100-m-de-alcance-52-tonos.jpg'},
+  'TIM-2C':{n:'Timbre inalámbrico de 2 campanas · 60 m de alcance, 50 tonos', p:301.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[9,6], img:RIMG+'23865e041/timbre-inalambrico-de-2-campanas-y-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
+  'TIM-140':{n:'Timbre inalámbrico con campana recargable · 140 m de alcance, 32 tonos', p:336.4, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[8,5], img:RIMG+'236742558/timbre-inalambrico-con-campana-de-bateria-recargable-y-boton-resistente-a-la-lluvia-140-m-de-alcance-32-tonos.jpg'},
+  'TIM-170':{n:'Timbre inalámbrico con contacto en campana · 170 m de alcance, 58 tonos', p:359.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[7,4], img:RIMG+'238736e22/timbre-inalambrico-con-contacto-en-la-campana-y-boton-resistente-a-la-lluvia-170-m-de-alcance-58-tonos.jpg'},
   'TER-MINI':{n:'Mini termómetro digital con higrómetro', p:114.84, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[20,15], img:RIMG+'23367a77b/mini-termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
   'TER-HIG':{n:'Termómetro digital con higrómetro', p:150.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[16,12], img:RIMG+'23179a027/termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
   'TER-IE':{n:'Termómetro digital interior/exterior con humedad', p:243.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[11,7], img:RIMG+'195763879/termometro-digital-para-interior-exterior-con-sensor-de-humedad.jpg'},
   'VEN-INA':{n:'Ventilador personal inalámbrico recargable', p:239, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[22,16], img:RIMG+'2201082b9/ventilador-personal-inalambrico-recargable.jpg'},
-  'VEN-ROC':{n:'Ventilador personal con rociador y batería', p:395, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[14,10], img:RIMG+'23317cdd1/ventilador-personal-con-rociador-y-bateria-recargable.jpg'},
-  'VEN-ENF':{n:'Ventilador de escritorio con enfriador y luz LED', p:459, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[10,7], img:RIMG+'23276b97a/ventilador-con-enfriador-de-aire-y-luz-led-para-escritorio.jpg'},
+  'VEN-ROC':{n:'Ventilador personal con rociador y batería recargable', p:395, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[14,10], img:RIMG+'23317cdd1/ventilador-personal-con-rociador-y-bateria-recargable.jpg'},
+  'VEN-ENF':{n:'Ventilador de escritorio con enfriador de aire y luz LED', p:459, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[10,7], img:RIMG+'23276b97a/ventilador-con-enfriador-de-aire-y-luz-led-para-escritorio.jpg'},
   'VEN-PLE':{n:'Ventilador plegable recargable con rejilla rotatoria', p:629, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[8,5], img:RIMG+'23284b891/ventilador-plegable-con-bateria-recargable-y-rejilla-rotatoria-para-escritorio.jpg'},
   'VEN-OSC':{n:'Ventilador oscilante con temporizador · escritorio', p:699, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[7,4], img:RIMG+'22830e412/ventilador-oscilante-con-ajuste-de-velocidad-y-temporizador-para-escritorio.jpg'},
   'EST-ORG':{n:'Estuche organizador para accesorios electrónicos', p:125, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-box', st:[26,20], img:RIMG+'22787ee49/estuche-organizador-para-accesorios-electronicos.jpg'},
@@ -1798,6 +1852,407 @@ const DESC = {
   'SHOME-127':'Tira LED Wi-Fi multicolor de 2 m para ambientar tu espacio; control desde la app.',
   'CCTV-213':'Cámara Wi-Fi de 3 Mpx que gira y sigue el movimiento automáticamente; visión nocturna y doble banda.'
 };
+
+/* =====================================================================
+   FICHA TÉCNICA · generada para TODO el catálogo   [INICIO MOTOR FICHA]
+   197 SKUs no se documentan a mano, y una ficha vacía ("Resuelve: …")
+   es peor que no tener ficha: el usuario vino a comparar. Steren nombra
+   sus productos con la especificación adentro — "Cámara Wi-Fi 6 · 4 Mpx
+   fija con panel solar · exterior" — así que la ficha se LEE del nombre.
+
+   Cuatro capas, de la más exacta a la más general:
+     SP    · hoja real curada (gana sobre todo lo demás)
+     ATTR  · atributos que el producto ya declara para el embudo (p.a)
+     SPEC  · reglas sobre el nombre → renglones técnicos
+     PACK  · rasgos que comparte toda una familia (por SKU o categoría)
+
+   Agregar un producto nuevo no pide escribir su ficha: la trae puesta.
+   En producción esta función se cambia por la hoja real de la KB
+   (ver motor-navegacion-kb.md §3) sin tocar la pantalla.
+   ===================================================================== */
+
+/* Hoja real tomada de steren.com.mx — el estándar al que apunta la KB */
+const SP = {
+  'CCTV-641': [
+    ['Resolución de imagen', '4 Mpx'], ['Resolución de video', '1440p a 15 FPS'],
+    ['Compresión', 'H.265 / H.264'], ['Frecuencia', '2.4 GHz y 5 GHz'],
+    ['Estándar', 'IEEE 802.11 a/b/g/n/ac/ax (Wi-Fi 6)'], ['Campo de visión', '75°'],
+    ['Iluminación', '24 LED blancos y 8 LED infrarrojos'], ['Batería interna', '3.7 Vcc · 4 500 mAh'],
+    ['Panel solar', '0.1 W integrado'], ['Memoria', 'microSD de hasta 256 GB'],
+    ['Alimentación', '5 Vcc 1 A por USB-C'], ['Protección', 'IP66 · lluvia y polvo']
+  ]
+};
+
+/* ---- Capa ATTR: lo que el producto YA declaró para el embudo ----
+   Resistencias, pilas, soldadura y eliminadores traen sus valores
+   exactos en `a`. Reusarlos evita adivinarlos del nombre. */
+const ATTR = {
+  resist: (a) => [
+    ['Valor', typeof fmtOhm === 'function' ? fmtOhm(a.ohm) : a.ohm + ' Ω'],
+    ['Potencia', a.w + ' watt'],
+    ['Tolerancia', '±5 %'],
+    ['Material', 'Carbón · uso general'],
+    ['Terminales', 'Axiales · para protoboard o placa']
+  ],
+  pilas: (a) => [
+    ['Tipo', {d:'D · las grandes', c:'C · medianas', n:'N · pequeñas',
+              boton:'Botón de litio', recarg:'Recargable Li-ion'}[a.tipo] || a.tipo],
+    ['Química', a.tipo === 'recarg' ? 'Li-ion recargable' : a.tipo === 'boton' ? 'Litio 3 V' : 'Alcalina'],
+    ['Se usa en', {d:'Linternas, radios y juguetes grandes', c:'Radios, timbres y juguetes',
+                   n:'Controles y aparatos chicos', boton:'Relojes, básculas y controles',
+                   recarg:'Linternas y proyectos de electrónica'}[a.tipo] || 'Uso general']
+  ],
+  soldar: (a) => [
+    ['Tipo', {cautin:'Cautín', estano:'Soldadura (estaño)', pasta:'Pasta para soldar',
+              acc:'Accesorio de soldadura'}[a.que] || a.que],
+    ['Nivel de uso', {basico:'Empezando · trabajos simples', medio:'Uso frecuente',
+                      pro:'Profesional · componentes delicados'}[a.nivel] || null]
+  ],
+  fuente: (a) => [
+    ['Voltaje de salida', (a.v === 'multi' || a.v === 9 ? 'Ajustable de 3 a 12' : a.v) + ' Vcc'],
+    ['Voltaje', null], ['Corriente', null],   // ya dichos arriba: que no se repitan
+    ['Corriente máxima', a.amp + ' A'],
+    ['Entrada', '127 Vca · contacto de casa'],
+    ['Regulación', 'Regulado · voltaje estable con y sin carga']
+  ]
+};
+
+/* Reglas sobre el nombre. [regex, etiqueta, valor]
+   El valor admite $1..$3 del match. Primera regla que acierta por
+   etiqueta gana: el orden ES la prioridad. */
+const SPEC = [
+  /* — Cámaras y video — */
+  [/(\d+) mpx/, 'Resolución', '$1 Mpx'],
+  [/wi-?fi 6/, 'Conexión', 'Wi-Fi 6 · 802.11ax'],
+  [/wi-?fi\/ethernet|wi-?fi ethernet/, 'Conexión', 'Wi-Fi o cable de red'],
+  [/doble banda/, 'Bandas', '2.4 GHz y 5 GHz'],
+  [/robotizada/, 'Movimiento', 'Robotizada · gira y se inclina desde la app'],
+  [/\bfija\b/, 'Movimiento', 'Fija · en el ángulo que le dejes'],
+  [/seguidor de movimiento/, 'Seguimiento', 'Sigue sola a quien se mueve'],
+  [/panel solar/, 'Energía', 'Panel solar integrado · no hay que cablear'],
+  [/para socket|para el socket/, 'Instalación', 'Se enrosca donde va un foco'],
+  [/exterior/, 'Instalación', 'Exterior · aguanta lluvia y polvo (IP66)'],
+  [/pantalla para video ?llamada/, 'Extra', 'Pantalla para hablar con quien esté en casa'],
+  [/dash ?cam|camara para auto/, 'Uso', 'Graba sola mientras manejas'],
+  [/camara de reversa/, 'Incluye', 'Cámara de reversa'],
+  [/\bwdr\b/, 'Imagen', 'WDR · no se quema con el contraluz'],
+  [/\b2k\b|1440p/, 'Video', '2K · 1440p'],
+  [/\b4k\b(?! 60)/, 'Video', '4K UHD'],
+  [/sumergible/, 'Resistencia', 'Sumergible con su carcasa'],
+  [/mini camara|mini bocina|mini linterna|mini termometro/, 'Tamaño', 'Mini · cabe en una mano'],
+
+  /* — Audio — */
+  [/bocina[^·]*\btws\b|\btws\b[^·]*bocina/, 'Emparejable', 'TWS · junta dos y suenan en estéreo'],
+  [/bocina[^·]*\btws\b|\btws\b[^·]*bocina/, 'Formato', null],
+  [/\btws\b/, 'Formato', 'TWS · cada audífono va por su lado'],
+  [/diadema/, 'Formato', 'De diadema · sobre las orejas'],
+  [/tipo clip|\bows\b/, 'Formato', 'Tipo clip · oreja abierta, oyes el entorno'],
+  [/\banc\b/, 'Cancelación de ruido', 'Activa (ANC) · apaga el ruido de afuera'],
+  [/\benc\b/, 'Micrófono', 'ENC · limpia tu voz en las llamadas'],
+  [/hi-?res/, 'Calidad de audio', 'Hi-Res certificado'],
+  [/multipunto/, 'Multipunto', 'Conectado a dos aparatos a la vez'],
+  [/hasta (\d+) h\b/, 'Batería', 'Hasta $1 horas de uso'],
+  [/control por app/, 'App', 'Ecualizador y controles desde el celular'],
+  [/ultradelgado/, 'Diseño', 'Ultradelgados · casi no se sienten'],
+  [/magsafe/, 'Sujeción', 'Imán MagSafe · se pega al celular'],
+  [/con linterna/, 'Extra', 'Linterna integrada'],
+  [/splash|resistente al agua/, 'Resistencia', 'Aguanta salpicaduras'],
+  [/amplificad/, 'Tipo', 'Amplificadas · no piden equipo aparte'],
+  [/2 vias|de 2 v[ií]as/, 'Configuración', '2 vías · woofer y tweeter'],
+  [/barra de sonido|sound ?bar/, 'Tipo', 'Barra de sonido para la TV'],
+  [/bass boost|splash bass/, 'Sonido', 'Refuerzo de graves'],
+  [/multimedia/, 'Uso', 'Escritorio · computadora o laptop'],
+  [/transmisor de audio bluetooth/, 'Función', 'Vuelve Bluetooth un equipo que no lo es'],
+
+  /* — Cables, adaptadores y red — */
+  [/hdmi 2\.1/, 'Norma', 'HDMI 2.1 · ultra alta velocidad'],
+  [/hdmi 2\.0/, 'Norma', 'HDMI 2.0 · alta velocidad'],
+  [/hdmi 2\.1/, 'Resolución máxima', '4K a 120 Hz · hasta 8K'],
+  [/hdmi 2\.0|hdmi 4k/, 'Resolución máxima', '4K a 60 Hz'],
+  [/displayport/, 'Norma', 'DisplayPort 1.4 · monitores de PC'],
+  [/displayport/, 'Resolución máxima', '4K a 60 Hz y altas tasas de refresco'],
+  [/certificado/, 'Certificación', 'Certificado de fábrica'],
+  [/toslink|cable [oó]ptico/, 'Señal', 'Audio digital óptico · sin ruido'],
+  [/auxiliar 3\.5|plug 3\.5|3\.5 mm/, 'Conector', 'Plug 3.5 mm'],
+  [/usb-?c a usb-?c/, 'Conectores', 'USB-C en los dos extremos'],
+  [/usb-?c a hdmi/, 'Conectores', 'USB-C → HDMI'],
+  [/usb-?c a 3\.5/, 'Conectores', 'USB-C → audífonos de 3.5 mm'],
+  [/4k 60 hz/, 'Resolución', '4K a 60 Hz'],
+  [/usb 3\.0/, 'Puerto', 'USB 3.0 · 5 Gbps'],
+  [/\bhub\b/, 'Función', 'Un puerto se vuelve tres'],
+  [/hub usb-?c/, 'Entrada', 'Un solo USB-C de tu laptop o celular'],
+  [/hdmi \+|\+ .*hdmi|a hdmi/, 'Salida de video', 'HDMI'],
+  [/soporte para pantallas|soporte de pared/, 'Montaje', 'A la pared, con tornillería incluida'],
+  [/soporte met[aá]lico/, 'Material', 'Metal · no se vence con el peso'],
+  [/ventilador personal/, 'Uso', 'Personal · escritorio, mesita o mochila'],
+  [/para escritorio|de escritorio/, 'Uso', 'Escritorio'],
+  [/\bventilador\b/, 'Tipo', 'Ventilador'],
+  [/cr(\d{4})/, 'Modelo de pila', 'CR$1'],
+  [/tipo bot[oó]n/, 'Voltaje', '3 V'],
+  [/tipo cord[oó]n/, 'Cable', 'Tipo cordón · delgado y flexible'],
+  [/organizador de cables|espiral/, 'Uso', 'Recoge y esconde el cableado'],
+  [/ac(\d{3,4})|ax(\d{3,4})/, 'Velocidad', 'Hasta $1 Mbps sumando bandas'],
+  [/\bmesh\b/, 'Cobertura', 'Una sola red con el mismo nombre en toda la casa'],
+  [/(\d+) nodos/, 'Piezas', '$1 nodos'],
+  [/repetidor/, 'Función', 'Alarga el alcance de tu módem'],
+
+  /* — Iluminación — */
+  [/rgb|multicolor/, 'Color de luz', '16 millones de colores + blancos'],
+  [/luz c[aá]lida/, 'Color de luz', 'Cálida · 3 000 K'],
+  [/luz fr[ií]a, natural o c[aá]lida/, 'Color de luz', 'Fría, natural o cálida · tú eliges'],
+  [/luz fr[ií]a/, 'Color de luz', 'Fría · 6 500 K'],
+  [/sensor de movimiento/, 'Sensor', 'Enciende sola cuando pasas'],
+  [/(\d[\d ,]*) l[uú]menes/, 'Flujo luminoso', '$1 lúmenes'],
+  [/uv de (\d+) nm|luz uv/, 'Tipo de luz', 'Ultravioleta 365 nm'],
+  [/articulada/, 'Brazo', 'Articulado · la mueves donde quieras'],
+  [/emergencia/, 'Uso', 'Respaldo para cuando se va la luz'],
+  [/aluminio/, 'Cuerpo', 'Aluminio · aguanta golpes'],
+  [/tipo llavero/, 'Tamaño', 'De llavero · cabe en el bolsillo'],
+  [/para techo/, 'Montaje', 'Plafón de techo'],
+  [/para monitor/, 'Montaje', 'Se cuelga del borde del monitor'],
+  [/controles touch/, 'Control', 'Táctil · sin botones'],
+  [/direccionables/, 'Luces', 'Direccionables · apuntas cada una'],
+
+  /* — Energía y carga — */
+  [/pd de (\d+) ?w|pd (\d+) ?w|power delivery de (\d+) ?w/, 'Carga rápida', 'Power Delivery $1 W'],
+  [/qc de (\d+) ?w|qc (\d+) ?w/, 'Carga rápida (USB-A)', 'Quick Charge $1 W'],
+  [/\bgan\b/, 'Tecnología', 'GaN · más chico y menos caliente'],
+  [/(\d[\d ,]*) ?mah/, 'Capacidad', '$1 mAh'],
+  [/cables? integrado/, 'Cables', 'Integrados · no cargas cables aparte'],
+  [/cable (?:usb-?c )?retr[aá]ctil/, 'Cable', 'Retráctil · se guarda solo'],
+  [/clavija abatible/, 'Clavija', 'Abatible · no se atora en la mochila'],
+  [/universal para laptop/, 'Compatibilidad', 'Trae puntas para las marcas más comunes'],
+  [/usb-?c doble|doble power delivery/, 'Salidas', 'Dos USB-C · dos equipos a la vez'],
+  [/con extensor/, 'Alcance', 'Extensor para los asientos de atrás'],
+  [/para auto/, 'Montaje', 'Encendedor de cigarros del auto'],
+  [/arrancador/, 'Función', 'Arranca el auto con la batería baja'],
+  [/inflador de llantas/, 'Incluye', 'Inflador de llantas'],
+  [/(\d{3,4}) va\b/, 'Capacidad', '$1 VA'],
+  [/hasta (\d+) min/, 'Respaldo', 'Hasta $1 minutos sin luz'],
+  [/no-?break/, 'Función', 'Lo conectado no se apaga de golpe'],
+  [/regulador de voltaje|^regulador/, 'Función', 'Estabiliza el voltaje que llega'],
+  [/(\d+) salidas/, 'Contactos', '$1 salidas'],
+  [/supresor de (\d+) ?j|supresor de picos(?: de voltaje)? \((\d+) ?j\)/, 'Protección', 'Supresor de picos · $1 J'],
+  [/supresor de picos/, 'Protección', 'Supresor de picos de voltaje'],
+  [/eliminador/, 'Función', 'Sustituye las pilas de tu aparato'],
+  [/puntas intercambiables/, 'Puntas', 'Intercambiables · le atina a casi cualquier equipo'],
+
+  /* — Extensiones y contactos — */
+  [/uso rudo/, 'Cable', 'Uso rudo · calibre reforzado'],
+  [/polarizada/, 'Contactos', 'Polarizados · con tierra física'],
+  [/(\d+) contactos/, 'Contactos', '$1 salidas'],
+  [/clavija a 90/, 'Clavija', 'A 90° · el mueble puede ir pegado al muro'],
+  [/multicontacto/, 'Función', 'Convierte un contacto en varios'],
+
+  /* — Casa y oficina — */
+  [/(\d+) m de alcance/, 'Alcance', '$1 metros entre botón y campana'],
+  [/(\d+) tonos/, 'Melodías', '$1 tonos a elegir'],
+  [/resistente a la lluvia/, 'Botón', 'Resistente a la lluvia'],
+  [/cin[eé]tic/, 'Energía del botón', 'Cinético · hace su corriente al pulsarlo'],
+  [/campana de bater[ií]a recargable/, 'Campana', 'Batería recargable · sin pilas'],
+  [/2 campanas/, 'Incluye', 'Dos campanas · una en cada piso'],
+  [/contacto en la campana/, 'Campana', 'Se enchufa al contacto'],
+  [/hasta (\d+) kg/, 'Capacidad', 'Hasta $1 kg'],
+  [/gramera/, 'Precisión', 'Gramera · lee de gramo en gramo'],
+  [/para equipaje/, 'Uso', 'Maletas · antes de llegar al aeropuerto'],
+  [/higr[oó]metro|sensor de humedad/, 'Mide', 'Temperatura y humedad'],
+  [/interior\/exterior/, 'Sensores', 'Uno adentro y uno afuera'],
+  [/oscilante/, 'Movimiento', 'Oscilante · barre todo el cuarto'],
+  [/temporizador/, 'Temporizador', 'Se apaga solo a la hora que le digas'],
+  [/(\d+) ?ml\b/, 'Capacidad', '$1 ml'],
+  [/tanque de (\d+(?:[.,]\d+)?) ?l\b/, 'Tanque', '$1 litros'],
+  [/(\d+) l\/d[ií]a/, 'Extracción', '$1 litros al día'],
+  [/efecto flama/, 'Extra', 'Luz con efecto de flama'],
+  [/de (\d+(?:[.,]\d+)?)(?: pulgadas|")/, 'Pantalla', '$1 pulgadas'],
+  [/(\d+)"–(\d+)"|de (\d+)" a (\d+)"/, 'Pantallas', 'De $1" a $2"'],
+  [/brazo articulado/, 'Movimiento', 'Gira, extiende e inclina'],
+  [/elevador para laptop/, 'Uso', 'Sube la pantalla a la altura de tus ojos'],
+  [/ultras[oó]nico para metales/, 'Uso', 'Joyería, lentes y piezas chicas'],
+  [/estuche organizador/, 'Uso', 'Cables, cargadores y memorias en su lugar'],
+  [/rociador/, 'Extra', 'Rocía agua fina para refrescar más'],
+  [/enfriador de aire/, 'Extra', 'Enfría además de ventilar'],
+  [/pad de enfriamiento/, 'Extra', 'Placa fría al tacto'],
+  [/aspiradora port[aá]til/, 'Uso', 'Coche, escritorio y rincones'],
+  [/alcohol[ií]metro/, 'Mide', 'Alcohol en el aliento'],
+  [/correas de (\d+) ?mm/, 'Medida', '$1 mm de ancho'],
+  [/portarretratos/, 'Función', 'Las fotos le llegan por app desde el celular'],
+  [/plegable/, 'Diseño', 'Plegable · se guarda en la mochila'],
+  [/deshumidificador/, 'Función', 'Le quita la humedad al cuarto'],
+  [/humidificador/, 'Función', 'Le devuelve humedad al aire seco'],
+
+  /* — Herramienta — */
+  [/(\d+) puntas intercambiables/, 'Puntas', '$1 intercambiables'],
+  [/tipo relojero/, 'Tamaño', 'Relojero · para tornillos diminutos'],
+  [/(\d+) en 1/, 'Funciones', '$1 herramientas en una'],
+  [/rj45|rj11|rj12/, 'Conectores', 'RJ45 / RJ11 · red y teléfono'],
+  [/pela cable/, 'Función', 'Pela, corta y poncha'],
+  [/de impacto/, 'Mecanismo', 'De impacto · deja el hilo asentado'],
+  [/micro corte/, 'Corte', 'Micro corte · al ras de la placa'],
+  [/de punta/, 'Punta', 'Larga y fina · para espacios cerrados'],
+  [/corte angular/, 'Corte', 'Angular · alcanza los rincones'],
+  [/de compresi[oó]n/, 'Función', 'Aprieta conectores coaxiales'],
+  [/multi ?metro/, 'Mediciones', 'Voltaje, corriente, resistencia y continuidad'],
+  [/volt[ií]metro y amper[ií]metro/, 'Mediciones', 'Voltaje y corriente en una carátula'],
+  [/osciloscopio/, 'Compatibilidad', 'Osciloscopio con conector BNC'],
+  [/conector bnc/, 'Conector', 'BNC'],
+  [/caim[aá]n/, 'Terminales', 'Caimán · se muerden solos al cable'],
+  [/puntas profesionales/, 'Uso', 'Repuesto o mejora para tu multímetro'],
+  [/cautin tipo lapiz/, 'Formato', 'Tipo lápiz · el de toda la vida'],
+  [/estaci[oó]n de caut[ií]n/, 'Formato', 'Estación con base y control'],
+  [/ajuste de potencia/, 'Ajuste', 'Potencia variable'],
+  [/control de temperatura/, 'Control', 'Temperatura exacta en pantalla'],
+  [/60\/40/, 'Aleación', '60 % estaño · 40 % plomo'],
+  [/(\d+) ?g\b/, 'Presentación', '$1 gramos'],
+  [/desoldador de succi[oó]n/, 'Función', 'Jala el estaño derretido'],
+  [/pasta para soldar/, 'Función', 'Limpia y ayuda a que el estaño pegue'],
+  [/base para caut[ií]n/, 'Función', 'Descansa el cautín caliente sin quemar nada'],
+
+  /* — Cómputo — */
+  [/(\d[\d \/]*) ?dpi/, 'Sensibilidad', 'Hasta $1 DPI'],
+  [/multidispositivo/, 'Equipos', 'Cambia entre 3 aparatos con un botón'],
+  [/vertical/, 'Ergonomía', 'Vertical · la muñeca descansa'],
+  [/iluminaci[oó]n multicolor/, 'Retroiluminación', 'Multicolor · se ve de noche'],
+  [/bluetooth\/rf|bluetooth rf/, 'Conexión', 'Bluetooth y RF · receptor USB incluido'],
+  [/compacto/, 'Tamaño', 'Compacto · deja lugar para el mouse'],
+  [/teclado y mouse/, 'Incluye', 'Teclado y mouse a juego'],
+
+  /* — Estudiantil y proyectos — */
+  [/1:(\d+)/, 'Reducción', '1:$1'],
+  [/torque de (\d+(?:[.,]\d+)?) ?kgf/, 'Torque', '$1 kgf·cm'],
+  [/(\d+)-(\d+) ?l\/h/, 'Flujo', 'De $1 a $2 litros por hora'],
+  [/dht11/, 'Salida', 'Digital · una línea de datos (DHT11)'],
+  [/\(pir\)/, 'Detección', 'Infrarrojo pasivo · calor del cuerpo'],
+  [/ultras[oó]nico/, 'Medición', 'Por eco · de 2 cm a 4 m'],
+  [/sensor [oó]ptico/, 'Detección', 'Óptica · presencia y obstáculos'],
+  [/sensor de polvo/, 'Detección', 'Partículas en el aire'],
+  [/seguidor de l[ií]nea/, 'Uso', 'Robots que siguen una línea negra'],
+  [/l298n|l293d/, 'Tipo', 'Puente H · controla giro y velocidad'],
+  [/(\d+) l[ií]neas de control/, 'Control', '$1 líneas · secuencia de pasos'],
+  [/eje tipo d\b/, 'Eje', 'Tipo D · no patina con la rueda'],
+  [/doble eje/, 'Eje', 'Doble · una rueda de cada lado'],
+  [/servomotor/, 'Control', 'Por ángulo · señal PWM desde la placa'],
+  [/faulhaber/, 'Tipo', 'Faulhaber · alta velocidad'],
+  [/motor reductor/, 'Tipo', 'Con reductor · más fuerza, menos vueltas'],
+  [/motor a pasos/, 'Tipo', 'A pasos · posición exacta'],
+  [/micro bomba de agua/, 'Uso', 'Riego, fuentes y proyectos de agua'],
+  [/kit solar|solar/, 'Energía', 'Celda solar · funciona con luz de día'],
+  [/hidr[aá]ulico/, 'Mecanismo', 'Hidráulico · agua a presión'],
+  [/(\d+) en 1 para armar|(\d+) en 1/, 'Modelos', '$1 formas distintas de armarlo'],
+  [/bobina de tesla/, 'Demuestra', 'Energía que viaja sin cables'],
+  [/smartbot/, 'Incluye', 'Motores, sensores y app para programarlo'],
+  [/caja de toques/, 'Demuestra', 'Corriente y reflejos · el clásico de feria'],
+  [/programaci[oó]n mec[aá]nica/, 'Demuestra', 'Programar sin computadora'],
+  [/circuito integrado/, 'Formato', 'Circuito integrado · va en protoboard'],
+  [/tarjeta para control/, 'Formato', 'Tarjeta lista · sólo la conectas'],
+
+  /* — Telefonía y genéricos (van al final: son el último recurso) — */
+  [/obd2|obdii/, 'Conexión', 'Puerto OBD2 del auto'],
+  [/\bgps\b/, 'Ubicación', 'GPS en tiempo real desde el celular'],
+  [/microsd|micro sd/, 'Memoria', 'Ranura microSD'],
+  [/^(?!.*(?:power delivery|\bpd\b|\bqc\b|\bgan\b))(?:.*?)(\d+(?:[.,]\d+)?)\s*(?:w\b|watts?\b)/, 'Potencia', '$1 W'],
+  [/(\d+(?:[.,]\d+)?)\s*vcc/, 'Voltaje', '$1 Vcc'],
+  [/(\d+(?:[.,]\d+)?)\s*a\b(?!\w)/, 'Corriente', '$1 A'],
+  [/(?:cable|extensi[oó]n|cord[oó]n|\btira\b)[^·]*·?\s*(?:de )?(\d+(?:[.,]\d+)?)\s*m\b/, 'Largo', '$1 metros'],
+  [/bluetooth/, 'Conexión', 'Bluetooth'],
+  [/wi-?fi/, 'Conexión', 'Wi-Fi'],
+  [/recargable/, 'Batería', 'Recargable por USB'],
+  [/^par de|^paquete de (\d+)|^(\d+) /, 'Piezas', '$1 en el paquete'],
+  [/alcalina/, 'Química', 'Alcalina'],
+  [/litio/, 'Química', 'Litio']
+];
+
+/* Rasgos que comparte una familia entera. [prueba(sku, p), [[etiqueta, valor]…]] */
+const PACK = [
+  [(s) => /^CCTV/.test(s), [
+    ['App', 'Steren Home · la ves desde donde estés'],
+    ['Grabación', 'microSD o nube · tú eliges'],
+    ['Visión nocturna', 'Sí · imagen aun sin luz'],
+    ['Avisos', 'Notificación al celular cuando detecta movimiento']]],
+  [(s) => /^AUD/.test(s), [
+    ['Micrófono', 'Integrado · contestas sin sacar el celular'],
+    ['Estuche', 'De carga · le devuelve varias cargas completas']]],
+  [(s) => /^BOC|^BOOM|^SPK|^BSD/.test(s), [
+    ['Entrada extra', 'Auxiliar 3.5 mm además de Bluetooth']]],
+  [(s) => /^FOC|^LAM-T|^SHOME-12/.test(s), [
+    ['Vida útil', 'Cerca de 25 000 horas'],
+    ['Socket', 'E26/E27 · el de siempre']]],
+  [(s, p) => p.cat === 'Smart Home', [
+    ['Asistentes', 'Alexa y Google Assistant'],
+    ['Red', 'Wi-Fi de casa · no pide hub aparte']]],
+  [(s) => /^PWB|^CAR-|^CAA-/.test(s), [
+    ['Protecciones', 'Sobrecarga, sobrecalentamiento y corto']]],
+  [(s) => /^SEN-|^MOT-|^SRV-|^BOM-|^KIT-/.test(s), [
+    ['Compatible con', 'Arduino, ESP32 y micro:bit'],
+    ['Nivel', 'Secundaria y prepa · con guía de armado']]],
+  [(s) => /^EXT-/.test(s), [
+    ['Uso', 'Interior y exterior · aislamiento reforzado']]],
+  [(s) => /^TIM-/.test(s), [
+    ['Instalación', 'Sin cables · el botón se pega o atornilla']]],
+  [(s, p) => p.cat === 'Cables' || /^Cable /.test(p.n), [
+    ['Blindaje', 'Malla y foil · sin interferencia'],
+    ['Conectores', 'Niquelados · no se oxidan']]],
+  [(s) => /^PIN-|^PON-|^DES-[0-9]|^DES-CH|^MUL|^PUN|^VCD/.test(s), [
+    ['Mango', 'Antiderrapante · no se resbala con la mano sudada']]],
+  [(s, p) => p.cat === 'Herramienta', [
+    ['Uso', 'Trabajo eléctrico y electrónico']]],
+  [(s) => /^R\d|^R\d+K/.test(s), [
+    ['Presentación', 'Por pieza · llévate las que necesites']]]
+];
+
+/* Datos de tienda — el cierre de cualquier ficha */
+function specTail(sku){
+  const p = P[sku];
+  return [
+    ['Marca', 'Steren'],
+    ['Modelo', sku],
+    ['Dónde está', p.loc],
+    ['Garantía', '1 año directo con Steren'],
+    ['Si aquí se agota', 'Te lo traemos de otra tienda o te lo mandamos a casa']
+  ];
+}
+
+function specsFor(sku){
+  const p = P[sku];
+  if(!p) return [];
+  const out = [], seen = {};
+  // v == null RESERVA la etiqueta sin imprimirla: sirve para callar un dato
+  // que ya se dijo con otro nombre (voltaje de salida vs. voltaje).
+  const push = (k, v) => { if(seen[k]) return; seen[k] = 1; if(v) out.push([k, v]); };
+  if(SP[sku]){ SP[sku].forEach(r => push(r[0], r[1])); return out.concat(specTail(sku)); }
+  if(p.fam && ATTR[p.fam] && p.a) ATTR[p.fam](p.a).forEach(r => push(r[0], r[1]));
+  const n = vnorm(p.n);
+  SPEC.forEach(([re, k, v]) => {
+    if(seen[k]) return;
+    const m = n.match(re);
+    if(!m) return;
+    let val = v;
+    if(val === null){ push(k, null); return; }   // regla que sólo calla una etiqueta
+    if(val.indexOf('$') >= 0){
+      // los regex con alternativas dejan huecos: toma los grupos que sí capturaron
+      const g = m.slice(1).filter(x => x != null);
+      if(!g.length) return;
+      val = val.replace(/\$(\d)/g, (_, i) => (g[i - 1] || '').replace(/\s+/g, ' ').trim());
+      if(/\$\d|\(\)|«»|^\s*$/.test(val) || /\s\s/.test(val)) return;
+    }
+    push(k, val);
+  });
+  PACK.forEach(([test, rows]) => { if(test(sku, p)) rows.forEach(r => push(r[0], r[1])); });
+  return out.concat(specTail(sku));
+}
+
+/* ---- Galería: las vistas se PRUEBAN antes de pintarse ----
+   Steren guarda las fotos secundarias bajo /<a>/<b>/<sku>_x1.jpg
+   (convención de su catálogo). Armamos las candidatas y sólo entra a la
+   galería la que de verdad cargó: nunca un hueco roto en una pantalla
+   de 43" frente a un cliente. En producción la KB manda el arreglo
+   `images` y esta función se borra.                [FIN MOTOR FICHA] */
+const GIMG = 'https://www.steren.com.mx/media/catalog/product/cache/82982b4d659458779d81eebe0035779e/';
+function galCandidates(sku){
+  const p = P[sku], out = [p.img];
+  const s = sku.toLowerCase();
+  if(/^[a-z]{2}/.test(s)) for(let i = 1; i <= 3; i++) out.push(GIMG + s[0] + '/' + s[1] + '/' + s + '_x' + i + '.jpg');
+  return out;
+}
 
 /* ---------------- CU-1 · CONECTAR DOS APARATOS ---------------- */
 const DEV = {
@@ -2219,6 +2674,7 @@ function taxFind(q){
   return best;
 }
 function openBrowseCat(cat){
+  lastAsk = null;
   if(!cat.subs) return openBrowseList(cat);
   flow = {type:'refine', step:1, cat};
   $('#chat-crumb').textContent = 'Buscar un producto';
@@ -2265,6 +2721,9 @@ function subAsk(sub, cat){
   renderChips(opts, o => {
     const skus = (o.all ? sub.skus : o.skus).filter(s => P[s]);
     if(!skus.length) return subAvailable(sub, cat);
+    // el motivo viaja hasta la ficha: "lo elegiste por esto"
+    lastAsk = o.all ? null : {q:q, a:o.l, s:o.s || '', skus:skus.slice()};
+    lastResult = null;
     if(skus.length === 1){
       botLine('Este es el que te sirve.');
       return showResult(fichaFor(skus[0]));
@@ -2826,7 +3285,7 @@ function showResult(res){
   const browsing = flow && flow.type === 'browse';
   $('#res-crumb').textContent = browsing ? 'Buscar un producto · ficha' : '¡Listo! Encontré tu solución';
   $('#res-context').textContent = cap(res.ctx);
-  let html = prodCard(res.main, 'hero-card');
+  let html = prodCard(res.main, 'hero-card') + specBlock(res.main);
   res.needs.forEach((n, i) => { html += needRow(n, i); });
   (res.similar || []).forEach(sku => { html += sugRow(sku, 'sim'); });
   res.extras.forEach(sku => { html += sugRow(sku, 'comp'); });
@@ -2839,6 +3298,14 @@ function showResult(res){
   if(pairOn) pubPhone({t:'ask', x:'Listo \u2014 m\u00EDralo en la pantalla. Di \u201Clo quiero\u201D para agregarlo, o pide otra cosa.'});
 }
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+/* Bloque de características, reutilizable donde haya un producto */
+function specBlock(sku){
+  const rows = specsFor(sku);
+  if(!rows.length) return '';
+  return '<div class="det-about det-specs"><div class="det-label">Características</div>' +
+    rows.map(([k, v]) => '<div class="sr"><span class="spk">' + k + '</span><span class="spv">' + v + '</span></div>').join('') +
+    '</div>';
+}
 
 /* =====================================================================
    MI LISTA · un objeto, un verbo, un cierre
@@ -3054,14 +3521,66 @@ function showHandoff(customCtx){
    DETALLE DE PRODUCTO · el momento "lo encontré"
    ===================================================================== */
 let detailFrom = 's-result';
+/* La respuesta que el usuario dio en la pregunta guía viaja hasta la ficha:
+   "lo elegiste por X" cierra el círculo del diálogo. La limpia cada
+   búsqueda nueva — un motivo viejo en una ficha nueva es una mentira. */
+let lastAsk = null;
+/* Un "por qué" que repite el nombre del producto no dice nada
+   ("Resuelve: Cámara Wi-Fi 6 · 4 Mpx…"). Mejor callarlo y dejar
+   que hable la ficha técnica. */
 function whyFor(sku){
-  if(lastResult){
-    if(sku === lastResult.main) return 'Resuelve: “' + cap(lastResult.ctx) + '”.';
-    const n = lastResult.needs.find(x => x.sku === sku);
-    if(n) return n.why;
-    if(lastResult.extras.includes(sku)) return 'Sugerido para tu solución — opcional.';
+  const p = P[sku];
+  if(!lastResult) return null;
+  if(sku === lastResult.main){
+    const ctx = vnorm(lastResult.ctx || ''), name = vnorm(p.n);
+    if(!ctx || name.indexOf(ctx) >= 0 || ctx.indexOf(name) >= 0) return null;
+    return 'Lo pediste así: “' + cap(lastResult.ctx) + '”.';
   }
-  return 'Del catálogo de esta tienda.';
+  const n = lastResult.needs.find(x => x.sku === sku);
+  if(n) return n.why;
+  if(lastResult.extras.includes(sku)) return 'Sugerido para lo que buscas — opcional.';
+  return null;
+}
+/* ---- Galería: las vistas se PRUEBAN antes de pintarse ----
+   Nunca un hueco roto en una pantalla de 43" frente a un cliente:
+   sólo entra la imagen que de verdad cargó. */
+let galToken = 0, galUrls = [], galIdx = 0;
+function buildGallery(sku){
+  const p = P[sku], tok = ++galToken;
+  const cand = galCandidates(sku), slots = new Array(cand.length).fill(null);
+  galUrls = []; galIdx = 0;
+  $('#det-pic').innerHTML = '<svg><use href="#' + p.ic + '"/></svg>';
+  $('#det-thumbs').innerHTML = '';
+  $('#det-galhint').textContent = '';
+  const paintMain = () => {
+    $('#det-pic').innerHTML = '<img src="' + galUrls[galIdx] + '" alt="">';
+    $$('#det-thumbs button').forEach((b, k) => b.classList.toggle('on', k === galIdx));
+  };
+  const paint = () => {
+    if(tok !== galToken) return;
+    const found = slots.filter(Boolean);
+    if(!found.length) return;
+    const keep = galUrls[galIdx];
+    galUrls = found;
+    galIdx = Math.max(0, found.indexOf(keep));
+    paintMain();
+    const th = $('#det-thumbs');
+    th.innerHTML = '';
+    if(galUrls.length < 2) return;
+    galUrls.forEach((u, i) => {
+      const b = document.createElement('button');
+      if(i === galIdx) b.className = 'on';
+      b.innerHTML = '<img src="' + u + '" alt="">';
+      b.addEventListener('click', () => { galIdx = i; paintMain(); track('gal_view', sku + ' #' + (i + 1)); });
+      th.appendChild(b);
+    });
+    $('#det-galhint').textContent = galUrls.length + ' vistas del producto · tócalas para verlo por todos lados';
+  };
+  cand.forEach((url, i) => {
+    const probe = new Image();
+    probe.onload = () => { if(probe.naturalWidth > 40){ slots[i] = url; paint(); } };
+    probe.src = url;
+  });
 }
 let curDetailSku = null;
 function showDetail(sku){
@@ -3070,19 +3589,36 @@ function showDetail(sku){
   curDetailSku = sku;
   if(currentScreen !== 's-detail') detailFrom = currentScreen;
   $('#det-title').textContent = p.n;
-  $('#det-pic').innerHTML = `<img src="${p.img}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg>`;
+  buildGallery(sku);
   $('#det-price').textContent = money(p.p);
   $('#det-sku').textContent = 'SKU ' + sku + ' · ' + p.cat;
   const st = p.st[0];
   $('#det-stock').innerHTML = st > 0
     ? `<span class="stock-ok">✓ Disponible en esta tienda</span><small>~${st} pzas según sistema · confirma en tienda</small>`
     : `<span class="stock-out">Agotado en esta tienda</span><small>en steren.com.mx o en otra sucursal</small>`;
-  const why = whyFor(sku);
-  const generic = why === 'Del catálogo de esta tienda.';
-  $('#det-label').textContent = generic ? 'Sobre este producto' : 'Por qué es para ti';
-  $('#det-why').textContent = generic ? '' : why;
-  $('#det-why').style.display = generic ? 'none' : 'block';
-  $('#det-desc').textContent = DESC[sku] || '';
+  // Banda "lo elegiste por": la respuesta de la pregunta guía, tal cual
+  const ab = $('#det-askband');
+  if(lastAsk && lastAsk.skus.indexOf(sku) >= 0){
+    $('#det-aq').textContent = lastAsk.q;
+    $('#det-aa').textContent = lastAsk.a + (lastAsk.s ? ' · ' + lastAsk.s : '');
+    ab.style.display = 'flex';
+  }else ab.style.display = 'none';
+  const why = whyFor(sku), desc = DESC[sku] || '';
+  $('#det-label').textContent = why ? 'Por qué es para ti' : 'De qué se trata';
+  $('#det-why').textContent = why || '';
+  $('#det-why').style.display = why ? 'block' : 'none';
+  $('#det-desc').textContent = desc;
+  // Si no hay ni motivo ni descripción, el bloque estorba: que hable la ficha
+  $('#det-aboutbox').style.display = (why || desc) ? 'block' : 'none';
+  // FICHA TÉCNICA · generada para cualquier SKU del catálogo
+  const rows = specsFor(sku);
+  // Los usuarios no leen tablas: los tres datos que más distinguen, arriba y grandes
+  const hi = rows.filter(r => ['Marca','Modelo','Dónde está','Garantía','Si aquí se agota'].indexOf(r[0]) < 0).slice(0, 3);
+  $('#det-hi').innerHTML = hi.map(([k, v]) =>
+    '<span><i>' + k + '</i><b>' + v.split(' · ')[0] + '</b></span>').join('');
+  $('#det-spec').innerHTML = rows.map(([k, v]) =>
+    '<div class="sr"><span class="spk">' + k + '</span><span class="spv">' + v + '</span></div>').join('');
+  $('#det-specbox').style.display = rows.length ? 'block' : 'none';
   // Tip del vendedor de la sesión — solo en el producto principal de una solución
   const tip = (lastResult && sku === lastResult.main && lastResult.note) ? lastResult.note : null;
   $('#det-tipband').style.display = tip ? 'flex' : 'none';
@@ -3692,6 +4228,7 @@ function parseFamVals(fk, qn){
   return Object.keys(out).length ? out : null;
 }
 function startFunnel(fk, pre, raw, from){
+  lastAsk = null;
   const F = KMAP[fk];
   flow = {type:'funnel', fam:fk, step:1, vals:Object.assign({}, pre || {}),
           lastKey:(pre && Object.keys(pre)[0]) || null, from:from || null};
@@ -4443,13 +4980,17 @@ $('#vc-go').addEventListener('click', () => { if(vFinal) routeVoice(vFinal); });
 /* =====================================================================
    SESIÓN · TIMEOUT · RESET
    ===================================================================== */
-const IDLE_MS = 60000, WARN_S = 15;
+const IDLE_MS = 60000, IDLE_READ_MS = 180000, WARN_S = 15;
 let idleTimer = null, warnInterval = null;
 
+/* Leer una ficha completa toma minutos, no segundos: en pantallas de
+   lectura el reloj de inactividad corre tres veces más lento. Nadie
+   debería tener que tocar la pantalla para "demostrar" que sigue ahí. */
 function armIdle(){
   clearTimeout(idleTimer);
   if(!session) return;
-  idleTimer = setTimeout(showTimeoutWarn, IDLE_MS);
+  const ms = READ_SCREENS.indexOf(currentScreen) >= 0 ? IDLE_READ_MS : IDLE_MS;
+  idleTimer = setTimeout(showTimeoutWarn, ms);
 }
 let surveyTimeoutMode = false, svCountdown = null;
 function showTimeoutWarn(){
@@ -4584,8 +5125,16 @@ $$('.intent').forEach(b => b.addEventListener('click', () => {
 }));
 
 // Micro-encuesta de satisfacción (1 toque, al cierre)
+/* La encuesta pertenece al CIERRE, no a la lectura.
+   Antes se disparaba también en la ficha y en el resultado: el usuario
+   iba a la mitad de las características y le tapaban la pantalla.
+   Ahora sólo aparece donde la visita YA terminó (QR, asesor, pase de
+   caja) — o cuando el usuario pide irse desde cualquier lado. En una
+   ficha, la inactividad da el aviso amable "¿sigues ahí?", que se
+   quita con un toque y no pierde nada. */
+const READ_SCREENS = ['s-detail','s-result','s-browse','s-talk'];
 function shouldSurvey(){
-  return session && sessionHadResult && !surveyed && ['s-qr','s-asesor','s-detail','s-result','s-pase'].includes(currentScreen);
+  return session && sessionHadResult && !surveyed && ['s-qr','s-asesor','s-pase'].includes(currentScreen);
 }
 let surveyNext = null;
 function askSurvey(next){
@@ -4658,6 +5207,15 @@ $('#tm-stay').addEventListener('click', cancelWarn);
 $('#kiosk').addEventListener('pointerdown', () => {
   if($('#ov-timeout').classList.contains('active')) return;
   armIdle();
+});
+// Desplazar una ficha es señal de vida tan buena como un toque
+['#det-scroll','#res-scroll','#browse-list','#talk-thread'].forEach(sel => {
+  const el = $(sel);
+  if(!el) return;
+  el.addEventListener('scroll', () => {
+    if($('#ov-timeout').classList.contains('active')) return;
+    armIdle();
+  }, {passive:true});
 });
 
 // Barra demo
