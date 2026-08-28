@@ -2220,7 +2220,7 @@ const TAX = [
     {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127'], loc:'Pasillo 5'},
     {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[], loc:'Pasillo 5'},
     {l:'Contactos inteligentes', syn:['contacto inteligente','contactos inteligentes','enchufe smart'], skus:[], loc:'Pasillo 5'},
-    {l:'Cámaras de seguridad Wi-Fi', syn:['camara wifi','camara de seguridad','camara smart','camara ip'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}, loc:'Pasillo 5'},
+    {l:'Cámaras de seguridad Wi-Fi', syn:['camara','camaras','una camara','camara wifi','camara de seguridad','camara smart','camara ip'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}, loc:'Pasillo 5'},
     {l:'Sistemas de seguridad inteligente', syn:['sistema de seguridad','kit de alarma inteligente','sensor de puerta'], skus:[], loc:'Pasillo 5'},
     {l:'Asistentes de voz', syn:['alexa','asistente de voz','google home','bocina inteligente'], skus:[], loc:'Pasillo 5'},
     {l:'Repetidores Wi-Fi', syn:['repetidor','repetidores','extensor de wifi','amplificador de wifi'], skus:['COM-8300','MESH-200+'], loc:'Pasillo 7'}
@@ -2587,6 +2587,24 @@ function taxFind(q){
    "cosas para el coche". Sin esto, quien nombra la CATEGORÍA caía al
    buscador de texto y recibía cualquier cosa. La subcategoría siempre
    gana sobre la categoría: es la respuesta más precisa. */
+/* ¿La frase ya contesta la pregunta guía de la subcategoría?
+   Se compara contra las etiquetas y subetiquetas de sus opciones:
+   "con cancelación de ruido" ≈ "Que aíslen el ruido · cancelación
+   activa (ANC)". Lo que el usuario ya dijo no se le vuelve a preguntar. */
+const ASK_STOPW = ['para','todos','lados','cosas','buen','desde','sobre','vas','poner','usar','quieres','prefieres','necesitas','nomas','otro','cuarto','aqui'];
+function askOptFor(sub, q){
+  if(!sub.ask) return null;
+  let best = null, score = 0;
+  sub.ask.opts.forEach(o => {
+    let s = 0;
+    (o.syn || []).forEach(w => { if(saysWord(q, vnorm(w))) s += w.length; });
+    vnorm(o.l + ' ' + (o.s || '')).split(/[^a-z0-9]+/).forEach(w => {
+      if(w.length > 3 && ASK_STOPW.indexOf(w) < 0 && saysWord(q, w)) s += w.length;
+    });
+    if(s > score){ score = s; best = o; }
+  });
+  return score >= 4 ? best : null;
+}
 function taxFindCat(q){
   let best = null, score = 0;
   TAX.forEach(c => (c.syn || []).concat([vnorm(c.l)]).forEach(w => {
@@ -2931,7 +2949,9 @@ function tBot(text){
   d.querySelector('.ttxt').textContent = text;
   talkAdd(d);
 }
+let _lastTU = '';
 function tUser(text){
+  _lastTU = text || '';
   if(!text) return;
   talkClearQuick();
   const d = document.createElement('div');
@@ -2983,6 +3003,9 @@ function tQuick(opts, onPick){
   talkAdd(d);
   refreshPrimary();
   if(typeof startChipListen === 'function' && window.voiceReady) startChipListen(opts, onPick);
+  // En el hilo NUNCA hay "no encontré esa opción" en bucle: lo que no
+  // coincida con un chip entra completo al motor de conversación.
+  chipFreeRoute = true;
 }
 
 /* ---------------- BOT: streaming de texto ---------------- */
@@ -3323,6 +3346,7 @@ function addToList(sku, qty){
   const msg = total > 1
     ? 'Van ' + total + ' · ' + shortName(sku) + ' en tu lista.'
     : shortName(sku) + ' va en tu lista.';
+  if(threadOn) tBot(msg + ' ¿Buscas algo más?');
   showToast(msg + '  ¿Algo más?');
   say(msg + ' ¿Buscas algo más?');
   if(pairOn) pubPhone({t:'ok', x: msg + ' Dime qué más necesitas — o pide ir a caja.'});
@@ -3379,7 +3403,7 @@ function finishSession(){
     phoneDone = true;
     pubPhone({t:'done', total: listTotal(), items: myList.map(r => {
       const p = P[r.sku];
-      return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty};
+      return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty, img: p.img};
     })});
   }
   const close = () => endSession(phoneDone
@@ -3684,14 +3708,25 @@ let ttsOn = true, voiceMode = false;
 /* Voz masculina para Stebot: se busca por nombre entre las voces del
    sistema (Juan/Raúl es-MX, Jorge, Diego, Pablo…). Si el equipo no tiene
    ninguna voz masculina en español, se baja el tono como aproximación. */
-let vozBot = null, vozBotMale = false;
+let vozBot = null;
+/* VOZ NEUTRA. La versión anterior cazaba voces masculinas por nombre y,
+   si no encontraba, bajaba el tono a 0.75 — por eso en algunos equipos
+   el bot sonaba grave "de repente": dependía de qué voces trajera ese
+   dispositivo. Ahora la elección es determinista y neutra: primero las
+   voces estándar de es-MX/es-US de mejor calidad, siempre a tono natural
+   (pitch 1). El mismo Stebot en cualquier equipo. */
 function pickBotVoice(){
   try{
     const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().indexOf('es') === 0);
-    const male = ['juan','raul','raúl','jorge','diego','carlos','pablo','alvaro','álvaro','andres','andrés','enrique','miguel','gerardo'];
-    vozBot = vs.find(v => male.some(n => v.name.toLowerCase().indexOf(n) >= 0)) || null;
-    vozBotMale = !!vozBot;
-    if(!vozBot) vozBot = vs.find(v => v.lang.toLowerCase() === 'es-mx') || vs[0] || null;
+    const pref = ['google español de estados unidos','google español','paulina','monica','mónica','luciana','sabina','angelica','helena'];
+    vozBot = null;
+    for(const nm of pref){
+      vozBot = vs.find(v => (v.name || '').toLowerCase().indexOf(nm) >= 0);
+      if(vozBot) break;
+    }
+    if(!vozBot) vozBot = vs.find(v => v.lang.toLowerCase() === 'es-mx')
+      || vs.find(v => v.lang.toLowerCase().indexOf('es-us') === 0)
+      || vs[0] || null;
   }catch(e){}
 }
 if(window.speechSynthesis){
@@ -3711,7 +3746,7 @@ function say(txt, onEnd){
     const u = new SpeechSynthesisUtterance(txt);
     u.lang = 'es-MX'; u.rate = 1.05;
     if(vozBot) u.voice = vozBot;
-    u.pitch = vozBotMale ? 1 : 0.75; // sin voz masculina disponible: tono grave
+    u.pitch = 1; // tono natural SIEMPRE — nunca depender del catálogo de voces del equipo
     let done = false;
     u.onend = u.onerror = () => {
       if(done) return;
@@ -3863,6 +3898,23 @@ function closeVoice(){
   $('#ov-voice').classList.remove('active');
 }
 
+/* ¿De qué producto estamos hablando? El contexto de la conversación:
+   la ficha abierta gana; luego el resultado; luego las tarjetas del hilo
+   (una sola = ese producto; varias = el conjunto). */
+function voiceCtx(){
+  if(currentScreen === 's-detail' && curDetailSku) return {sku: curDetailSku};
+  if(lastResult && lastResult.main) return {sku: lastResult.main};
+  if(vmState && vmState.skus && vmState.skus.length)
+    return vmState.skus.length === 1 ? {sku: vmState.skus[0]} : {set: vmState.skus.slice(), raw: vmState.raw};
+  return null;
+}
+/* Una línea del bot que llega a donde el usuario esté mirando:
+   hilo si hay hilo; si no, voz + toast. */
+function sayLine(txt){
+  if(threadOn){ botLine(txt); return; }
+  say(txt);
+  showToast(txt);
+}
 /* ---- Router: transcripción → respuesta EN la interfaz ---- */
 const vnorm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 function routeVoice(raw){
@@ -3873,7 +3925,8 @@ function routeVoice(raw){
              : has('junto', 'al lado', 'a un lado', 'pegado') ? 'j' : 'm';
   closeVoice();
   track('voice_search', raw);
-  userEcho('\u201C' + raw + '\u201D');
+  // eco idempotente: si un chip del hilo ya pintó esta frase, no se repite
+  if(!(threadOn && _lastTU && vnorm(_lastTU) === vnorm(raw))) userEcho('\u201C' + raw + '\u201D');
 
   // 1.1) COMPRA: "lo quiero" · "dame dos" · "ya es todo" · "mi lista".
   //      Mismo verbo por voz que por toque, con la misma confirmación.
@@ -3929,6 +3982,70 @@ function routeVoice(raw){
     return startBrowse();
   }
 
+  // 1.3) PREGUNTAS SOBRE LO QUE ESTÁ EN PANTALLA — precio, pasillo,
+  //      ficha o cualquier característica. Es la mitad de una conversación
+  //      real de mostrador: el bot enseña, el cliente pregunta SOBRE eso.
+  const ctxV = voiceCtx();
+  const askPrice  = has('cuanto cuesta','cuanto vale','cuanto sale','que precio','el precio','en cuanto esta','en cuanto sale');
+  const askWhere  = has('donde esta','donde estan','donde lo encuentro','donde los encuentro','en que pasillo','que pasillo');
+  const askDetail = has('la ficha','caracteristicas','mas detalles','ver detalles','dime mas de','cuentame mas','especificaciones');
+  // "el primero" / "la segunda": elegir de las tarjetas con la pura voz
+  if(ctxV && ctxV.set){
+    const ORD = [['primer','primera','primero'],['segundo','segunda'],['tercero','tercera','tercer'],['cuarto','cuarta']];
+    const oi = ORD.findIndex(ws => ws.some(w => saysWord(q, w)));
+    if(oi >= 0 && ctxV.set[oi]){
+      sayLine('Ese — te enseño todo.');
+      return showDetail(ctxV.set[oi]);
+    }
+  }
+  if(ctxV && (askPrice || askWhere || askDetail)){
+    if(ctxV.set){
+      if(askPrice){
+        const ps = ctxV.set.map(s => P[s].p);
+        sayLine('Van de ' + money(Math.min.apply(null, ps)) + ' a ' + money(Math.max.apply(null, ps)) + ' — toca el que te interese y te doy su ficha.');
+        return;
+      }
+      sayLine('Toca el que te interese y te enseño todo de ese.');
+      return;
+    }
+    const pv = P[ctxV.sku];
+    if(askDetail){ sayLine('Va — su ficha completa.'); return showDetail(ctxV.sku); }
+    if(askPrice){ sayLine(pv.n.split(' · ')[0] + ' cuesta ' + money(pv.p) + '. Si lo quieres, dime “lo quiero”.'); return; }
+    sayLine('Está en ' + pv.loc + '. ¿Te lo apunto en tu lista?');
+    return;
+  }
+  // Característica dicha como pregunta: "¿tiene bluetooth?" "¿es recargable?"
+  // Se contesta desde la MISMA ficha técnica que pinta la pantalla — y si el
+  // dato no existe, honestidad, no silencio. Sólo cuando la frase no nombra
+  // una categoría nueva (eso es otra búsqueda, no una pregunta).
+  // "tiene" (el producto) no es "tienes" (la tienda): la S separa la
+  //  pregunta sobre lo mostrado de una búsqueda nueva.
+  const esPregunta = /^(tiene(?!s)|trae(?!s)|incluye|es |viene|de cuant|cuant|que tan|cual es su|sirve|aguanta|se puede|se le puede)/.test(q) &&
+    !has('quiero','busco','necesito','muestrame','enseñame','ensename','vendes','manejas');
+  if(ctxV && ctxV.set && esPregunta){
+    sayLine('¿De cuál de los que te enseñé? Di “el primero” o “la segunda” — o tócalo — y te contesto lo que quieras de ese.');
+    return;
+  }
+  if(ctxV && ctxV.sku && esPregunta){
+    const rows = specsFor(ctxV.sku);
+    const stopq = ['tiene','trae','incluye','viene','cuanto','cuantos','cuanta','cuantas','este','esta'];
+    // el idioma de la calle vs. el de la ficha: megapixeles≈Mpx, watts≈potencia…
+    const ALIAS = {megapixeles:'mpx', megapixel:'mpx', pixeles:'mpx', watts:'potencia', watt:'potencia',
+                   volts:'voltaje', voltios:'voltaje', amperes:'corriente', pulgadas:'pantalla',
+                   metros:'alcance', agua:'lluvia', mojarse:'lluvia', golpes:'aguanta'};
+    const palabras = q.split(/[^a-z0-9]+/).filter(w => w.length > 3 && stopq.indexOf(w) < 0);
+    const hit = rows.find(([k, v]) => {
+      const hay = vnorm(k + ' ' + v);
+      return palabras.some(w => hay.indexOf(w) >= 0 || (ALIAS[w] && hay.indexOf(ALIAS[w]) >= 0));
+    });
+    track('voice_spec_q', q + (hit ? ' → ' + hit[0] : ' → sin dato'));
+    if(hit){ sayLine(hit[0] + ': ' + hit[1] + '. ¿Algo más que quieras saber?'); return; }
+    // Sin el dato, la respuesta honesta — JAMÁS desviar la pregunta a una
+    // búsqueda nueva ("¿cuántas horas de batería?" no es "quiero pilas").
+    sayLine('Ese dato no viene en su ficha — un asesor te lo confirma en mostrador. ¿Seguimos buscando?');
+    return;
+  }
+
   // 1) Conexión con ambos aparatos: si NO dijo la distancia, se pregunta.
   //    Sin happy path: el resultado llega cuando el bot está seguro.
   const A = has('laptop','computadora','compu','pc') ? 'laptop' : has('celular','telefono','iphone') ? 'celular' : has('consola','xbox','playstation','play ','nintendo','switch') ? 'consola' : has('bocina','bocinas') ? 'bocina' : null;
@@ -3947,7 +4064,8 @@ function routeVoice(raw){
   }
 
   // 1.5) Arranque vago: "quiero un cable" → el bot repregunta (conversación)
-  if(has('cable','cables') && !(A && B) && !has('usb','carga','cargador','aux','auxiliar','optico')){
+  if(has('cable','cables') && !(A && B) && !has('usb','carga','cargador','aux','auxiliar','optico') &&
+     !has('sin cable','sin cables','inalambrico','inalambricos','inalambrica','sin cablear')){
     if(A){
       flow = {type:'connect', step:2, a:A};
       $('#chat-crumb').textContent = 'Conectar dos aparatos';
@@ -4020,6 +4138,20 @@ function routeVoice(raw){
   const tx = taxFind(q);
   if(tx){
     if(tx.sub.fam) return startFunnel(tx.sub.fam, parseFamVals(tx.sub.fam, q), raw);
+    // "Audífonos con cancelación de ruido" trae la respuesta ADENTRO:
+    // preguntar "¿cómo los prefieres?" sería no haber escuchado.
+    const opt = askOptFor(tx.sub, q);
+    if(opt && opt.skus && opt.skus.length){
+      lastAsk = {q: tx.sub.ask.q, a: opt.l, s: opt.s || '', skus: opt.skus.slice()};
+      lastResult = null;
+      track('ask_skip', tx.sub.l + ' → ' + opt.l);
+      if(opt.skus.length === 1){
+        botLine('Ese lo tengo — mira.');
+        return showResult(fichaFor(opt.skus[0]));
+      }
+      botLine('Para eso tengo esto.');
+      return showVoiceMatches(opt.skus, tx.sub.l, true, () => subAsk(tx.sub, tx.cat));
+    }
     if(tx.sub.ask && tx.sub.skus.length > 4) return subAsk(tx.sub, tx.cat);
     if(tx.sub.skus.length){
       botLine('Esto tengo de ' + tx.sub.l.toLowerCase() + '.');
@@ -4058,6 +4190,15 @@ function routeVoice(raw){
     // ya no correspondían al catálogo — la incoherencia que se veía.)
     const rama = subOf(scored[0].sku);
     if(rama && !wantAll){
+      // también aquí: si la frase ya trae la respuesta, no se pregunta
+      const ro = askOptFor(rama.sub, q);
+      if(ro && ro.skus && ro.skus.length){
+        lastAsk = {q: rama.sub.ask.q, a: ro.l, s: ro.s || '', skus: ro.skus.slice()};
+        lastResult = null;
+        botLine(ro.skus.length === 1 ? 'Ese lo tengo — mira.' : 'Para eso tengo esto.');
+        if(ro.skus.length === 1) return showResult(fichaFor(ro.skus[0]));
+        return showVoiceMatches(ro.skus, rama.sub.l, true, () => subAsk(rama.sub, rama.cat));
+      }
       if(rama.sub.ask && rama.sub.skus.length > 4) return subAsk(rama.sub, rama.cat);
       if(rama.sub.skus.length > 1){
         botLine('Eso está en ' + rama.sub.l.toLowerCase() + '. Esto tengo.');
@@ -4071,6 +4212,12 @@ function routeVoice(raw){
   //    registro de demanda. Si no, reintento de voz.
   const off = offCatMatch(q);
   if(off) return offCatalog(raw, off);
+  if(threadOn || pairOn){
+    // En plena conversación, "no te entendí" con un overlay encima era
+    // matar el hilo. La respuesta es OTRA burbuja: la escalera de rescate.
+    track('voz_sin_ruta', raw);
+    return rescueFlow('Cliente dijo: “' + raw + '”');
+  }
   $('#ov-voice').classList.add('active');
   voiceFail(raw);
 }
@@ -4441,7 +4588,8 @@ function pubList(){
   if(!pairOn) return;
   pubPhone({t:'list', total: listTotal(), items: myList.map(r => {
     const p = P[r.sku];
-    return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty};
+    // img: el usuario quiere VER qué se lleva, no leer un SKU
+    return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty, img: p.img};
   })});
 }
 function openPair(){
@@ -4459,6 +4607,28 @@ function openPair(){
   $('#ov-pair').classList.add('active');
   track('pair_open');
   connectPair();
+}
+/* La bienvenida del teléfono: el hilo de conversación, listo para el
+   primer mensaje de voz. Con arrancadores tocables para quien no sabe
+   qué decir — cada chip ES una frase que también podría dictar. */
+function phoneWelcome(){
+  closePair();
+  voiceMode = true;
+  threadOn = true;
+  talkReset();
+  go('s-talk');
+  const msg = '¡Hola! Ya estamos conectados. Toca el micrófono de tu teléfono y dime qué buscas — yo te llevo hasta el producto.';
+  tBot(msg);
+  say('¡Hola! Ya estamos conectados. Toca el micrófono de tu teléfono y dime qué buscas.');
+  tQuick([
+    {ic:'i-headset', l:'Unos audífonos'},
+    {ic:'i-cam',     l:'Una cámara'},
+    {ic:'i-bolt',    l:'Un cargador'},
+    {ic:'i-chat',    l:'No sé cómo se llama', goal:1}
+  ], o => o.goal ? browseGoal() : routeVoice(o.l));
+  pubPhone({t:'ask', x:'Toca el micrófono y dime qué buscas — la conversación va en la pantalla del kiosko.'});
+  pubList();
+  track('phone_welcome');
 }
 function setPairStatus(s){
   const el = $('#pair-status');
@@ -4499,7 +4669,11 @@ function connectPair(){
               say('Listo, tu lista está en tu teléfono. Desde ahí puedes seguir pidiendo.');
             }, 400);
           }else{
-            setTimeout(() => { closePair(); openVoice(); pubList(); }, 900);
+            // Antes: closePair() + openVoice() → un overlay de "escuchando"
+            // tapaba la pantalla y el usuario no sabía qué hacer. Ahora el
+            // conectar ATERRIZA en la conversación: el hilo da la bienvenida
+            // y el teléfono recibe la instrucción exacta.
+            setTimeout(phoneWelcome, 700);
           }
         }else if(ph === pairPid){
           try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}

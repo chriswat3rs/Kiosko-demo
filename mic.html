@@ -60,6 +60,12 @@ main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:
 }
 #mic:active{transform:scale(.94)}
 #mic.rec{background:var(--red);box-shadow:0 0 0 10px rgba(194,44,44,.15),0 12px 30px rgba(194,44,44,.35);animation:pulse 1.2s ease-in-out infinite}
+/* Enviado: el botón LO DICE — verde, palomita, vibración. El usuario no
+   debe dudar ni un segundo de si su voz salió o no. */
+#mic.sent{background:var(--green);box-shadow:0 0 0 10px rgba(10,122,69,.15),0 12px 30px rgba(10,122,69,.35);animation:none}
+/* Tu turno: cuando el bot pregunta, el micrófono llama con dos latidos */
+#mic.cue{animation:cue 1.4s ease-out 2}
+@keyframes cue{0%{box-shadow:0 0 0 0 rgba(0,70,190,.4),0 12px 30px rgba(0,70,190,.35)}70%{box-shadow:0 0 0 24px rgba(0,70,190,0),0 12px 30px rgba(0,70,190,.35)}100%{box-shadow:0 0 0 0 rgba(0,70,190,0),0 12px 30px rgba(0,70,190,.35)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 #mic svg{width:86px;height:86px}
 .miclbl{font-size:19px;font-weight:800;color:var(--ink);text-align:center;line-height:1.35}
@@ -88,6 +94,11 @@ main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:
 .ml-h .ml-tot{font-size:22px;font-weight:800}
 .ml-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #ffffff26}
 .ml-row:first-child{border-top:0}
+.ml-row .ml-pic{
+  width:56px;height:56px;border-radius:12px;background:#fff;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;
+}
+.ml-row .ml-pic img{max-width:100%;max-height:100%;object-fit:contain}
 .ml-row .ml-k{flex:1;min-width:0}
 .ml-row .ml-sku{font-family:'SF Mono',Menlo,monospace;font-size:21px;font-weight:700;letter-spacing:.03em}
 .ml-row .ml-n{font-size:14px;color:#E4EEFB;margin-top:3px;line-height:1.3}
@@ -139,7 +150,7 @@ footer{padding:10px 20px 16px;font-size:12px;color:#8A99AC;text-align:center;lin
       <div class="q" id="ask">Dime qué necesitas.</div>
     </div>
     <div class="micstage" id="micstage">
-      <div class="hintline" id="hintline">Toca y habla — <b>la conversación va en la pantalla</b></div>
+      <div class="hintline" id="hintline">Toca el micrófono y dime qué buscas — <b>la conversación va en la pantalla del kiosko</b></div>
       <div id="live"></div>
       <button id="mic" aria-label="Hablar">
         <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -237,7 +248,11 @@ function start(c){
     if(blocked) return;
     if(d.t === 'list'){ renderList(d); }
     // La pregunta del bot NO se repite aquí: vive en el display.
-    if(d.t === 'ask'){ fb('', ''); }
+    if(d.t === 'ask'){
+      fb('', '');
+      // Tu turno: el micrófono da dos latidos para llamar la mano
+      if(!listening){ $('#mic').classList.remove('cue'); void $('#mic').offsetWidth; $('#mic').classList.add('cue'); }
+    }
     if(d.t === 'ok' && d.x){ fb('ok', d.x); }
     if(d.t === 'miss' && d.x){ fb('miss', d.x); }
   });
@@ -285,7 +300,9 @@ function renderList(d){
     (uds > items.length ? ' · ' + uds + ' piezas' : '');
   $('#ml-total').textContent = money(d.total || 0);
   $('#ml-rows').innerHTML = items.map(r =>
-    '<div class="ml-row"><div class="ml-k"><div class="ml-sku">' + esc(r.sku) + '</div>' +
+    '<div class="ml-row">' +
+    (r.img ? '<div class="ml-pic"><img src="' + esc(r.img) + '" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '') +
+    '<div class="ml-k"><div class="ml-sku">' + esc(r.sku) + '</div>' +
     '<div class="ml-n">' + esc(r.n) + '</div><div class="ml-l">' + esc(r.loc) + '</div></div>' +
     (finished
       ? (r.q > 1 ? '<div class="ml-q">×' + r.q + '</div>' : '')
@@ -311,39 +328,70 @@ function sendText(x){
   x = (x || '').trim();
   if(!x || !client || blocked) return;
   client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}));
-  fb('', 'Enviado — mira el kiosko.');
-  $('#live').textContent = '';
+  // Confirmación que no deja duda: botón verde + palomita + vibración,
+  // y la frase enviada se queda visible un momento con su ✓.
+  clearTimeout(micReset);
+  $('#mic').classList.remove('rec');
+  $('#mic').classList.add('sent');
+  micLbl('Enviado ✓');
+  $('#live').textContent = '✓ “' + x + '”';
+  fb('ok', 'Mira la pantalla del kiosko — Stebot te contesta ahí.');
+  vib([30, 40, 30]);
+  micReset = setTimeout(() => {
+    $('#mic').classList.remove('sent');
+    micLbl('Toca para hablar');
+    $('#live').textContent = '';
+  }, 2200);
 }
 
 /* ---- Voz en el teléfono (Web Speech API; con respaldo de texto) ---- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false;
 if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el teclado de abajo.'; $('#miclbl').textContent = 'Usa el teclado'; }
+/* El botón dice su estado en CADA instante — la fricción que se veía en
+   pruebas era el silencio entre "toqué" y "¿me oyó?": el dictado tarda
+   ~medio segundo en arrancar y no había ninguna señal. Ahora:
+     toco   → rojo al INSTANTE + "Preparando…" + vibración
+     listo  → "Te escucho — habla"
+     hablo  → la frase se pinta en vivo
+     callo  → se envía SOLO (o toco para enviar ya) → VERDE + ✓ + vibración
+   Nadie se queda pensando si su mensaje salió. */
+const vib = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+let micReset = null;
+function micLbl(txt){ $('#miclbl').textContent = txt; }
 $('#mic').addEventListener('click', () => {
+  if(blocked || !client) return;
   if(!SR){ $('#txt').focus(); return; }
-  if(listening){ try{ rec.stop(); }catch(e){} return; }
+  if(listening){ try{ rec.stop(); }catch(e){} return; }  // segundo toque = enviar ya
+  clearTimeout(micReset);
+  $('#mic').classList.remove('sent', 'cue');
   rec = new SR();
   rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
   let heard = '';
   listening = true;
-  $('#mic').classList.add('rec');
-  $('#miclbl').textContent = 'Te escucho… toca para terminar';
+  $('#mic').classList.add('rec');          // señal INMEDIATA, antes de que arranque el dictado
+  micLbl('Preparando…');
+  $('#live').textContent = '';
+  vib(25);
+  rec.onstart = rec.onaudiostart = () => { if(listening) micLbl('Te escucho — habla'); };
+  rec.onspeechstart = () => { if(listening) micLbl('Te escucho…'); };
   rec.onresult = e => {
     let fin = '', mid = '';
     for(let i = 0; i < e.results.length; i++){
       if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
     }
     heard = (fin || mid).trim();
-    $('#live').textContent = heard ? '“' + heard + '”' : '';
+    if(heard){ $('#live').textContent = '“' + heard + '”'; micLbl('Al terminar se envía solo — o toca para enviar ya'); }
   };
   rec.onerror = () => { listening = false; };
   rec.onend = () => {
     listening = false;
     $('#mic').classList.remove('rec');
-    $('#miclbl').textContent = 'Toca para hablar';
-    if(heard) sendText(heard);
+    if(heard){ sendText(heard); return; }   // sendText pinta la confirmación
+    micLbl('No te escuché — toca e intenta otra vez');
+    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
   };
-  try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); }
+  try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
 });
 $('#kb').addEventListener('click', () => {
   const r = $('#txtrow');
