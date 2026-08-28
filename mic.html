@@ -389,6 +389,9 @@ $('#mic').addEventListener('click', () => {
   if(listening){ try{ rec.stop(); }catch(e){} return; }  // segundo toque = enviar ya
   clearTimeout(micReset);
   $('#mic').classList.remove('sent', 'cue');
+  // barge-in: avisa al kiosko ANTES de dictar — si el bot está hablando,
+  // se calla en ese instante y no se dicta encima de su voz
+  try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
   rec = new SR();
   rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
   let heard = '';

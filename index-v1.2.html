@@ -2569,12 +2569,48 @@ function saysWord(q, w){
   if(!re) re = _wre[w] = new RegExp('(^|[^a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)');
   return re.test(q);
 }
+/* ============ CAPA MORFOLÓGICA ============
+   La gente pide "una camarita", "un foquito", "unas bocinitas para mi
+   compu" — y el catálogo dice cámara, foco, bocina. stemkey() reduce
+   cada palabra a su raíz: quita diminutivos (-ito/-cito/-illo), plural
+   y vocal final, y normaliza ortografía (qu→c, z→c). Así foquito, focos
+   y foco son la MISMA llave: 'foc'. El matcheo deja de ser de letras
+   exactas y pasa a ser de raíces. */
+function stemkey(w){
+  if(w.length < 4) return w;
+  let s = w.replace(/qu/g, 'c').replace(/z/g, 'c'); // ortografía PRIMERO: foquito→focito
+  // Sufijos del más largo al más corto — y si un recorte deja raíz de
+  // menos de 3 letras se prueba el siguiente ("focito": -cito deja "fo",
+  // se descarta; -ito deja "foc", que es la raíz de foco).
+  const SUF = ['citos','citas','sitos','sitas','illos','illas','cito','cita','sito','sita','illo','illa','itos','itas','ito','ita'];
+  for(const sf of SUF){
+    if(s.length > sf.length + 2 && s.slice(-sf.length) === sf){ s = s.slice(0, -sf.length); break; }
+  }
+  if(s.length > 5 && /es$/.test(s)) s = s.slice(0, -2);
+  else if(s.length > 4 && /s$/.test(s)) s = s.slice(0, -1);
+  if(s.length > 3 && /[aeiou]$/.test(s)) s = s.slice(0, -1);
+  return s.length >= 3 ? s : w;
+}
+const _n2 = {};
+function norm2(s){
+  if(_n2[s] !== undefined && s.length < 60) return _n2[s];
+  const r = s.split(/[^a-z0-9]+/).filter(Boolean).map(stemkey).join(' ');
+  if(s.length < 60) _n2[s] = r;
+  return r;
+}
+/* saysWord con raíces: "camaritas" dice «camara», "foquitos" dice «foco» */
+function saysStem(q2, w){
+  const wk = norm2(w);
+  if(!wk) return false;
+  return (' ' + q2 + ' ').indexOf(' ' + wk + ' ') >= 0;
+}
 function taxFind(q){
   let best = null, score = 0, stock = -1;
+  const q2 = norm2(q);
   TAX.forEach(c => c.subs.forEach(s => {
     const n = (s.skus || []).length + (s.fam ? 99 : 0);
     (s.syn || []).forEach(w => {
-      if(!saysWord(q, w)) return;
+      if(!saysWord(q, w) && !saysStem(q2, w)) return;
       // Gana el sinónimo más largo. A igual longitud —"cautín" vive en dos
       // ramas del árbol real, como en el sitio— gana la que tiene MÁS
       // producto: entre dos respuestas correctas, la más útil.
@@ -2591,15 +2627,16 @@ function taxFind(q){
    Se compara contra las etiquetas y subetiquetas de sus opciones:
    "con cancelación de ruido" ≈ "Que aíslen el ruido · cancelación
    activa (ANC)". Lo que el usuario ya dijo no se le vuelve a preguntar. */
-const ASK_STOPW = ['para','todos','lados','cosas','buen','desde','sobre','vas','poner','usar','quieres','prefieres','necesitas','nomas','otro','cuarto','aqui'];
+const ASK_STOPW = ['para','todos','lados','cosas','buen','desde','sobre','vas','poner','usar','quieres','prefieres','necesitas','nomas','aqui'];
 function askOptFor(sub, q){
   if(!sub.ask) return null;
   let best = null, score = 0;
+  const q2 = norm2(q);
   sub.ask.opts.forEach(o => {
     let s = 0;
-    (o.syn || []).forEach(w => { if(saysWord(q, vnorm(w))) s += w.length; });
+    (o.syn || []).forEach(w => { if(saysWord(q, vnorm(w)) || saysStem(q2, vnorm(w))) s += w.length; });
     vnorm(o.l + ' ' + (o.s || '')).split(/[^a-z0-9]+/).forEach(w => {
-      if(w.length > 3 && ASK_STOPW.indexOf(w) < 0 && saysWord(q, w)) s += w.length;
+      if(w.length > 3 && ASK_STOPW.indexOf(w) < 0 && (saysWord(q, w) || saysStem(q2, w))) s += w.length;
     });
     if(s > score){ score = s; best = o; }
   });
@@ -2607,8 +2644,9 @@ function askOptFor(sub, q){
 }
 function taxFindCat(q){
   let best = null, score = 0;
+  const q2 = norm2(q);
   TAX.forEach(c => (c.syn || []).concat([vnorm(c.l)]).forEach(w => {
-    if(w.length > score && saysWord(q, w)){ score = w.length; best = c; }
+    if(w.length > score && (saysWord(q, w) || saysStem(q2, w))){ score = w.length; best = c; }
   }));
   return best;
 }
@@ -3898,6 +3936,74 @@ function closeVoice(){
   $('#ov-voice').classList.remove('active');
 }
 
+/* ============ MAPA DE USOS ============
+   La otra mitad del lenguaje de mostrador: la gente NO nombra el
+   producto — nombra su problema. "No se oye la película", "para cuando
+   se va la luz", "un regalo para mi papá". Cada entrada mapea una
+   intención dicha con cualquier palabra a su respuesta: productos
+   directos, la subcategoría con su pregunta, o una pregunta propia
+   cuando el uso tiene dos lecturas (¿"ver quién toca" es timbre o
+   cámara?). En producción esto ES el NLU del bot de WhatsApp; aquí
+   demuestra el comportamiento con datos, no con guion. */
+const USOS = [
+  {re:/\b(correr|corro|gym|gimnasio|ejercicio|entrenar|deporte)\b/, skus:['AUD-7420','AUD-7120','AUD-AE200','AUD-AE600'], say:'Para entrenar van mejor los que no llevan ni un cable.'},
+  {re:/\b(dormir|ruido|avion|oficina ruidosa|concentrar)\b/, skus:['AUD-2540','AUD-AE600','AUD-AE700','AUD-AE800'], say:'Estos apagan el ruido de afuera — cancelación activa.'},
+  {re:/\b(pelicula|peliculas|series|cine|television no se oye|tele.*(se oiga|no se oye|mas fuerte|volumen)|(se oiga|no se oye|volumen).*tele)\b/, skus:['BSD-120'], say:'Para eso es la barra de sonido — la tele se oye de otro tamaño.'},
+  {re:/\b(fiesta|reunion|bailar|pachanga)\b/, skus:['BOC-980','BOC-970','BOOM-300','SPK-BT700'], say:'Para fiesta, de las que se oyen fuerte.'},
+  {re:/\bmusica\b.*\b(carro|coche|auto|camioneta)\b|\b(carro|coche|auto)\b.*\bmusica\b/, sub:'Transmisores FM Bluetooth', say:'Para música en el coche.'},
+  {re:/\b(musica|canciones|rolas|escuchar)\b/, sub:'Bocinas'},
+  {re:/\b(quien toca|quien llega|la puerta|el porton|timbran)\b/, q:'¿Quieres OÍR cuando lleguen, o VER quién es?', opts:[
+    {l:'Oír — un timbre', s:'suena adentro cuando tocan', ic:'i-bell', skus:['TIM-080','TIM-060','TIM-CIN','TIM-2C','TIM-140','TIM-170']},
+    {l:'Ver — una cámara', s:'lo ves desde tu celular', ic:'i-cam', sub:'Cámaras de seguridad Wi-Fi'}]},
+  {re:/\b(vigilar|cuidar|checar)\b|\b(perro|gato|mascota|bebe|abuel)/, skus:['CCTV-611','CCTV-203','CCTV-213','CCTV-238'], say:'Con una cámara lo ves desde tu celular, estés donde estés.'},
+  {re:/\b(regalo|regalar|cumpleanos|navidad|intercambio)\b/, sub:'Gadgets'},
+  {re:/\b(calor|ventilar|sofocado|caluroso)\b/, skus:['VEN-INA','VEN-ROC','VEN-ENF','VEN-PLE','VEN-OSC'], say:'Aire al rescate — mira estos.'},
+  {re:/\b(maleta|equipaje|viaje|aeropuerto)\b/, skus:['BAS-EQU','PWB-5000','CAR-GAN45'], say:'Para el viaje: pesa la maleta antes de llegar al mostrador — y carga en el camino.'},
+  {re:/\b(pesar|gramos|ingredientes|cocina|receta)\b/, sub:'Básculas digitales'},
+  {re:/\b(robot|armar|feria de ciencias|tarea de|proyecto escolar)\b/, sub:'Kits para armar'},
+  {re:/\b(leer|lectura|buro|escritorio oscuro|lucecita)\b/, skus:['LAM-088','COM-601'], say:'Luz puntual para leer sin desvelar a nadie.'},
+  {re:/\b(grabar|grabacion|clases|juntas|entrevista)\b/, sub:'Grabadoras de voz'},
+  {re:/\b(jardin|iluminar.*(patio|afuera|cochera|entrada)|(patio|cochera|entrada).*(oscur|iluminar|luz))\b/, skus:['FOC-SENS','LAM-500','LAM-290'], say:'Para afuera: luz que prende sola o aguanta trabajo rudo.'},
+  {re:/\b(medir|multimetro|cuanto marca|continuidad|checar voltaje|el voltaje)\b/, sub:'Multímetros', say:'Para medir, esto.'},
+  {re:/\b(se descarga|pila del cel|bateria del cel|sin pila el)\b/, sub:'Power banks'},
+  {re:/\b(cargar|cargador)\b.*\b(carro|coche|auto|camioneta)\b|\b(carro|coche|auto)\b.*\bcargador\b/, sub:'Cargadores USB para auto'},
+  {re:/\b(mojad|lluvia|alberca|playa)\b.*\b(bocina|musica)\b|\b(bocina|musica)\b.*\b(agua|lluvia|alberca|playa)\b/, skus:['BOC-980','BOC-940'], say:'Estas aguantan salpicaduras.'}
+];
+function subByLabel(l){
+  let hit = null;
+  TAX.forEach(c => c.subs.forEach(s => { if(s.l === l) hit = {cat:c, sub:s}; }));
+  return hit;
+}
+function usoFor(q){
+  for(const u of USOS) if(u.re.test(q)) return u;
+  return null;
+}
+function runUso(u, raw){
+  track('uso', (u.sub || (u.skus || [])[0] || u.q || '').toString().slice(0, 30));
+  if(u.q){
+    sayLine(u.q);
+    renderChips(u.opts.map(o => ({ic:o.ic, l:o.l, s:o.s, fo:o})), p => {
+      const o = p.fo;
+      if(o.sub){ const r = subByLabel(o.sub); if(r) return openSub(r.sub, r.cat); }
+      botLine('Esto tengo.');
+      showVoiceMatches(o.skus.filter(k => P[k]), o.l, true);
+    }, true);
+    return true;
+  }
+  if(u.sub){
+    const r = subByLabel(u.sub);
+    if(r){ if(u.say) botLine(u.say); openSub(r.sub, r.cat); return true; }
+  }
+  if(u.skus){
+    const ks = u.skus.filter(k => P[k]);
+    if(!ks.length) return false;
+    botLine(u.say || 'Para eso te sirve esto.');
+    if(ks.length === 1) showResult(fichaFor(ks[0]));
+    else showVoiceMatches(ks, raw, true);
+    return true;
+  }
+  return false;
+}
 /* ¿De qué producto estamos hablando? El contexto de la conversación:
    la ficha abierta gana; luego el resultado; luego las tarjetas del hilo
    (una sola = ese producto; varias = el conjunto). */
@@ -4065,7 +4171,8 @@ function routeVoice(raw){
 
   // 1.5) Arranque vago: "quiero un cable" → el bot repregunta (conversación)
   if(has('cable','cables') && !(A && B) && !has('usb','carga','cargador','aux','auxiliar','optico') &&
-     !has('sin cable','sin cables','inalambrico','inalambricos','inalambrica','sin cablear')){
+     !has('sin cable','sin cables','inalambrico','inalambricos','inalambrica','sin cablear') &&
+     !has('hdmi','displayport','soldar','soldadura','antena','coaxial','red','extension','organizador','pelar','ponchar')){
     if(A){
       flow = {type:'connect', step:2, a:A};
       $('#chat-crumb').textContent = 'Conectar dos aparatos';
@@ -4096,7 +4203,8 @@ function routeVoice(raw){
     if(opt){ botLine('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
     return askProblem(p);
   }
-  if(has('luz','apagon','apagones','voltaje','regulador','no break','nobreak','picos','se apaga')){
+  if(has('luz','apagon','apagones','voltaje','picos','se apaga') &&
+     !has('medir','multimetro','continuidad','cuanto marca','no break','nobreak','regulador','foco','focos','lampara')){
     const p = PROBLEMS.find(x => x.ic === 'i-bolt');
     const opt = optByWords(p);
     if(opt){ botLine('Listo, esto es lo que necesitas.'); return showResult(opt.res); }
@@ -4117,8 +4225,9 @@ function routeVoice(raw){
   }
 
   const wantAll = has('todos', 'todas', 'muestrame', 'muestramelos', 'ensename', 'ver todo', 'completo');
+  const q2k = norm2(q);
   for(const fk in KMAP){
-    if(KMAP[fk].words.some(w => q.indexOf(w) >= 0)){
+    if(KMAP[fk].words.some(w => saysWord(q, w) || saysStem(q2k, w))){
       const pre = parseFamVals(fk, q);
       if(!pre && wantAll){ // "muéstrame todas las pilas" → tandas de 4, sin preguntas
         track('fam_all', fk);
@@ -4135,7 +4244,13 @@ function routeVoice(raw){
 
   // 2.8) TAXONOMÍA STEREN: cualquier subcategoría del catálogo real.
   //      El bot reconoce el universo completo, tenga ficha o no.
+  const uso0 = usoFor(q);
   const tx = taxFind(q);
+  // El USO gana cuando el árbol no reconoció nada — y también cuando lo
+  // reconocido es una subcategoría VACÍA pero el uso trae producto real.
+  if(uso0 && (!tx || (!tx.sub.skus.length && !tx.sub.fam && (uso0.skus || uso0.q)))){
+    if(runUso(uso0, raw)) return;
+  }
   if(tx){
     if(tx.sub.fam) return startFunnel(tx.sub.fam, parseFamVals(tx.sub.fam, q), raw);
     // "Audífonos con cancelación de ruido" trae la respuesta ADENTRO:
@@ -4166,6 +4281,11 @@ function routeVoice(raw){
     track('voice_cat', txc.id);
     return openBrowseCat(txc);
   }
+
+  // 2.95) Fuera de giro ANTES del buscador de texto: "quiero una moto" no
+  //       debe caer en "motores para proyectos" por parecido de letras.
+  const off0 = offCatMatch(q);
+  if(off0) return offCatalog(raw, off0);
 
   // 3) Búsqueda en catálogo: ANTES de mostrar productos, una pregunta de
   //    afinación por categoría. Los productos son el final del diálogo.
@@ -4214,8 +4334,10 @@ function routeVoice(raw){
   if(off) return offCatalog(raw, off);
   if(threadOn || pairOn){
     // En plena conversación, "no te entendí" con un overlay encima era
-    // matar el hilo. La respuesta es OTRA burbuja: la escalera de rescate.
+    // matar el hilo. Primero el ECO — que el usuario vea que SÍ lo
+    // escuchamos bien y el problema es nuestro — y luego los caminos.
     track('voz_sin_ruta', raw);
+    tBot('Te escuché: “' + raw + '” — no lo ubiqué a la primera.');
     return rescueFlow('Cliente dijo: “' + raw + '”');
   }
   $('#ov-voice').classList.add('active');
@@ -4685,6 +4807,9 @@ function connectPair(){
         }
         return;
       }
+      // barge-in: al tocar el micrófono del teléfono, el bot se calla al
+      // instante — nadie dicta encima de una bocina hablando.
+      if(d.t === 'hush' && pairOn && ph === pairPid){ try{ speechSynthesis.cancel(); }catch(e){} return; }
       if(d.t === 'bye' && pairOn && ph === pairPid) return phoneLost();
       if(d.t === 'text' && d.x && pairOn && ph === pairPid) handleRemoteText(String(d.x).slice(0, 200));
       if(d.t === 'qty' && d.sku && pairOn && ph === pairPid) setQty(String(d.sku), parseInt(d.q, 10) || 0, true);
@@ -4726,6 +4851,7 @@ function pubPhone(obj){
 }
 function handleRemoteText(text){
   armIdle();
+  try{ speechSynthesis.cancel(); }catch(e){} // llegó su voz: lo del bot ya no importa
   track('voice_remote_text', text);
   // Turno de chips activo → mapear la frase a una opción (sin clics)
   if(chipCtx && (currentScreen === 's-chat' || currentScreen === 's-talk')){
