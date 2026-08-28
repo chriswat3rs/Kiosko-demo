@@ -206,6 +206,32 @@ body.display-mode .frame-caption{display:none}
 .tcard .tacts button svg{width:32px;height:32px}
 /* Respuestas rápidas: sugerencias, no un menú */
 .tquick{display:flex;flex-wrap:wrap;gap:18px;align-self:flex-start;max-width:94%;animation:rise .3s ease backwards}
+/* ── Componentes del contrato API (product externo, video, imagen, iframe) ── */
+.tcard-x{align-items:center}
+.tcard-x .tx-desc{font-size:26px;color:var(--ink-2);line-height:1.35;margin-top:6px}
+.tcard-x .tx-qr{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;margin-left:8px}
+.tcard-x .tx-qr .q{background:#fff;padding:8px;border-radius:14px;border:2px solid var(--line-2)}
+.tcard-x .tx-qr .q img{display:block}
+.tcard-x .tx-qr span{font-size:19px;font-weight:700;color:var(--ink-2)}
+.tvid{
+  align-self:flex-start;width:78%;max-width:720px;aspect-ratio:16/9;border-radius:26px;overflow:hidden;
+  position:relative;background:#000;border:2.5px solid var(--line);box-shadow:var(--shadow);animation:rise .3s ease backwards;
+}
+.tvid img{width:100%;height:100%;object-fit:cover;opacity:.85}
+.tvid iframe{width:100%;height:100%;border:0}
+.tvid .play{
+  position:absolute;inset:0;margin:auto;width:120px;height:120px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(0,70,190,.92);color:#fff;display:flex;align-items:center;justify-content:center;
+}
+.tvid .play svg{width:64px;height:64px}
+.timg-bot{align-self:flex-start;max-width:70%;border-radius:26px;overflow:hidden;border:2.5px solid var(--line);box-shadow:var(--shadow);animation:rise .3s ease backwards}
+.timg-bot img{display:block;width:100%;max-height:560px;object-fit:contain;background:#fff}
+.tframe{align-self:stretch;border-radius:26px;overflow:hidden;border:2.5px solid var(--line);background:#fff;box-shadow:var(--shadow);animation:rise .3s ease backwards}
+.tframe .bar{display:flex;align-items:center;gap:12px;padding:16px 22px;background:#E7F1FE;font-size:23px;font-weight:700;color:var(--blue)}
+.tframe .bar.off{background:var(--amber-s, #FCF1DF);color:var(--amber, #8A5200)}
+.tframe .bar svg{width:28px;height:28px;flex-shrink:0}
+.tframe iframe{width:100%;height:640px;border:0;display:block}
+.tframe .q{display:flex;justify-content:center;padding:24px}
 .tquick button{
   background:#E7F1FE;border:2.5px solid #BFD9F8;color:var(--blue);border-radius:36px;
   padding:24px 34px;font-family:var(--sans);font-size:27px;font-weight:700;cursor:pointer;transition:.12s;
@@ -1094,6 +1120,7 @@ body.display-mode .frame-caption{display:none}
     <button id="db-err">Error del bot</button>
     <button id="db-nom">Sin resultados</button>
     <button id="db-imgrej">Foto rechazada</button>
+    <button id="db-json">JSON API</button>
     <button id="db-display">Modo display</button>
     <button id="db-reset">Reiniciar demo</button>
   </div>
@@ -3779,6 +3806,7 @@ if(window.speechSynthesis){
       pause()/resume() mientras habla lo mantiene despierto toda la jornada. */
 let __utter = null;
 function say(txt, onEnd){
+  if(typeof stopBotAudio === 'function') stopBotAudio(); // una sola voz a la vez
   if(!ttsOn){ if(onEnd) onEnd(); return; }
   try{
     const u = new SpeechSynthesisUtterance(txt);
@@ -4003,6 +4031,108 @@ function runUso(u, raw){
     return true;
   }
   return false;
+}
+/* =====================================================================
+   RENDERIZADOR DEL CONTRATO STEBOT (API real del equipo de desarrollo)
+   Consume TAL CUAL el JSON que responde el backend del bot:
+     thread_id  → identidad de la conversación (la memoria vive allá)
+     output[]   → lo que el bot DICE este turno: text (burbuja) y
+                  audio (m4a pregrabado por su TTS — se reproduce ese;
+                  si falla la descarga, respaldo con la voz local)
+     data[]     → lo que el bot MUESTRA: product, product_list, video,
+                  image, iframe — cada tipo es UN componente del hilo
+     responses[]→ lo que el usuario puede CONTESTAR: chips tocables
+                  (y dictables — el matcheo de chips ya escucha)
+   El punto para desarrollo: el kiosko no interpreta la intención del
+   turno — sólo pinta bloques. Todo el demo es este puñado de
+   componentes; lo demás (catálogo, NLU) es la simulación de SU backend.
+   ===================================================================== */
+let __botAudio = null;
+function stopBotAudio(){ if(__botAudio){ try{ __botAudio.pause(); }catch(e){} __botAudio = null; } }
+function playBotAudio(url, fallbackText){
+  stopBotAudio();
+  try{
+    const a = new Audio(url);
+    __botAudio = a;
+    a.onerror = () => { if(__botAudio === a){ __botAudio = null; if(fallbackText) say(fallbackText); } };
+    a.play().catch(() => { if(__botAudio === a){ __botAudio = null; if(fallbackText) say(fallbackText); } });
+  }catch(e){ if(fallbackText) say(fallbackText); }
+}
+/* Tarjeta de producto EXTERNA (title/description/image/url — sin SKU).
+   En un kiosko no se navega a una URL: se convierte en QR para llevar. */
+function tCardData(d){
+  const el = document.createElement('div');
+  el.className = 'tcard tcard-x';
+  el.innerHTML = '<div class="tpic"><img alt="" loading="lazy" onerror="this.style.display=\'none\'"></div>' +
+    '<div class="tinfo"><div class="tn"></div><div class="tx-desc"></div></div>' +
+    '<div class="tx-qr"><div class="q"></div><span>Véelo en tu celular</span></div>';
+  el.querySelector('.tpic img').src = d.image || '';
+  el.querySelector('.tn').textContent = d.title || '';
+  el.querySelector('.tx-desc').textContent = d.description || '';
+  if(d.url && typeof QRCode !== 'undefined') new QRCode(el.querySelector('.tx-qr .q'), {text:d.url, width:104, height:104, correctLevel:QRCode.CorrectLevel.L});
+  else el.querySelector('.tx-qr').style.display = 'none';
+  talkAdd(el);
+}
+/* Video (YouTube): miniatura + toque para reproducir — jamás autoplay
+   con audio en una tienda. nocookie por ser pantalla pública. */
+function tVideo(url){
+  const m = String(url).match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/);
+  if(!m) return;
+  const id = m[1];
+  const el = document.createElement('div');
+  el.className = 'tvid';
+  el.innerHTML = '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt=""><button class="play" aria-label="Reproducir"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>';
+  el.querySelector('.play').addEventListener('click', () => {
+    track('api_video', id);
+    el.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+  });
+  talkAdd(el);
+}
+function tImageBot(url){
+  const el = document.createElement('div');
+  el.className = 'timg-bot';
+  el.innerHTML = '<img alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">';
+  el.querySelector('img').src = url;
+  talkAdd(el);
+}
+/* iframe: SOLO dominio propio (allowlist) — una pantalla pública no
+   embebe páginas arbitrarias. Fuera de la lista: tarjeta con QR. */
+function tFrame(url){
+  const el = document.createElement('div');
+  el.className = 'tframe';
+  if(/^https:\/\/www\.steren\.com\.mx\//.test(String(url))){
+    el.innerHTML = '<div class="bar"><svg><use href="#i-search"/></svg><span></span></div>' +
+      '<iframe sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>';
+    el.querySelector('.bar span').textContent = String(url).replace(/^https:\/\//, '');
+    el.querySelector('iframe').src = url;
+  }else{
+    el.innerHTML = '<div class="bar off"><svg><use href="#i-alert"/></svg><span>Contenido externo — escanéalo en tu celular</span></div><div class="q"></div>';
+    if(typeof QRCode !== 'undefined') new QRCode(el.querySelector('.q'), {text:String(url), width:150, height:150, correctLevel:QRCode.CorrectLevel.L});
+  }
+  talkAdd(el);
+}
+/* El renderizador: un JSON del backend → un turno completo del hilo */
+function renderStebot(resp){
+  if(!session) startSession();
+  if(!threadOn){ voiceMode = true; threadOn = true; talkReset(); go('s-talk'); }
+  else if(currentScreen !== 's-talk') go('s-talk');
+  let habla = null, audio = null;
+  (resp.output || []).forEach(o => {
+    if(o.type === 'text' && o.value){ tBot(o.value); if(!habla) habla = o.value; }
+    if(o.type === 'audio' && o.value) audio = o.value;
+  });
+  if(audio) playBotAudio(audio, habla);   // su TTS manda; el local es respaldo
+  else if(habla) say(habla);
+  (resp.data || []).forEach(d => {
+    if(d.type === 'product') tCardData(d);
+    else if(d.type === 'product_list') (d.products || []).slice(0, 4).forEach(tCardData);
+    else if(d.type === 'video') tVideo(d.url);
+    else if(d.type === 'image') tImageBot(d.url);
+    else if(d.type === 'iframe') tFrame(d.url);
+  });
+  const rs = (resp.responses || []).filter(r => r.type === 'text' && r.value);
+  if(rs.length) tQuick(rs.map(r => ({ic:'i-chat', l:r.value})), o => routeVoice(o.l));
+  track('api_render', resp.thread_id || '-');
 }
 /* ¿De qué producto estamos hablando? El contexto de la conversación:
    la ficha abierta gana; luego el resultado; luego las tarjetas del hilo
@@ -4809,7 +4939,7 @@ function connectPair(){
       }
       // barge-in: al tocar el micrófono del teléfono, el bot se calla al
       // instante — nadie dicta encima de una bocina hablando.
-      if(d.t === 'hush' && pairOn && ph === pairPid){ try{ speechSynthesis.cancel(); }catch(e){} return; }
+      if(d.t === 'hush' && pairOn && ph === pairPid){ try{ speechSynthesis.cancel(); }catch(e){} stopBotAudio(); return; }
       if(d.t === 'bye' && pairOn && ph === pairPid) return phoneLost();
       if(d.t === 'text' && d.x && pairOn && ph === pairPid) handleRemoteText(String(d.x).slice(0, 200));
       if(d.t === 'qty' && d.sku && pairOn && ph === pairPid) setQty(String(d.sku), parseInt(d.q, 10) || 0, true);
@@ -5535,6 +5665,42 @@ $('#kiosk').addEventListener('pointerdown', () => {
 
 // Barra demo
 $('#db-reset').addEventListener('click', () => endSession('Demo reiniciado'));
+/* Los JSON de EJEMPLO del equipo de desarrollo — el primero es su archivo
+   example_response tal cual (mismos campos, mismo orden), para que vean
+   sus bloques pintados por los componentes del kiosko sin tocar nada. */
+const API_EJEMPLOS = [
+ {
+  thread_id:'1234567890',
+  output:[
+    {type:'text', value:'Hola, soy Stebot'},
+    {type:'audio', value:'https://qacgstorage.blob.core.windows.net/chatbot-files/1234567890.m4a'}
+  ],
+  data:[
+    {type:'product', title:'Proyector Home Theater Full HD', description:'1,100 ANSI lm, función espejo, enfoque automático', image:'https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/23472de59/proyector-multimedia-home-theater-full-hd-de-1100-ansi-lm-con-funcion-espejo-ajuste-automatico-de-enfoque-y-trapecio.jpg', url:'https://www.steren.com.mx/proyector-multimedia-home-theater-full-hd-de-34100-lm-1100-ansi-lm-con-funcion-espejo-bluetooth-ajuste-automatico-de-enfoque-y-trapecio.html'},
+    {type:'video', url:'https://www.youtube.com/watch?v=Td8HVzRSRWU'},
+    {type:'image', url:'https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/23472de59/proyector-multimedia-home-theater-full-hd-de-1100-ansi-lm-con-funcion-espejo-ajuste-automatico-de-enfoque-y-trapecio.jpg'},
+    {type:'iframe', url:'https://www.steren.com.mx/oficinas-corporativas'}
+  ],
+  responses:[
+    {type:'text', value:'Ayúdame a resolver mi problema'},
+    {type:'text', value:'Quiero ver más proyectores'}
+  ]
+ },
+ {
+  thread_id:'1234567891',
+  output:[{type:'text', value:'Tengo estas dos opciones para tu sala — la diferencia es el brillo.'}],
+  data:[{type:'product_list', products:[
+    {type:'product', title:'Proyector Full HD · 1,100 ANSI lm', description:'Para sala con poca luz', image:'https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/23472de59/proyector-multimedia-home-theater-full-hd-de-1100-ansi-lm-con-funcion-espejo-ajuste-automatico-de-enfoque-y-trapecio.jpg', url:'https://www.steren.com.mx/proyector-multimedia-home-theater-full-hd-de-34100-lm-1100-ansi-lm-con-funcion-espejo-bluetooth-ajuste-automatico-de-enfoque-y-trapecio.html'},
+    {type:'product', title:'Pantalla para proyector 100\"', description:'Automática, de pared', image:'https://www.steren.com.mx/media/catalog/product/cache/92457bf2b5977fff7efe99bd6badebc6/image/20160279d/pantalla-para-proyector-automatica-de-100.jpg', url:'https://www.steren.com.mx/pantalla-para-proyector-automatica-de-100.html'}
+  ]}],
+  responses:[{type:'text', value:'¿Cuál se ve mejor de día?'}, {type:'text', value:'Lo quiero'}]
+ }
+];
+let apiEjIx = 0;
+$('#db-json').addEventListener('click', () => {
+  track('api_demo', apiEjIx);
+  renderStebot(API_EJEMPLOS[apiEjIx++ % API_EJEMPLOS.length]);
+});
 $('#db-off').addEventListener('click', () => {
   SIM.offline = !SIM.offline;
   $('#kiosk').classList.toggle('offline', SIM.offline);
