@@ -15,7 +15,7 @@
   --bg:#F5F7FB; --white:#FFFFFF;
   --green:#0A7A45; --green-s:#E3F4EB;
   --amber:#8A5200; --amber-s:#FCF1DF;
-  --red:#C22C2C;
+  --red:#C22C2C; --ink-3:#B9C7D9;
   --grad:linear-gradient(135deg,#1265E0 0%,#0046BE 55%,#00308F 100%);
   --shadow:0 10px 30px rgba(6,21,48,.08);
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
@@ -101,7 +101,7 @@ body.display-mode .frame-caption{display:none}
 #kiosk.offline #offline-banner{display:flex}
 #kiosk.offline #screens .screen{top:84px}
 #offline-banner svg{width:36px;height:36px;flex-shrink:0}
-.offline .prod .price,.offline .prow .ppr,.offline .det-price,.offline .det-stock,
+.offline .prod .price,.offline .prow .ppr,.offline .det-price{opacity:.5}
 
 /* ---- Área de pantallas ---- */
 #screens{flex:1;position:relative;overflow:hidden}
@@ -593,11 +593,7 @@ body.display-mode .frame-caption{display:none}
 .det-loc{display:flex;align-items:flex-start;gap:10px;font-size:25px;color:#fff;margin-top:14px;line-height:1.3}
 .det-loc span small{white-space:nowrap}
 .det-loc svg{width:30px;height:30px;color:#CFE2FA;flex-shrink:0}
-.det-loc small{color:#A9C6EE;font-size:22px}
-.det-stock{margin-top:20px}
-.det-stock .stock-ok{display:inline-block;background:#fff;color:var(--green);font-size:27px;font-weight:800;padding:10px 22px;border-radius:30px}
-.det-stock .stock-out{display:inline-block;background:#fff;color:var(--red);font-size:27px;font-weight:800;padding:10px 22px;border-radius:30px}
-.det-stock small{display:block;font-size:22px;color:#CFE2FA;margin-top:10px;line-height:1.35}
+.det-loc small{color:#CFE2FA;font-size:23px}
 .det-about{border-radius:26px;padding:32px 36px}
 .det-label{
   font-size:24px;font-weight:800;color:var(--blue);letter-spacing:.06em;
@@ -607,6 +603,8 @@ body.display-mode .frame-caption{display:none}
 #det-desc{font-size:28px;color:var(--ink-2);line-height:1.5;margin-top:10px}
 .det-tipband{border-radius:26px;padding:26px 32px;display:flex;align-items:center;gap:22px}
 .det-tipband .vava{width:64px;height:64px;font-size:28px;flex-shrink:0}
+.det-tipband .vava svg{width:34px;height:34px}
+.vchip .vava svg{width:38px;height:38px}
 .det-tipband .dt-who{font-size:23px;color:var(--ink-2);font-weight:700;margin-bottom:4px}
 .det-tipband .dt-note{font-size:28px;color:var(--ink);line-height:1.4}
 .prod .chev{width:44px;height:44px;color:#B9C7D9;flex-shrink:0;margin-left:8px}
@@ -768,7 +766,7 @@ body.display-mode .frame-caption{display:none}
 .code-row .ck{flex:1;min-width:0}
 .code-row .skubig{font-family:var(--mono);font-size:48px;font-weight:700;color:#fff;letter-spacing:.03em;line-height:1}
 .code-row .cnm{font-size:27px;color:#E4EEFB;margin-top:8px;line-height:1.25}
-.code-row .cloc{font-size:23px;color:#A9C6EE;margin-top:4px}
+.code-row .cloc{font-size:24px;color:#DCEAFB;margin-top:4px}
 .cpr{font-size:38px;font-weight:800;color:#fff;flex-shrink:0;padding-left:16px}
 .code-total{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0}
 .code-total .tl{font-size:30px;font-weight:800;color:#fff}
@@ -1112,17 +1110,19 @@ body.display-mode .frame-caption{display:none}
 
 <!-- ============ BARRA DEMO ============ -->
 <div class="demo-bar">
-  <div class="t">Prototipo · Kiosco Interactivo Steren<span>V1.2 · voz en kiosko · 1080 × 1920</span></div>
+  <div class="t">Prototipo · Kiosco Interactivo Steren</div>
   <div class="actions">
-    <span class="hint">Simular fallas:</span>
-    <button id="db-tts" class="on">Voz bot: ON</button>
-    <button id="db-off">Sin red</button>
-    <button id="db-err">Error del bot</button>
-    <button id="db-nom">Sin resultados</button>
-    <button id="db-imgrej">Foto rechazada</button>
-    <button id="db-json">JSON API</button>
+    <!-- Controles de demo ocultos para presentación. Los listeners siguen vivos:
+         quitar el atributo hidden vuelve a mostrarlos, uno por uno. -->
+    <span class="hint" hidden>Simular fallas:</span>
+    <button id="db-tts" class="on" hidden>Voz bot: ON</button>
+    <button id="db-off" hidden>Sin red</button>
+    <button id="db-err" hidden>Error del bot</button>
+    <button id="db-nom" hidden>Sin resultados</button>
+    <button id="db-imgrej" hidden>Foto rechazada</button>
+    <button id="db-json" hidden>JSON API</button>
     <button id="db-display">Modo display</button>
-    <button id="db-reset">Reiniciar demo</button>
+    <button id="db-reset" hidden>Reiniciar demo</button>
   </div>
 </div>
 
@@ -1244,7 +1244,7 @@ body.display-mode .frame-caption{display:none}
           <section class="screen" id="s-asesor">
             <div class="hero">
               <div class="crumb" id="asesor-crumb">Ayuda de una persona</div>
-              <h2 id="asesor-title">Acércate a cualquier<br>asesor de piso</h2>
+              <h2 id="asesor-title">Busca a un asesor<br>y muéstrale esto</h2>
             </div>
             <div class="vchips-top">
               <div class="vchips" id="asesor-vendors"></div>
@@ -1276,7 +1276,7 @@ body.display-mode .frame-caption{display:none}
             <div class="hero">
               <div class="crumb" id="pase-crumb">Tu lista</div>
               <div class="pase-head">
-                <h2 id="pase-title" style="font-size:52px">Llévalos del pasillo<br>o dilos en caja</h2>
+                <h2 id="pase-title" style="font-size:52px">Muestra estos códigos<br>o dilos en caja</h2>
                 <!-- El precio final se ve sin desplazar -->
                 <div class="pase-tot"><div class="pt-l">Total estimado</div><div class="pt-v" id="pase-tot"></div></div>
               </div>
@@ -1294,7 +1294,7 @@ body.display-mode .frame-caption{display:none}
                 <div class="take-qr" id="pase-qr"></div>
                 <div>
                   <div class="tk-t" id="pase-take-t">Llévatela en tu teléfono</div>
-                  <div class="tk-s" id="pase-take-s">Escanea y tu lista aparece ahí — con códigos y pasillo. Desde ahí puedes seguir pidiendo.</div>
+                  <div class="tk-s" id="pase-take-s">Escanea y tu lista aparece ahí, con todo y códigos. Desde ahí puedes seguir pidiendo.</div>
                 </div>
               </div>
               <div class="photo-tip minor"><svg><use href="#i-cam"/></svg><span>¿Sin teléfono a la mano? Tómale una foto a esta pantalla.</span></div>
@@ -1322,7 +1322,6 @@ body.display-mode .frame-caption{display:none}
                   <div class="det-price" id="det-price"></div>
                   <div class="det-sku" id="det-sku"></div>
                   <div class="det-loc" id="det-loc"></div>
-                  <div class="det-stock" id="det-stock"></div>
                 </div>
               </div>
               <div class="det-askband" id="det-askband" style="display:none">
@@ -1339,7 +1338,7 @@ body.display-mode .frame-caption{display:none}
                 <div id="det-spec"></div>
               </div>
               <div class="det-tipband" id="det-tipband" style="display:none">
-                <span class="vava" id="dt-ava">M</span>
+                <span class="vava" id="dt-ava"></span>
                 <div><div class="dt-who" id="dt-who"></div><div class="dt-note" id="dt-note"></div></div>
               </div>
             </div>
@@ -1536,210 +1535,210 @@ window.KIOSK_EVENTS = EVENTS; // inspección en demo: embudo completo de la sesi
 const IMG = 'https://www.steren.com.mx/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/';
 const RIMG = 'https://www.steren.com.mx/media/catalog/product/cache/92457bf2b5977fff7efe99bd6badebc6/image/';
 const P = {
-  '299-502':{n:'Cable HDMI 2.1 certificado · 2 m',        p:199,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[22,14], img:IMG+'22100b86a/cable-hdmir-2-1-certificado-de-ultra-alta-velocidad-de-2-m.jpg'},
-  '295-503':{n:'Cable HDMI 2.0 certificado · 3 m',        p:199,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[18,11], img:IMG+'220978f81/cable-hdmir-2-0-certificado-de-alta-velocidad-de-3-m.jpg'},
-  '299-830':{n:'Cable HDMI 4K tipo cordón · 10 m',        p:399,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[6,3],   img:IMG+'234812977/cable-hdmi-4k-con-cable-tipo-cordon-de-10-m.jpg'},
-  '295-600':{n:'Cable DisplayPort · 2 m',                 p:329,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[11,7],  img:IMG+'228013f5a/cable-displayport-de-2-m.jpg'},
-  'USB-3102':{n:'Cable USB-C a USB-C · 100 W · 2 m',      p:179,  loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-cable',  st:[26,19], img:IMG+'227910ce2/cable-usb-c-de-2-m-100-w.jpg'},
-  '255-258':{n:'Cable auxiliar 3.5 mm · 1.8 m',           p:19,   loc:'Pasillo 6 · Audio',        cat:'Audio',        ic:'i-cable',  st:[30,21], img:IMG+'15598e020/cable-auxiliar-plug-a-plug-3-5-mm-de-1-8-m.jpg'},
-  '299-400':{n:'Cable óptico Toslink · 2 m',              p:119,  loc:'Pasillo 6 · Audio',        cat:'Audio',        ic:'i-cable',  st:[9,5],   img:IMG+'15665d173/cable-toslink-de-fibra-optica-con-conector-a-90-de-2-m.jpg'},
-  'USB-4724':{n:'Adaptador USB-C a HDMI · 4K 60 Hz',      p:249,  loc:'Pasillo 4 · Adaptadores',  cat:'Adaptadores',  ic:'i-adapter',st:[18,12], img:IMG+'21820bdec/adaptador-usb-c-a-hdmi-4k-60-hz.jpg'},
-  'USB-471':{n:'Hub USB-C · HDMI + USB 3.0 + USB-C',      p:199,  loc:'Pasillo 4 · Adaptadores',  cat:'Adaptadores',  ic:'i-adapter',st:[7,4],   img:IMG+'19371fd1f/adaptador-usb-c-a-hdmi-usb-3-0-usb-c.jpg'},
-  'USB-456':{n:'Adaptador USB-C a 3.5 mm',                p:79,   loc:'Pasillo 6 · Audio',        cat:'Adaptadores',  ic:'i-adapter',st:[20,16], img:IMG+'208075230/adaptador-usb-c-a-3-5mm.jpg'},
-  'POD-165':{n:'Transmisor de audio Bluetooth',           p:349,  loc:'Pasillo 6 · Audio',        cat:'Audio',        ic:'i-box',    st:[8,6],   img:IMG+'217496daa/transmisor-de-audio-bluetooth.jpg'},
-  '905-3107':{n:'Multicontacto 6 salidas con supresor',   p:159,  loc:'Pasillo 2 · Energía',      cat:'Energía',      ic:'i-bolt',   st:[24,17], img:IMG+'23525ba92/tira-multicontactos-de-6-salidas-verticales-con-supresor-de-picos-245-j.jpg'},
-  'NB-900':{n:'No-break 900 VA · hasta 85 min',           p:2290, loc:'Pasillo 2 · Energía',      cat:'Energía',      ic:'i-nobreak',st:[5,2],   img:IMG+'20465366a/no-break-ups-de-hasta-85-min-de-respaldo-900-va.jpg'},
-  'REG-1050':{n:'Regulador de voltaje 1 000 W · 8 contactos', p:599, loc:'Pasillo 2 · Energía',   cat:'Energía',      ic:'i-nobreak',st:[10,8],  img:IMG+'185421bdd/regulador-de-voltaje-1-000-w-con-8-contactos.jpg'},
-  'COM-8300':{n:'Repetidor Wi-Fi AC1200 doble banda',     p:499,  loc:'Pasillo 7 · Conectividad', cat:'Conectividad', ic:'i-router', st:[12,6],  img:IMG+'22108ca3c/repetidor-wi-fi-ac1200-2-4-ghz-y-5-ghz-hasta-40-m-de-cobertura.jpg'},
-  'MESH-200+':{n:'Kit Wi-Fi 6 Mesh AX1500 · 2 nodos',     p:1790, loc:'Pasillo 7 · Conectividad', cat:'Conectividad', ic:'i-router', st:[4,0],   img:IMG+'232448808/sistema-smart-wi-fi-6-mesh-doble-ax1500-2-4-ghz-y-5-ghz-hasta-30-m-de-alcance-por-modulo.jpg'},
-  'BOC-970':{n:'Bocina Bluetooth TWS grande · resistente a salpicaduras', p:715, loc:'Pasillo 6 · Audio', cat:'Bocinas', ic:'i-speaker', st:[9,6],  img:IMG+'23209c27a/bocina-bluetooth-tws-resistente-a-salpicaduras-grande.jpg'},
-  'BSD-120':{n:'Barra de sonido Bluetooth · 250 W',                p:995, loc:'Pasillo 6 · Audio', cat:'Bocinas', ic:'i-speaker', st:[5,3],  img:IMG+'219452b9d/barra-de-sonido-bluetooth.jpg'},
-  'AUD-7625':{n:'Audífonos Bluetooth de diadema · 25 h',           p:349, loc:'Pasillo 6 · Audio', cat:'Bocinas', ic:'i-headset', st:[15,10], img:IMG+'234136a0a/audifonos-bluetooth-con-bateria-de-hasta-25-h.jpg'},
-  'STV-105':{n:'Soporte para pantallas 32"–75" · brazo articulado',p:695, loc:'Pasillo 3 · Soportes', cat:'Soportes', ic:'i-mount', st:[8,4], img:IMG+'194943023/soporte-para-pantallas-de-32-a-75-con-brazo-articulado.jpg'},
-  'COM-083':{n:'Soporte metálico elevador para laptop',            p:522, loc:'Pasillo 3 · Soportes', cat:'Soportes', ic:'i-mount', st:[10,7], img:IMG+'23225968c/soporte-metalico-elevador-para-laptop.jpg'},
-  'SHOME-120':{n:'Foco LED Wi-Fi multicolor · 10 W',               p:150, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-bulb', st:[30,22], img:IMG+'20475fce0/foco-led-wi-fi-rgb-w-multicolor-de-10-w.jpg'},
-  'SHOME-127':{n:'Tira LED Wi-Fi multicolor · 2 m',                p:299, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-bulb', st:[14,9], img:IMG+'219076343/tira-led-wi-fi-multicolor-rgb-w-de-2-m.jpg'},
-  'CCTV-213':{n:'Cámara Wi-Fi 3 Mpx · sigue el movimiento',        p:549, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[7,5], img:IMG+'23370d83c/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-doble-banda.jpg'},
-  '400-200N':{n:'Tubo organizador de cables en espiral',  p:99,   loc:'Pasillo 4 · Cables',       cat:'Cables',       ic:'i-box',    st:[40,33], img:IMG+'158669d78/tubo-organizador-de-cables-tipo-espiral-negro.jpg'},
+  '299-502':{n:'Cable HDMI 2.1 certificado · 2 m',        p:199,       cat:'Cables',       ic:'i-cable', img:IMG+'22100b86a/cable-hdmir-2-1-certificado-de-ultra-alta-velocidad-de-2-m.jpg'},
+  '295-503':{n:'Cable HDMI 2.0 certificado · 3 m',        p:199,       cat:'Cables',       ic:'i-cable', img:IMG+'220978f81/cable-hdmir-2-0-certificado-de-alta-velocidad-de-3-m.jpg'},
+  '299-830':{n:'Cable HDMI 4K tipo cordón · 10 m',        p:399,       cat:'Cables',       ic:'i-cable',   img:IMG+'234812977/cable-hdmi-4k-con-cable-tipo-cordon-de-10-m.jpg'},
+  '295-600':{n:'Cable DisplayPort · 2 m',                 p:329,       cat:'Cables',       ic:'i-cable',  img:IMG+'228013f5a/cable-displayport-de-2-m.jpg'},
+  'USB-3102':{n:'Cable USB-C a USB-C · 100 W · 2 m',      p:179,       cat:'Cables',       ic:'i-cable', img:IMG+'227910ce2/cable-usb-c-de-2-m-100-w.jpg'},
+  '255-258':{n:'Cable auxiliar 3.5 mm · 1.8 m',           p:19,        cat:'Audio',        ic:'i-cable', img:IMG+'15598e020/cable-auxiliar-plug-a-plug-3-5-mm-de-1-8-m.jpg'},
+  '299-400':{n:'Cable óptico Toslink · 2 m',              p:119,        cat:'Audio',        ic:'i-cable',   img:IMG+'15665d173/cable-toslink-de-fibra-optica-con-conector-a-90-de-2-m.jpg'},
+  'USB-4724':{n:'Adaptador USB-C a HDMI · 4K 60 Hz',      p:249,  cat:'Adaptadores',  ic:'i-adapter', img:IMG+'21820bdec/adaptador-usb-c-a-hdmi-4k-60-hz.jpg'},
+  'USB-471':{n:'Hub USB-C · HDMI + USB 3.0 + USB-C',      p:199,  cat:'Adaptadores',  ic:'i-adapter',   img:IMG+'19371fd1f/adaptador-usb-c-a-hdmi-usb-3-0-usb-c.jpg'},
+  'USB-456':{n:'Adaptador USB-C a 3.5 mm',                p:79,        cat:'Adaptadores',  ic:'i-adapter', img:IMG+'208075230/adaptador-usb-c-a-3-5mm.jpg'},
+  'POD-165':{n:'Transmisor de audio Bluetooth',           p:349,        cat:'Audio',        ic:'i-box',   img:IMG+'217496daa/transmisor-de-audio-bluetooth.jpg'},
+  '905-3107':{n:'Multicontacto 6 salidas con supresor',   p:159,      cat:'Energía',      ic:'i-bolt', img:IMG+'23525ba92/tira-multicontactos-de-6-salidas-verticales-con-supresor-de-picos-245-j.jpg'},
+  'NB-900':{n:'No-break 900 VA · hasta 85 min',           p:2290,      cat:'Energía',      ic:'i-nobreak',   img:IMG+'20465366a/no-break-ups-de-hasta-85-min-de-respaldo-900-va.jpg'},
+  'REG-1050':{n:'Regulador de voltaje 1 000 W · 8 contactos', p:599,   cat:'Energía',      ic:'i-nobreak',  img:IMG+'185421bdd/regulador-de-voltaje-1-000-w-con-8-contactos.jpg'},
+  'COM-8300':{n:'Repetidor Wi-Fi AC1200 doble banda',     p:499, cat:'Conectividad', ic:'i-router',  img:IMG+'22108ca3c/repetidor-wi-fi-ac1200-2-4-ghz-y-5-ghz-hasta-40-m-de-cobertura.jpg'},
+  'MESH-200+':{n:'Kit Wi-Fi 6 Mesh AX1500 · 2 nodos',     p:1790, cat:'Conectividad', ic:'i-router',   img:IMG+'232448808/sistema-smart-wi-fi-6-mesh-doble-ax1500-2-4-ghz-y-5-ghz-hasta-30-m-de-alcance-por-modulo.jpg'},
+  'BOC-970':{n:'Bocina Bluetooth TWS grande · resistente a salpicaduras', p:715, cat:'Bocinas', ic:'i-speaker',  img:IMG+'23209c27a/bocina-bluetooth-tws-resistente-a-salpicaduras-grande.jpg'},
+  'BSD-120':{n:'Barra de sonido Bluetooth · 250 W',                p:995, cat:'Bocinas', ic:'i-speaker',  img:IMG+'219452b9d/barra-de-sonido-bluetooth.jpg'},
+  'AUD-7625':{n:'Audífonos Bluetooth de diadema · 25 h',           p:349, cat:'Bocinas', ic:'i-headset', img:IMG+'234136a0a/audifonos-bluetooth-con-bateria-de-hasta-25-h.jpg'},
+  'STV-105':{n:'Soporte para pantallas 32"–75" · brazo articulado',p:695, cat:'Soportes', ic:'i-mount', img:IMG+'194943023/soporte-para-pantallas-de-32-a-75-con-brazo-articulado.jpg'},
+  'COM-083':{n:'Soporte metálico elevador para laptop',            p:522, cat:'Soportes', ic:'i-mount', img:IMG+'23225968c/soporte-metalico-elevador-para-laptop.jpg'},
+  'SHOME-120':{n:'Foco LED Wi-Fi multicolor · 10 W',               p:150, cat:'Smart Home', ic:'i-bulb', img:IMG+'20475fce0/foco-led-wi-fi-rgb-w-multicolor-de-10-w.jpg'},
+  'SHOME-127':{n:'Tira LED Wi-Fi multicolor · 2 m',                p:299, cat:'Smart Home', ic:'i-bulb', img:IMG+'219076343/tira-led-wi-fi-multicolor-rgb-w-de-2-m.jpg'},
+  'CCTV-213':{n:'Cámara Wi-Fi 3 Mpx · sigue el movimiento',        p:549, cat:'Smart Home', ic:'i-cam', img:IMG+'23370d83c/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-doble-banda.jpg'},
+  '400-200N':{n:'Tubo organizador de cables en espiral',  p:99,       cat:'Cables',       ic:'i-box', img:IMG+'158669d78/tubo-organizador-de-cables-tipo-espiral-negro.jpg'},
   /* Familia de miles de SKUs (resistencias reales steren.com.mx): mismo
      producto, muchas variantes — el caso "no happy path" por excelencia. */
-  'R22-1/2': {n:'Resistencia de carbón · ½ watt · 22 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[420,300], fam:'resist', a:{ohm:22, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R47-1/2': {n:'Resistencia de carbón · ½ watt · 47 Ohms · 5%',   p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[380,260], fam:'resist', a:{ohm:47, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R100-1/2':{n:'Resistencia de carbón · ½ watt · 100 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[500,410], fam:'resist', a:{ohm:100, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R330-1/2':{n:'Resistencia de carbón · ½ watt · 330 Ohms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[460,350], fam:'resist', a:{ohm:330, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R5K6-1/2':{n:'Resistencia de carbón · ½ watt · 5.6 kOhms · 5%', p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[340,280], fam:'resist', a:{ohm:5600, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R10K-1/2':{n:'Resistencia de carbón · ½ watt · 10 kOhms · 5%',  p:0.35, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[390,310], fam:'resist', a:{ohm:10000, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
-  'R100-1W': {n:'Resistencia de carbón · 1 watt · 100 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[260,190], fam:'resist', a:{ohm:100, w:'1'}, img:RIMG+'198833eca/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-100-ohms.jpg'},
-  'R330-1W': {n:'Resistencia de carbón · 1 watt · 330 Ohms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[240,170], fam:'resist', a:{ohm:330, w:'1'}, img:RIMG+'198821380/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-330-ohms.jpg'},
-  'R5K6-1W': {n:'Resistencia de carbón · 1 watt · 5.6 kOhms · 5%', p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[210,150], fam:'resist', a:{ohm:5600, w:'1'}, img:RIMG+'199160fe9/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-5-6-kohms.jpg'},
-  'R10K-1W': {n:'Resistencia de carbón · 1 watt · 10 kOhms · 5%',  p:0.70, loc:'Pasillo 8 · Electrónica', cat:'Electrónica', ic:'i-chip', st:[230,160], fam:'resist', a:{ohm:10000, w:'1'}, img:RIMG+'19877742f/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-10-kohms.jpg'},
+  'R22-1/2': {n:'Resistencia de carbón · ½ watt · 22 Ohms · 5%',   p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:22, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R47-1/2': {n:'Resistencia de carbón · ½ watt · 47 Ohms · 5%',   p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:47, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1/2':{n:'Resistencia de carbón · ½ watt · 100 Ohms · 5%',  p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:100, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R330-1/2':{n:'Resistencia de carbón · ½ watt · 330 Ohms · 5%',  p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:330, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R5K6-1/2':{n:'Resistencia de carbón · ½ watt · 5.6 kOhms · 5%', p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:5600, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R10K-1/2':{n:'Resistencia de carbón · ½ watt · 10 kOhms · 5%',  p:0.35, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:10000, w:'½'}, img:RIMG+'1993687c3/resistencia-de-carbon-de-1-2-watt-al-5-de-tolerancia-de-56-kohms.jpg'},
+  'R100-1W': {n:'Resistencia de carbón · 1 watt · 100 Ohms · 5%',  p:0.70, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:100, w:'1'}, img:RIMG+'198833eca/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-100-ohms.jpg'},
+  'R330-1W': {n:'Resistencia de carbón · 1 watt · 330 Ohms · 5%',  p:0.70, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:330, w:'1'}, img:RIMG+'198821380/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-330-ohms.jpg'},
+  'R5K6-1W': {n:'Resistencia de carbón · 1 watt · 5.6 kOhms · 5%', p:0.70, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:5600, w:'1'}, img:RIMG+'199160fe9/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-5-6-kohms.jpg'},
+  'R10K-1W': {n:'Resistencia de carbón · 1 watt · 10 kOhms · 5%',  p:0.70, cat:'Electrónica', ic:'i-chip', fam:'resist', a:{ohm:10000, w:'1'}, img:RIMG+'19877742f/resistencia-de-carbon-de-1-watt-al-5-de-tolerancia-de-10-kohms.jpg'},
   /* Pilas y baterías (reales steren.com.mx) */
-  'PIL-D2':   {n:'Par de pilas alcalinas Ultra “D”',            p:85.84, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[60,42],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2368030eb/paquete-de-2-pilas-alcalinas-ultra-d.jpg'},
-  'PIL-C2':   {n:'Par de pilas alcalinas Ultra “C”',            p:75.40, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[55,38],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'2367909ea/paquete-de-2-pilas-alcalinas-ultra-c.jpg'},
-  'PIL-D6':   {n:'Paquete de 6 pilas alcalinas “D”',            p:220.40,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[30,22],  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2053337b6/paquete-de-6-pilas-alcalinas-d.jpg'},
-  'PIL-C6':   {n:'Paquete de 6 pilas alcalinas “C”',            p:174,   loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[28,19],  fam:'pilas', a:{tipo:'c'},          img:RIMG+'20505eb7f/paquete-de-6-pilas-alcalinas-c.jpg'},
-  'PIL-N2':   {n:'Par de pilas alcalinas tipo “N”',             p:29,    loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[40,31],  fam:'pilas', a:{tipo:'n'},          img:RIMG+'195345df5/paquete-de-2-pilas-alcalinas-tipo-n.jpg'},
-  'CR2016':   {n:'Pila de litio tipo botón CR2016',             p:10.79, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[120,95], fam:'pilas', a:{tipo:'boton'},      img:RIMG+'16365f482/pila-de-litio-tipo-boton-cr2016.jpg'},
-  'CR2025-6': {n:'Paquete de 6 pilas botón CR2025',             p:47.56, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[80,64],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'22269aa6f/6-pilas-de-litio-tipo-boton-cr2025.jpg'},
-  'CR1632':   {n:'Pila de litio tipo botón CR1632',             p:11.60, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[90,70],  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'20573ccb6/pila-de-litio-tipo-boton-cr1632.jpg'},
-  'LIPO-1000':{n:'Batería recargable LiPo · 1 000 mAh',         p:66.12, loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[45,30],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'22785a29d/bateria-recargable-lipo-1-000-mah.jpg'},
-  'LI-14500': {n:'Par de baterías recargables Li-ion 14500',    p:127.60,loc:'Pasillo 2 · Pilas', cat:'Pilas', ic:'i-batt', st:[35,26],  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'2278671e8/2-baterias-recargables-li-ion-800-mah-tipo-14500.jpg'},
+  'PIL-D2':   {n:'Par de pilas alcalinas Ultra “D”',            p:85.84, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2368030eb/paquete-de-2-pilas-alcalinas-ultra-d.jpg'},
+  'PIL-C2':   {n:'Par de pilas alcalinas Ultra “C”',            p:75.40, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'c'},          img:RIMG+'2367909ea/paquete-de-2-pilas-alcalinas-ultra-c.jpg'},
+  'PIL-D6':   {n:'Paquete de 6 pilas alcalinas “D”',            p:220.40, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'d'},          img:RIMG+'2053337b6/paquete-de-6-pilas-alcalinas-d.jpg'},
+  'PIL-C6':   {n:'Paquete de 6 pilas alcalinas “C”',            p:174, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'c'},          img:RIMG+'20505eb7f/paquete-de-6-pilas-alcalinas-c.jpg'},
+  'PIL-N2':   {n:'Par de pilas alcalinas tipo “N”',             p:29, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'n'},          img:RIMG+'195345df5/paquete-de-2-pilas-alcalinas-tipo-n.jpg'},
+  'CR2016':   {n:'Pila de litio tipo botón CR2016',             p:10.79, cat:'Pilas', ic:'i-batt', fam:'pilas', a:{tipo:'boton'},      img:RIMG+'16365f482/pila-de-litio-tipo-boton-cr2016.jpg'},
+  'CR2025-6': {n:'Paquete de 6 pilas botón CR2025',             p:47.56, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'22269aa6f/6-pilas-de-litio-tipo-boton-cr2025.jpg'},
+  'CR1632':   {n:'Pila de litio tipo botón CR1632',             p:11.60, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'boton'},      img:RIMG+'20573ccb6/pila-de-litio-tipo-boton-cr1632.jpg'},
+  'LIPO-1000':{n:'Batería recargable LiPo · 1 000 mAh',         p:66.12, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'22785a29d/bateria-recargable-lipo-1-000-mah.jpg'},
+  'LI-14500': {n:'Par de baterías recargables Li-ion 14500',    p:127.60, cat:'Pilas', ic:'i-batt',  fam:'pilas', a:{tipo:'recargable'}, img:RIMG+'2278671e8/2-baterias-recargables-li-ion-800-mah-tipo-14500.jpg'},
   /* Soldadura y cautines (reales steren.com.mx) */
-  'CAU-30':   {n:'Cautín tipo lápiz · 30 watts',                p:89,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[40,28], fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166511739/cautin-tipo-lapiz-de-30-watts.jpg'},
-  'CAU-35':   {n:'Cautín tipo lápiz · 35 watts',                p:99,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[38,27], fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166535a61/cautin-tipo-lapiz-de-35-watts.jpg'},
-  'CAU-40':   {n:'Cautín tipo lápiz · 40 watts',                p:149, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[30,21], fam:'soldar', a:{que:'cautin', nivel:'medio'},  img:RIMG+'16657d3ea/cautin-tipo-lapiz-de-40-watts.jpg'},
-  'CAU-AJ30': {n:'Cautín 30 watts · ajuste de potencia y puntas', p:299, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[18,12], fam:'soldar', a:{que:'cautin', nivel:'pro'},  img:RIMG+'2275052b0/cautin-tipo-lapiz-de-30-watts-con-ajuste-de-potencia-y-puntas-intercambiables.jpg'},
-  'CAU-EST45':{n:'Estación de cautín 45 watts · control de temperatura', p:595, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-bolt', st:[10,6], fam:'soldar', a:{que:'cautin', nivel:'pro'}, img:RIMG+'166702201/cautin-de-lapiz-tipo-estacion-con-control-de-temperatura-de-45-watts.jpg'},
-  'SOL-17':   {n:'Tubo de soldadura 60/40 · 17 g',              p:69,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[80,66], fam:'soldar', a:{que:'estano'}, img:RIMG+'18700f899/tubo-de-17-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
-  'SOL-50':   {n:'Rollo de soldadura 60/40 · 50 g',             p:179, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[50,39], fam:'soldar', a:{que:'estano'}, img:RIMG+'233919c28/rollo-de-50-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
-  'SOL-100':  {n:'Rollo de soldadura 60/40 · 100 g',            p:329, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[35,24], fam:'soldar', a:{que:'estano'}, img:RIMG+'18701dac1/rollo-de-100-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
-  'PAS-25':   {n:'Pasta para soldar · lata de 25 g',            p:29,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[70,55], fam:'soldar', a:{que:'pasta'},  img:RIMG+'186986f36/pasta-para-soldar-en-lata-con-25-gramos.jpg'},
-  'CAU-BASE': {n:'Base para cautín tipo lápiz',                 p:119, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[25,18], fam:'soldar', a:{que:'acc'},    img:RIMG+'16669b866/base-sencilla-para-cautin-tipo-lapiz.jpg'},
-  'DES-CH':   {n:'Desoldador de succión chico',                 p:99,  loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-box', st:[30,22], fam:'soldar', a:{que:'acc'},    img:RIMG+'16664b7ca/desoldador-de-succion-chico.jpg'},
+  'CAU-30':   {n:'Cautín tipo lápiz · 30 watts',                p:89, cat:'Herramienta', ic:'i-bolt', fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166511739/cautin-tipo-lapiz-de-30-watts.jpg'},
+  'CAU-35':   {n:'Cautín tipo lápiz · 35 watts',                p:99, cat:'Herramienta', ic:'i-bolt', fam:'soldar', a:{que:'cautin', nivel:'basico'}, img:RIMG+'166535a61/cautin-tipo-lapiz-de-35-watts.jpg'},
+  'CAU-40':   {n:'Cautín tipo lápiz · 40 watts',                p:149, cat:'Herramienta', ic:'i-bolt', fam:'soldar', a:{que:'cautin', nivel:'medio'},  img:RIMG+'16657d3ea/cautin-tipo-lapiz-de-40-watts.jpg'},
+  'CAU-AJ30': {n:'Cautín 30 watts · ajuste de potencia y puntas', p:299, cat:'Herramienta', ic:'i-bolt', fam:'soldar', a:{que:'cautin', nivel:'pro'},  img:RIMG+'2275052b0/cautin-tipo-lapiz-de-30-watts-con-ajuste-de-potencia-y-puntas-intercambiables.jpg'},
+  'CAU-EST45':{n:'Estación de cautín 45 watts · control de temperatura', p:595, cat:'Herramienta', ic:'i-bolt', fam:'soldar', a:{que:'cautin', nivel:'pro'}, img:RIMG+'166702201/cautin-de-lapiz-tipo-estacion-con-control-de-temperatura-de-45-watts.jpg'},
+  'SOL-17':   {n:'Tubo de soldadura 60/40 · 17 g',              p:69, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'estano'}, img:RIMG+'18700f899/tubo-de-17-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
+  'SOL-50':   {n:'Rollo de soldadura 60/40 · 50 g',             p:179, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'estano'}, img:RIMG+'233919c28/rollo-de-50-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
+  'SOL-100':  {n:'Rollo de soldadura 60/40 · 100 g',            p:329, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'estano'}, img:RIMG+'18701dac1/rollo-de-100-gramos-de-soldadura-con-aleacion-esta-o-plomo-60-40.jpg'},
+  'PAS-25':   {n:'Pasta para soldar · lata de 25 g',            p:29, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'pasta'},  img:RIMG+'186986f36/pasta-para-soldar-en-lata-con-25-gramos.jpg'},
+  'CAU-BASE': {n:'Base para cautín tipo lápiz',                 p:119, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'acc'},    img:RIMG+'16669b866/base-sencilla-para-cautin-tipo-lapiz.jpg'},
+  'DES-CH':   {n:'Desoldador de succión chico',                 p:99, cat:'Herramienta', ic:'i-box', fam:'soldar', a:{que:'acc'},    img:RIMG+'16664b7ca/desoldador-de-succion-chico.jpg'},
   /* Eliminadores y fuentes (reales steren.com.mx) */
-  'ELI-12-2': {n:'Eliminador regulado 12 Vcc · 2 A',            p:96.28, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-bolt', st:[40,29], fam:'fuente', a:{v:12, amp:2},        img:RIMG+'2006444d1/eliminador-regulado-de-12-vcc-2-a-para-tiras-led.jpg'},
-  'ELI-12-5': {n:'Eliminador regulado 12 Vcc · 5 A',            p:324.80,loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-bolt', st:[22,15], fam:'fuente', a:{v:12, amp:5},        img:RIMG+'2064340e9/eliminador-regulado-de-12-vcc-5-a.jpg'},
-  'ELI-MULTI':{n:'Eliminador universal 3–12 Vcc · 1.2 A · puntas intercambiables', p:208.80, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-bolt', st:[30,20], fam:'fuente', a:{v:'multi', amp:1.2}, img:RIMG+'17117e49c/eliminador-regulado-de-3-a-12-vcc-1-2-a-con-puntas-intercambiables-negro.jpg'},
+  'ELI-12-2': {n:'Eliminador regulado 12 Vcc · 2 A',            p:96.28, cat:'Energía', ic:'i-bolt', fam:'fuente', a:{v:12, amp:2},        img:RIMG+'2006444d1/eliminador-regulado-de-12-vcc-2-a-para-tiras-led.jpg'},
+  'ELI-12-5': {n:'Eliminador regulado 12 Vcc · 5 A',            p:324.80, cat:'Energía', ic:'i-bolt', fam:'fuente', a:{v:12, amp:5},        img:RIMG+'2064340e9/eliminador-regulado-de-12-vcc-5-a.jpg'},
+  'ELI-MULTI':{n:'Eliminador universal 3–12 Vcc · 1.2 A · puntas intercambiables', p:208.80, cat:'Energía', ic:'i-bolt', fam:'fuente', a:{v:'multi', amp:1.2}, img:RIMG+'17117e49c/eliminador-regulado-de-3-a-12-vcc-1-2-a-con-puntas-intercambiables-negro.jpg'},
   /* ===== Catálogo ampliado · productos reales steren.com.mx ===== */
-  'CCTV-611':{n:'Cámara Wi-Fi 6 · 4 Mpx robotizada con pantalla para videollamada', p:795, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[9,6], img:RIMG+'237998bed/camara-de-seguridad-wi-fi-6-4-mpx-robotizada-con-pantalla-para-video-llamada-doble-banda.jpg'},
-  'CCTV-645':{n:'Cámara Wi-Fi 6 · 4 Mpx robotizada con panel solar · exterior', p:1790, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[5,3], img:RIMG+'23565f40c/camara-de-seguridad-wi-fi-6-4-mpx-robotizada-con-panel-solar-para-exterior-compatible-con-asistentes-de-voz.jpg'},
-  'CCTV-641':{n:'Cámara Wi-Fi 6 · 4 Mpx fija con panel solar · exterior', p:1590, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[6,4], img:RIMG+'23963ada0/camara-de-seguridad-wi-fi-6-4-mpx-fija-con-panel-solar-para-exterior-doble-banda-compatible-con-asistentes-de-voz.jpg'},
-  'CCTV-235':{n:'Cámara Wi-Fi/Ethernet · 4 Mpx robotizada con seguidor · exterior', p:1290, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[7,5], img:RIMG+'21831ccba/camara-de-seguridad-wi-fi-ethernet-4-mpx-robotizada-con-seguidor-de-movimiento-para-exterior-doble-banda.jpg'},
-  'CCTV-238':{n:'Cámara Wi-Fi 3 Mpx robotizada para socket de foco', p:799, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[8,6], img:RIMG+'22408459d/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-para-socket.jpg'},
-  'CCTV-203':{n:'Cámara Wi-Fi 3 Mpx fija', p:595, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[14,10], img:RIMG+'233138e6c/camara-de-seguridad-wi-fi-3-mpx-fija.jpg'},
-  'CCTV-625':{n:'Mini cámara Wi-Fi 6 · 4 Mpx fija · exterior', p:795, loc:'Pasillo 5 · Smart Home', cat:'Smart Home', ic:'i-cam', st:[10,7], img:RIMG+'234934894/mini-camara-de-seguridad-wi-fi-6-4-mpx-fija-doble-banda-para-exterior.jpg'},
-  'AUD-2540':{n:'Audífonos Bluetooth multipunto ANC · hasta 60 h', p:499, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[16,11], img:RIMG+'23895fb6c/audifonos-bluetooth-multipunto-anc-con-bateria-de-hasta-60-h.jpg'},
-  'AUD-7655':{n:'Audífonos Bluetooth ultradelgados · hasta 35 h', p:295, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[22,15], img:RIMG+'23830d290/audifonos-bluetooth-ultradelgados-con-bateria-de-hasta-35-h.jpg'},
-  'AUD-7120':{n:'Audífonos Bluetooth FreePods TWS tipo clip', p:324.80, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[18,12], img:RIMG+'23947402b/audifonos-bluetooth-freepods-tws-ows-touch-tipo-clip-negros.jpg'},
-  'AUD-7420':{n:'Audífonos Bluetooth FreePods Crystal Pro TWS', p:209, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[26,19], img:RIMG+'237151c1a/audifonos-bluetooth-freepods-crystal-pro-tws-touch.jpg'},
-  'AUD-AE600':{n:'Audífonos AEON 600 Hi-Res TWS con ANC', p:995, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[7,4], img:RIMG+'23671e642/audifonos-bluetooth-aeon-600-hi-res-freepods-tws-con-anc-enc-por-ia-y-control-por-app.jpg'},
-  'AUD-AE200':{n:'Audífonos AEON 200 FreePods TWS', p:495, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[12,8], img:RIMG+'236703f83/audifonos-bluetooth-aeon-200-freepods-tws-con-enc-por-ia-y-control-por-app.jpg'},
-  'AUD-AE800':{n:'Audífonos AEON 800 Hi-Res TWS con ANC adaptativo', p:1490, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[4,2], img:RIMG+'236632359/audifonos-bluetooth-aeon-800-hi-res-freepods-tws-con-anc-adaptativo-enc-por-ia-y-control-por-app.jpg'},
-  'AUD-AE700':{n:'Audífonos AEON 700 Hi-Res con ANC/ENC', p:1290, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-headset', st:[5,3], img:RIMG+'23631ef7f/audifonos-bluetooth-aeon-700-hi-res-con-anc-enc-por-ia-y-control-por-app.jpg'},
-  'BOC-9030':{n:'Mini bocina Bluetooth con linterna y clip', p:278.40, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[20,14], img:RIMG+'238934dc7/mini-bocina-bluetooth-con-linterna-y-clip.jpg'},
-  'BOC-9020':{n:'Mini bocina Bluetooth con sujeción MagSafe y TWS', p:299, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[17,12], img:RIMG+'238664bfa/mini-bocina-bluetooth-con-sujecion-magsafe-y-tws.jpg'},
-  'BOC-980':{n:'Bocina Bluetooth TWS Splash Bass · grande', p:835.20, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[8,5], img:RIMG+'238498a95/bocina-bluetooth-tws-splash-bass.jpg'},
-  'SPK-BT700':{n:'Juego de 2 bocinas amplificadas Bluetooth de 2 vías', p:2668, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-amp', st:[3,1], img:RIMG+'23833ada9/juego-de-2-bocinas-amplificadas-bluetooth-de-2-vias.jpg'},
-  'BOC-940':{n:'Bocina Bluetooth TWS Splash Bass · mediana', p:661.20, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[9,6], img:RIMG+'238283ebf/bocina-bluetooth-tws-splash-bass.jpg'},
-  'BOOM-300':{n:'Bocina Bluetooth TWS Bass Boost', p:1450, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[6,4], img:RIMG+'23827a469/bocina-bluetooth-tws-bass-boost.jpg'},
-  'BOC-095':{n:'Bocinas Bluetooth multimedia para escritorio', p:1218, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[7,5], img:RIMG+'23826d6e0/bocinas-bluetooth-multimedia.jpg'},
-  'BOC-066':{n:'Bocinas multimedia para computadora', p:255.20, loc:'Pasillo 6 · Audio', cat:'Audio', ic:'i-speaker', st:[24,18], img:RIMG+'23807d0ac/bocinas-multimedia.jpg'},
-  'FOC-3X10':{n:'3 focos LED Wi-Fi multicolor de 10 W', p:406, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[15,10], img:RIMG+'21454584c/3-focos-led-wi-fi-rgb-w-multicolor-de-10-w.jpg'},
-  'FOC-15W':{n:'Foco LED Wi-Fi multicolor de 15 W', p:220.40, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[18,13], img:RIMG+'21657fbe0/foco-led-wi-fi-rgb-w-multicolor-de-15-w.jpg'},
-  'LAM-T24':{n:'Lámpara LED Wi-Fi de 24 W para techo', p:533.60, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[6,4], img:RIMG+'23906047e/lampara-led-wi-fi-de-24-w-para-techo.jpg'},
-  'FOC-USB5':{n:'Foco LED USB de 5 W', p:37.12, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[40,32], img:RIMG+'22032834b/foco-led-usb-5-w.jpg'},
-  'FOC-4X12':{n:'4 focos LED de luz fría de 12 W', p:90.48, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[35,26], img:RIMG+'2215502c4/4-focos-led-de-luz-fria-12-w.jpg'},
-  'FOC-SENS':{n:'Foco LED con sensor de movimiento de 10 W', p:139.20, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-sensor', st:[14,9], img:RIMG+'20843a376/foco-led-con-sensor-de-movimiento-10-w.jpg'},
-  'FOC-12C':{n:'Foco LED de luz cálida de 12 W', p:24.36, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-bulb', st:[50,41], img:RIMG+'22152bd72/foco-led-de-luz-calida-12-w.jpg'},
-  'COM-601':{n:'Lámpara LED para monitor con controles touch', p:295, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[10,7], img:RIMG+'238617095/lampara-led-para-monitor-con-controles-touch.jpg'},
-  'LAM-088':{n:'Lámpara LED articulada · luz fría, natural o cálida', p:339, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[12,8], img:RIMG+'214321a55/lampara-led-de-luz-fria-natural-o-calida-articulada.jpg'},
-  'LAM-200':{n:'Mini linterna de luz UV 365 nm recargable', p:162.40, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[16,11], img:RIMG+'23215a18a/mini-linterna-de-luz-uv-de-365-nm-con-bateria-recargable.jpg'},
-  'LAM-500':{n:'Lámpara LED de emergencia con luces direccionables', p:649.60, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[7,5], img:RIMG+'175545c12/lampara-led-de-emergencia-con-luces-direccionables-20-led.jpg'},
-  'LAM-180':{n:'Mini linterna LED tipo llavero recargable', p:74.25, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[30,24], img:RIMG+'228425fc8/mini-linterna-led-tipo-llavero-con-bateria-recargable.jpg'},
-  'LAM-290':{n:'Linterna LED de 1 200 lúmenes · aluminio, recargable', p:255.20, loc:'Pasillo 5 · Iluminación', cat:'Iluminación', ic:'i-lamp', st:[13,9], img:RIMG+'232467011/linterna-led-de-1-200-lumenes-con-bateria-recargable-y-estructura-de-aluminio.jpg'},
-  'PWB-5000':{n:'Power bank de 5 000 mAh · PD 20 W con cables integrados', p:339, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-powerbank', st:[20,14], img:RIMG+'236861e6f/cargador-usb-con-power-bank-de-5-000-mah-pd-20-w-con-1-salida-usb-c-cables-integrados-usb-c-y-lightning-y-clavija-abatible.jpg'},
-  'PWB-20000':{n:'Power bank de 20 000 mAh · PD 45 W y QC 30 W', p:603.20, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-powerbank', st:[9,6], img:RIMG+'2391901d3/power-bank-de-20-000-mah-pd-de-45-w-y-qc-de-30-w-1-salida-usb-c-1-salida-usb-y-cable-usb-c.jpg'},
-  'CAR-PD100':{n:'Cargador USB-C Power Delivery de 100 W', p:419, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-adapter', st:[11,8], img:RIMG+'2343856ff/cargador-usb-c-power-delivery-de-100-w.jpg'},
-  'CAR-PD65':{n:'Cargador USB-C Power Delivery de 65 W', p:254, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-adapter', st:[16,12], img:RIMG+'234421fea/cargador-usb-c-power-delivery-de-65-w.jpg'},
-  'CAR-GAN45':{n:'Cargador GaN USB-C 45 W con cable retráctil', p:339, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-adapter', st:[13,9], img:RIMG+'23904f9d7/cargador-gan-usb-c-pd-45-w-con-cable-usb-c-retractil.jpg'},
-  'CAR-GAN100':{n:'Cargador GaN USB-C doble · 100 W', p:452.40, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-adapter', st:[8,5], img:RIMG+'234346748/cargador-gan-usb-c-doble-power-delivery-100-w.jpg'},
-  'CAR-LAP45':{n:'Cargador universal para laptop de 45 W', p:420, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-laptop', st:[7,4], img:RIMG+'23441a97b/cargador-universal-para-laptop-de-45-w.jpg'},
-  'CAR-LAP90':{n:'Cargador universal para laptop de 90 W', p:590, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-laptop', st:[6,3], img:RIMG+'234433f96/cargador-universal-para-laptop-de-90-w.jpg'},
-  'MUL-005':{n:'Multímetro compacto básico', p:90.48, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-meter', st:[18,13], img:RIMG+'180027251/multimetro-compacto-basico.jpg'},
-  'VCD-100':{n:'Voltímetro y amperímetro digital', p:84.68, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-meter', st:[15,10], img:RIMG+'211724938/voltimetro-y-amperimetro-digital.jpg'},
-  'PUN-530':{n:'Puntas profesionales para multímetro', p:127.60, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-meter', st:[12,8], img:RIMG+'183896e99/puntas-profesionales-para-multimetro.jpg'},
-  'PUN-030':{n:'Cables plug banana a caimán', p:58, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-cable', st:[20,15], img:RIMG+'23694d750/cables-plug-banana-a-caiman.jpg'},
-  'PUN-010':{n:'Puntas para osciloscopio con conector BNC y caimanes', p:61.48, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-sensor', st:[10,7], img:RIMG+'18382b8fe/puntas-para-osciloscopio-con-conector-bnc-y-caimanes.jpg'},
-  'MOU-BT':{n:'Mouse Bluetooth/RF multidispositivo recargable · 3 200 DPI', p:395, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[14,10], img:RIMG+'233067b25/mouse-bluetooth-rf-multidispositivo-con-bateria-recargable-1000-1600-2400-3200-dpi.jpg'},
-  'MOU-VERT':{n:'Mouse vertical Bluetooth/RF recargable · 2 400 DPI', p:395, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[9,6], img:RIMG+'2326090f7/mouse-bluetooth-rf-vertical-multidispositivo-con-bateria-recargable-800-1200-1800-2400-dpi.jpg'},
-  'MOU-1000':{n:'Mouse Bluetooth/RF recargable · 1 000 DPI', p:159, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[26,20], img:RIMG+'238583779/mouse-bluetooth-rf-multidispositivo-con-bateria-recargable-1000-dpi.jpg'},
-  'TEC-BT':{n:'Teclado Bluetooth/RF multidispositivo recargable', p:395, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[11,8], img:RIMG+'23845eed9/teclado-bluetooth-rf-multidispositivo-con-bateria-recargable.jpg'},
-  'TEC-LUZ':{n:'Teclado Bluetooth compacto con iluminación multicolor', p:239, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[15,11], img:RIMG+'217643ee4/teclado-bluetooth-recargable-con-iluminacion-multicolor-compacto.jpg'},
-  'KIT-TM':{n:'Teclado y mouse Bluetooth/RF multidispositivo recargables', p:629, loc:'Pasillo 7 · Cómputo', cat:'Cómputo', ic:'i-keyboard', st:[8,5], img:RIMG+'23938a787/teclado-y-mouse-bluetooth-rf-multidispositivo-con-bateria-recargable.jpg'},
+  'CCTV-611':{n:'Cámara Wi-Fi 6 · 4 Mpx robotizada con pantalla para videollamada', p:795, cat:'Smart Home', ic:'i-cam', img:RIMG+'237998bed/camara-de-seguridad-wi-fi-6-4-mpx-robotizada-con-pantalla-para-video-llamada-doble-banda.jpg'},
+  'CCTV-645':{n:'Cámara Wi-Fi 6 · 4 Mpx robotizada con panel solar · exterior', p:1790, cat:'Smart Home', ic:'i-cam', img:RIMG+'23565f40c/camara-de-seguridad-wi-fi-6-4-mpx-robotizada-con-panel-solar-para-exterior-compatible-con-asistentes-de-voz.jpg'},
+  'CCTV-641':{n:'Cámara Wi-Fi 6 · 4 Mpx fija con panel solar · exterior', p:1590, cat:'Smart Home', ic:'i-cam', img:RIMG+'23963ada0/camara-de-seguridad-wi-fi-6-4-mpx-fija-con-panel-solar-para-exterior-doble-banda-compatible-con-asistentes-de-voz.jpg'},
+  'CCTV-235':{n:'Cámara Wi-Fi/Ethernet · 4 Mpx robotizada con seguidor · exterior', p:1290, cat:'Smart Home', ic:'i-cam', img:RIMG+'21831ccba/camara-de-seguridad-wi-fi-ethernet-4-mpx-robotizada-con-seguidor-de-movimiento-para-exterior-doble-banda.jpg'},
+  'CCTV-238':{n:'Cámara Wi-Fi 3 Mpx robotizada para socket de foco', p:799, cat:'Smart Home', ic:'i-cam', img:RIMG+'22408459d/camara-de-seguridad-wi-fi-3-mpx-robotizada-con-seguidor-de-movimiento-para-socket.jpg'},
+  'CCTV-203':{n:'Cámara Wi-Fi 3 Mpx fija', p:595, cat:'Smart Home', ic:'i-cam', img:RIMG+'233138e6c/camara-de-seguridad-wi-fi-3-mpx-fija.jpg'},
+  'CCTV-625':{n:'Mini cámara Wi-Fi 6 · 4 Mpx fija · exterior', p:795, cat:'Smart Home', ic:'i-cam', img:RIMG+'234934894/mini-camara-de-seguridad-wi-fi-6-4-mpx-fija-doble-banda-para-exterior.jpg'},
+  'AUD-2540':{n:'Audífonos Bluetooth multipunto ANC · hasta 60 h', p:499, cat:'Audio', ic:'i-headset', img:RIMG+'23895fb6c/audifonos-bluetooth-multipunto-anc-con-bateria-de-hasta-60-h.jpg'},
+  'AUD-7655':{n:'Audífonos Bluetooth ultradelgados · hasta 35 h', p:295, cat:'Audio', ic:'i-headset', img:RIMG+'23830d290/audifonos-bluetooth-ultradelgados-con-bateria-de-hasta-35-h.jpg'},
+  'AUD-7120':{n:'Audífonos Bluetooth FreePods TWS tipo clip', p:324.80, cat:'Audio', ic:'i-headset', img:RIMG+'23947402b/audifonos-bluetooth-freepods-tws-ows-touch-tipo-clip-negros.jpg'},
+  'AUD-7420':{n:'Audífonos Bluetooth FreePods Crystal Pro TWS', p:209, cat:'Audio', ic:'i-headset', img:RIMG+'237151c1a/audifonos-bluetooth-freepods-crystal-pro-tws-touch.jpg'},
+  'AUD-AE600':{n:'Audífonos AEON 600 Hi-Res TWS con ANC', p:995, cat:'Audio', ic:'i-headset', img:RIMG+'23671e642/audifonos-bluetooth-aeon-600-hi-res-freepods-tws-con-anc-enc-por-ia-y-control-por-app.jpg'},
+  'AUD-AE200':{n:'Audífonos AEON 200 FreePods TWS', p:495, cat:'Audio', ic:'i-headset', img:RIMG+'236703f83/audifonos-bluetooth-aeon-200-freepods-tws-con-enc-por-ia-y-control-por-app.jpg'},
+  'AUD-AE800':{n:'Audífonos AEON 800 Hi-Res TWS con ANC adaptativo', p:1490, cat:'Audio', ic:'i-headset', img:RIMG+'236632359/audifonos-bluetooth-aeon-800-hi-res-freepods-tws-con-anc-adaptativo-enc-por-ia-y-control-por-app.jpg'},
+  'AUD-AE700':{n:'Audífonos AEON 700 Hi-Res con ANC/ENC', p:1290, cat:'Audio', ic:'i-headset', img:RIMG+'23631ef7f/audifonos-bluetooth-aeon-700-hi-res-con-anc-enc-por-ia-y-control-por-app.jpg'},
+  'BOC-9030':{n:'Mini bocina Bluetooth con linterna y clip', p:278.40, cat:'Audio', ic:'i-speaker', img:RIMG+'238934dc7/mini-bocina-bluetooth-con-linterna-y-clip.jpg'},
+  'BOC-9020':{n:'Mini bocina Bluetooth con sujeción MagSafe y TWS', p:299, cat:'Audio', ic:'i-speaker', img:RIMG+'238664bfa/mini-bocina-bluetooth-con-sujecion-magsafe-y-tws.jpg'},
+  'BOC-980':{n:'Bocina Bluetooth TWS Splash Bass · grande', p:835.20, cat:'Audio', ic:'i-speaker', img:RIMG+'238498a95/bocina-bluetooth-tws-splash-bass.jpg'},
+  'SPK-BT700':{n:'Juego de 2 bocinas amplificadas Bluetooth de 2 vías', p:2668, cat:'Audio', ic:'i-amp', img:RIMG+'23833ada9/juego-de-2-bocinas-amplificadas-bluetooth-de-2-vias.jpg'},
+  'BOC-940':{n:'Bocina Bluetooth TWS Splash Bass · mediana', p:661.20, cat:'Audio', ic:'i-speaker', img:RIMG+'238283ebf/bocina-bluetooth-tws-splash-bass.jpg'},
+  'BOOM-300':{n:'Bocina Bluetooth TWS Bass Boost', p:1450, cat:'Audio', ic:'i-speaker', img:RIMG+'23827a469/bocina-bluetooth-tws-bass-boost.jpg'},
+  'BOC-095':{n:'Bocinas Bluetooth multimedia para escritorio', p:1218, cat:'Audio', ic:'i-speaker', img:RIMG+'23826d6e0/bocinas-bluetooth-multimedia.jpg'},
+  'BOC-066':{n:'Bocinas multimedia para computadora', p:255.20, cat:'Audio', ic:'i-speaker', img:RIMG+'23807d0ac/bocinas-multimedia.jpg'},
+  'FOC-3X10':{n:'3 focos LED Wi-Fi multicolor de 10 W', p:406, cat:'Iluminación', ic:'i-bulb', img:RIMG+'21454584c/3-focos-led-wi-fi-rgb-w-multicolor-de-10-w.jpg'},
+  'FOC-15W':{n:'Foco LED Wi-Fi multicolor de 15 W', p:220.40, cat:'Iluminación', ic:'i-bulb', img:RIMG+'21657fbe0/foco-led-wi-fi-rgb-w-multicolor-de-15-w.jpg'},
+  'LAM-T24':{n:'Lámpara LED Wi-Fi de 24 W para techo', p:533.60, cat:'Iluminación', ic:'i-bulb', img:RIMG+'23906047e/lampara-led-wi-fi-de-24-w-para-techo.jpg'},
+  'FOC-USB5':{n:'Foco LED USB de 5 W', p:37.12, cat:'Iluminación', ic:'i-bulb', img:RIMG+'22032834b/foco-led-usb-5-w.jpg'},
+  'FOC-4X12':{n:'4 focos LED de luz fría de 12 W', p:90.48, cat:'Iluminación', ic:'i-bulb', img:RIMG+'2215502c4/4-focos-led-de-luz-fria-12-w.jpg'},
+  'FOC-SENS':{n:'Foco LED con sensor de movimiento de 10 W', p:139.20, cat:'Iluminación', ic:'i-sensor', img:RIMG+'20843a376/foco-led-con-sensor-de-movimiento-10-w.jpg'},
+  'FOC-12C':{n:'Foco LED de luz cálida de 12 W', p:24.36, cat:'Iluminación', ic:'i-bulb', img:RIMG+'22152bd72/foco-led-de-luz-calida-12-w.jpg'},
+  'COM-601':{n:'Lámpara LED para monitor con controles touch', p:295, cat:'Iluminación', ic:'i-lamp', img:RIMG+'238617095/lampara-led-para-monitor-con-controles-touch.jpg'},
+  'LAM-088':{n:'Lámpara LED articulada · luz fría, natural o cálida', p:339, cat:'Iluminación', ic:'i-lamp', img:RIMG+'214321a55/lampara-led-de-luz-fria-natural-o-calida-articulada.jpg'},
+  'LAM-200':{n:'Mini linterna de luz UV 365 nm recargable', p:162.40, cat:'Iluminación', ic:'i-lamp', img:RIMG+'23215a18a/mini-linterna-de-luz-uv-de-365-nm-con-bateria-recargable.jpg'},
+  'LAM-500':{n:'Lámpara LED de emergencia con luces direccionables', p:649.60, cat:'Iluminación', ic:'i-lamp', img:RIMG+'175545c12/lampara-led-de-emergencia-con-luces-direccionables-20-led.jpg'},
+  'LAM-180':{n:'Mini linterna LED tipo llavero recargable', p:74.25, cat:'Iluminación', ic:'i-lamp', img:RIMG+'228425fc8/mini-linterna-led-tipo-llavero-con-bateria-recargable.jpg'},
+  'LAM-290':{n:'Linterna LED de 1 200 lúmenes · aluminio, recargable', p:255.20, cat:'Iluminación', ic:'i-lamp', img:RIMG+'232467011/linterna-led-de-1-200-lumenes-con-bateria-recargable-y-estructura-de-aluminio.jpg'},
+  'PWB-5000':{n:'Power bank de 5 000 mAh · PD 20 W con cables integrados', p:339, cat:'Energía', ic:'i-powerbank', img:RIMG+'236861e6f/cargador-usb-con-power-bank-de-5-000-mah-pd-20-w-con-1-salida-usb-c-cables-integrados-usb-c-y-lightning-y-clavija-abatible.jpg'},
+  'PWB-20000':{n:'Power bank de 20 000 mAh · PD 45 W y QC 30 W', p:603.20, cat:'Energía', ic:'i-powerbank', img:RIMG+'2391901d3/power-bank-de-20-000-mah-pd-de-45-w-y-qc-de-30-w-1-salida-usb-c-1-salida-usb-y-cable-usb-c.jpg'},
+  'CAR-PD100':{n:'Cargador USB-C Power Delivery de 100 W', p:419, cat:'Energía', ic:'i-adapter', img:RIMG+'2343856ff/cargador-usb-c-power-delivery-de-100-w.jpg'},
+  'CAR-PD65':{n:'Cargador USB-C Power Delivery de 65 W', p:254, cat:'Energía', ic:'i-adapter', img:RIMG+'234421fea/cargador-usb-c-power-delivery-de-65-w.jpg'},
+  'CAR-GAN45':{n:'Cargador GaN USB-C 45 W con cable retráctil', p:339, cat:'Energía', ic:'i-adapter', img:RIMG+'23904f9d7/cargador-gan-usb-c-pd-45-w-con-cable-usb-c-retractil.jpg'},
+  'CAR-GAN100':{n:'Cargador GaN USB-C doble · 100 W', p:452.40, cat:'Energía', ic:'i-adapter', img:RIMG+'234346748/cargador-gan-usb-c-doble-power-delivery-100-w.jpg'},
+  'CAR-LAP45':{n:'Cargador universal para laptop de 45 W', p:420, cat:'Energía', ic:'i-laptop', img:RIMG+'23441a97b/cargador-universal-para-laptop-de-45-w.jpg'},
+  'CAR-LAP90':{n:'Cargador universal para laptop de 90 W', p:590, cat:'Energía', ic:'i-laptop', img:RIMG+'234433f96/cargador-universal-para-laptop-de-90-w.jpg'},
+  'MUL-005':{n:'Multímetro compacto básico', p:90.48, cat:'Herramienta', ic:'i-meter', img:RIMG+'180027251/multimetro-compacto-basico.jpg'},
+  'VCD-100':{n:'Voltímetro y amperímetro digital', p:84.68, cat:'Herramienta', ic:'i-meter', img:RIMG+'211724938/voltimetro-y-amperimetro-digital.jpg'},
+  'PUN-530':{n:'Puntas profesionales para multímetro', p:127.60, cat:'Herramienta', ic:'i-meter', img:RIMG+'183896e99/puntas-profesionales-para-multimetro.jpg'},
+  'PUN-030':{n:'Cables plug banana a caimán', p:58, cat:'Herramienta', ic:'i-cable', img:RIMG+'23694d750/cables-plug-banana-a-caiman.jpg'},
+  'PUN-010':{n:'Puntas para osciloscopio con conector BNC y caimanes', p:61.48, cat:'Herramienta', ic:'i-sensor', img:RIMG+'18382b8fe/puntas-para-osciloscopio-con-conector-bnc-y-caimanes.jpg'},
+  'MOU-BT':{n:'Mouse Bluetooth/RF multidispositivo recargable · 3 200 DPI', p:395, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'233067b25/mouse-bluetooth-rf-multidispositivo-con-bateria-recargable-1000-1600-2400-3200-dpi.jpg'},
+  'MOU-VERT':{n:'Mouse vertical Bluetooth/RF recargable · 2 400 DPI', p:395, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'2326090f7/mouse-bluetooth-rf-vertical-multidispositivo-con-bateria-recargable-800-1200-1800-2400-dpi.jpg'},
+  'MOU-1000':{n:'Mouse Bluetooth/RF recargable · 1 000 DPI', p:159, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'238583779/mouse-bluetooth-rf-multidispositivo-con-bateria-recargable-1000-dpi.jpg'},
+  'TEC-BT':{n:'Teclado Bluetooth/RF multidispositivo recargable', p:395, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'23845eed9/teclado-bluetooth-rf-multidispositivo-con-bateria-recargable.jpg'},
+  'TEC-LUZ':{n:'Teclado Bluetooth compacto con iluminación multicolor', p:239, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'217643ee4/teclado-bluetooth-recargable-con-iluminacion-multicolor-compacto.jpg'},
+  'KIT-TM':{n:'Teclado y mouse Bluetooth/RF multidispositivo recargables', p:629, cat:'Cómputo', ic:'i-keyboard', img:RIMG+'23938a787/teclado-y-mouse-bluetooth-rf-multidispositivo-con-bateria-recargable.jpg'},
   /* — segunda tanda: Casa y oficina, Automotriz, Línea estudiantil, Herramienta, Energía — */
-  'BAS-CIN':{n:'Báscula digital gramera cinética · hasta 5 kg', p:417.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-scale', st:[9,6], img:RIMG+'2327266d7/bascula-digital-gramera-cinetica-hasta-5-kg.jpg'},
-  'BAS-5KG':{n:'Báscula digital gramera rectangular · hasta 5 kg', p:197.2, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-scale', st:[15,11], img:RIMG+'23795b4c3/bascula-digital-gramera-hasta-5-kg-rectangular.jpg'},
-  'BAS-EQU':{n:'Báscula digital para equipaje · hasta 40 kg', p:162.4, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-scale', st:[12,8], img:RIMG+'219001014/bascula-digital-para-equipaje-hasta-40-kg.jpg'},
-  'BAS-180':{n:'Báscula digital personal · hasta 180 kg', p:208.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-scale', st:[14,10], img:RIMG+'20107d209/bascula-digital-hasta-180-kg.jpg'},
-  'TIM-080':{n:'Timbre inalámbrico · 80 m de alcance, 36 tonos', p:174, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[18,13], img:RIMG+'214825468/timbre-inalambrico-con-boton-resistente-a-la-lluvia-80-m-de-alcance-36-tonos.jpg'},
-  'TIM-060':{n:'Timbre inalámbrico · 60 m de alcance, 50 tonos', p:208.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[16,11], img:RIMG+'23841df94/timbre-inalambrico-con-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
-  'TIM-CIN':{n:'Timbre inalámbrico cinético · sin pilas, 100 m de alcance, 52 tonos', p:290, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[10,7], img:RIMG+'2316489f7/timbre-inalambrico-cinetico-100-m-de-alcance-52-tonos.jpg'},
-  'TIM-2C':{n:'Timbre inalámbrico de 2 campanas · 60 m de alcance, 50 tonos', p:301.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[9,6], img:RIMG+'23865e041/timbre-inalambrico-de-2-campanas-y-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
-  'TIM-140':{n:'Timbre inalámbrico con campana recargable · 140 m de alcance, 32 tonos', p:336.4, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[8,5], img:RIMG+'236742558/timbre-inalambrico-con-campana-de-bateria-recargable-y-boton-resistente-a-la-lluvia-140-m-de-alcance-32-tonos.jpg'},
-  'TIM-170':{n:'Timbre inalámbrico con contacto en campana · 170 m de alcance, 58 tonos', p:359.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-bell', st:[7,4], img:RIMG+'238736e22/timbre-inalambrico-con-contacto-en-la-campana-y-boton-resistente-a-la-lluvia-170-m-de-alcance-58-tonos.jpg'},
-  'TER-MINI':{n:'Mini termómetro digital con higrómetro', p:114.84, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[20,15], img:RIMG+'23367a77b/mini-termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
-  'TER-HIG':{n:'Termómetro digital con higrómetro', p:150.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[16,12], img:RIMG+'23179a027/termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
-  'TER-IE':{n:'Termómetro digital interior/exterior con humedad', p:243.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-thermo', st:[11,7], img:RIMG+'195763879/termometro-digital-para-interior-exterior-con-sensor-de-humedad.jpg'},
-  'VEN-INA':{n:'Ventilador personal inalámbrico recargable', p:239, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[22,16], img:RIMG+'2201082b9/ventilador-personal-inalambrico-recargable.jpg'},
-  'VEN-ROC':{n:'Ventilador personal con rociador y batería recargable', p:395, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[14,10], img:RIMG+'23317cdd1/ventilador-personal-con-rociador-y-bateria-recargable.jpg'},
-  'VEN-ENF':{n:'Ventilador de escritorio con enfriador de aire y luz LED', p:459, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[10,7], img:RIMG+'23276b97a/ventilador-con-enfriador-de-aire-y-luz-led-para-escritorio.jpg'},
-  'VEN-PLE':{n:'Ventilador plegable recargable con rejilla rotatoria', p:629, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[8,5], img:RIMG+'23284b891/ventilador-plegable-con-bateria-recargable-y-rejilla-rotatoria-para-escritorio.jpg'},
-  'VEN-OSC':{n:'Ventilador oscilante con temporizador · escritorio', p:699, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-home', st:[7,4], img:RIMG+'22830e412/ventilador-oscilante-con-ajuste-de-velocidad-y-temporizador-para-escritorio.jpg'},
-  'EST-ORG':{n:'Estuche organizador para accesorios electrónicos', p:125, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-box', st:[26,20], img:RIMG+'22787ee49/estuche-organizador-para-accesorios-electronicos.jpg'},
-  'EST-ORGG':{n:'Estuche organizador grande para accesorios', p:169, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-box', st:[18,13], img:RIMG+'23346f281/estuche-organizador-grande-para-accesorios-electronicos.jpg'},
-  'HUM-130':{n:'Humidificador y difusor de aroma 130 ml · efecto flama', p:339, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-spray', st:[12,8], img:RIMG+'2316824ea/humidificador-y-difusor-de-aroma-de-130-ml-con-efecto-flama.jpg'},
-  'DES-900':{n:'Deshumidificador electrónico · tanque de 900 ml', p:672.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-spray', st:[9,6], img:RIMG+'23627539d/deshumidificador-electronico-con-tanque-de-900-ml.jpg'},
-  'DES-3L':{n:'Deshumidificador electrónico · tanque de 3 L', p:1682, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-spray', st:[4,2], img:RIMG+'2170227eb/deshumidificador-electronico-con-tanque-de-3-l.jpg'},
-  'ASP-POR':{n:'Aspiradora portátil recargable', p:707.6, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-spray', st:[10,6], img:RIMG+'23498b649/aspiradora-portatil.jpg'},
-  'LIM-ULT':{n:'Limpiador ultrasónico para metales y joyería · 550 ml', p:429.2, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-spray', st:[7,4], img:RIMG+'22940ba5e/limpiador-ultrasonico-para-metales-y-joyeria-con-tina-de-550-ml.jpg'},
-  'POR-WIFI':{n:'Portarretratos digital Wi-Fi de 10"', p:1390, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-monitor', st:[5,3], img:RIMG+'231635de5/portarretratos-digital-wi-fi-de-10-pulgadas.jpg'},
-  'CAM-DEP4K':{n:'Cámara deportiva sumergible 4K Wi-Fi', p:846.8, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-cam', st:[8,5], img:RIMG+'19360b4d4/camara-deportiva-sumergible-4k-wi-fi.jpg'},
-  'COR-22':{n:'4 correas de silicón de 22 mm para smartwatch', p:116, loc:'Pasillo 11 · Casa y oficina', cat:'Casa', ic:'i-timer', st:[24,18], img:RIMG+'23388d4b8/4-correas-de-22-mm-de-silicon-para-smart-watch.jpg'},
-  'CAA-10':{n:'Cargador USB 10 W para auto', p:55.68, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[30,24], img:RIMG+'171518719/cargador-usb-10-w-para-auto.jpg'},
-  'CAA-18':{n:'Cargador USB QC 18 W para auto', p:62.64, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[28,22], img:RIMG+'19593bba7/cargador-usb-qc-18-w-para-auto.jpg'},
-  'CAA-2020':{n:'Cargador USB-C PD 20 W y USB QC 20 W para auto', p:84.68, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[25,19], img:RIMG+'2172259e4/cargador-usb-c-pd-20-w-y-usb-qc-20-w-para-auto.jpg'},
-  'CAA-3018':{n:'Cargador USB-C PD 30 W y USB QC 18 W para auto', p:150.8, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[18,13], img:RIMG+'230099849/cargador-usb-c-pd-30-w-y-usb-qc-18-w-para-auto.jpg'},
-  'CAA-30E':{n:'Cargador USB-C PD 30 W con extensor para auto', p:197.2, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[14,10], img:RIMG+'23386a9e3/cargador-usb-c-pd-30-w-con-extensor-para-auto.jpg'},
-  'CAA-RET':{n:'Cargador USB-C PD 30 W con cable retráctil para auto', p:278.4, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[11,7], img:RIMG+'23950bcf7/cargador-usb-c-pd-30-w-usb-qc-15-w-con-cable-retractil-para-auto.jpg'},
-  'CAA-65':{n:'Cargador USB-C PD 65 W / USB QC 18 W para auto', p:336.4, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[9,6], img:RIMG+'23137519c/cargador-usb-c-pd-65-w-usb-qc-18-w-para-auto.jpg'},
-  'CAA-100':{n:'Cargador USB-C PD 100 W / USB QC 18 W para auto', p:417.6, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-car', st:[7,4], img:RIMG+'22816d93d/cargador-usb-c-pd-100-w-usb-qc-18-w-para-auto.jpg'},
-  'ALC-DIG':{n:'Alcoholímetro digital compacto', p:208.8, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-meter', st:[13,9], img:RIMG+'177019df2/alcoholimetro-digital-compacto.jpg'},
-  'OBD-WIFI':{n:'Escáner automotriz OBD2 Wi-Fi · Android, iOS y Windows', p:255.2, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-scan', st:[10,7], img:RIMG+'23025720a/escaner-automotriz-obd2-wi-fi-para-android-ios-y-windows.jpg'},
-  'ARR-PB':{n:'Arrancador para auto con power bank y linterna LED', p:823.6, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-powerbank', st:[8,5], img:RIMG+'210450eb5/arrancador-para-auto-compacto-o-suv-power-bank-y-linterna-led.jpg'},
-  'ARR-INF':{n:'Arrancador para auto con inflador de llantas y power bank', p:1508, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-powerbank', st:[5,3], img:RIMG+'236649f0e/arrancador-para-auto-compacto-o-suv-inflador-de-llantas-power-bank-y-linterna-led.jpg'},
-  'DASH-2K':{n:'Cámara para auto (Dash Cam) 2K con cámara de reversa', p:1067.2, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-cam', st:[6,4], img:RIMG+'2303550c5/camara-para-auto-dash-cam-con-grabador-2k-wdr-y-camara-de-reversa.jpg'},
-  'GPS-OBD':{n:'Rastreador GPS OBDII para vehículos', p:1055.6, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-pin', st:[7,4], img:RIMG+'23522da2f/rastreador-localizador-gps-obdii-para-vehiculos.jpg'},
-  'GPS-VEH':{n:'Rastreador/localizador GPS para vehículos', p:1450, loc:'Pasillo 12 · Automotriz', cat:'Automotriz', ic:'i-pin', st:[6,3], img:RIMG+'236666386/rastreador-localizador-gps-para-vehiculos.jpg'},
-  'KIT-SOL6':{n:'Kit solar 6 en 1 para armar', p:174, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[20,15], img:RIMG+'17494dd43/kit-solar-6-en-1-para-armar.jpg'},
-  'KIT-TES':{n:'Kit bobina de Tesla para armar', p:199, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[12,8], img:RIMG+'21891e629/kit-bobina-de-tesla-para-armar.jpg'},
-  'KIT-TOQ':{n:'Kit de caja de toques para armar', p:232, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[15,11], img:RIMG+'20019f5d3/kit-de-caja-de-toques-para-armar.jpg'},
-  'KIT-SOL4':{n:'Kit solar 4 en 1 para armar', p:255.2, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[14,10], img:RIMG+'19578c352/kit-solar-4-en-1.jpg'},
-  'KIT-SH12':{n:'Kit solar e hidráulico 12 en 1', p:580, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[9,6], img:RIMG+'204642aa6/kit-solar-e-hidraulico-12-en-1.jpg'},
-  'KIT-PM5':{n:'Kit de programación mecánica 5 en 1 para armar', p:661.2, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[7,4], img:RIMG+'20955d804/kit-de-programacion-mecanica-5-en-1-para-armar.jpg'},
-  'KIT-BOT':{n:'Kit para armar SmartBot', p:661.2, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-kit', st:[6,4], img:RIMG+'20463015e/kit-para-armar-smartbot.jpg'},
-  'SEN-OPT':{n:'Sensor óptico para proyectos', p:19.72, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[40,32], img:RIMG+'2143185cb/sensor-optico.jpg'},
-  'SEN-DHT':{n:'Sensor de temperatura y humedad (DHT11)', p:31.32, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[35,28], img:RIMG+'1946055a7/sensor-de-temperatura-y-humedad-dht11.jpg'},
-  'SEN-LIN':{n:'Sensor seguidor de línea', p:31.32, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[30,24], img:RIMG+'20292a55c/sensor-seguidor-de-linea.jpg'},
-  'SEN-PIR':{n:'Sensor de movimiento (PIR)', p:40.6, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[28,21], img:RIMG+'19454216b/sensor-de-movimiento-pir.jpg'},
-  'SEN-ULT':{n:'Sensor ultrasónico de distancia', p:41.75, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[26,20], img:RIMG+'1945948ab/sensor-ultrasonico.jpg'},
-  'SEN-POL':{n:'Sensor de polvo', p:150.8, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-sensor', st:[10,7], img:RIMG+'20305ccb4/sensor-de-polvo.jpg'},
-  'MOT-MINI':{n:'Mini motor de corriente directa', p:18.56, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[45,36], img:RIMG+'20367551d/mini-motor-de-corriente-directa.jpg'},
-  'MOT-RED48':{n:'Motor reductor de doble eje tipo I · 3 Vcc, 1:48', p:31.32, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[32,25], img:RIMG+'194642b82/motor-reductor-de-doble-eje-tipo-i-3-vcc-1-48.jpg'},
-  'BOM-80':{n:'Micro bomba de agua · 80–120 l/h', p:35.96, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[20,15], img:RIMG+'21430a4ed/micro-bomba-de-agua-con-flujo-de-80-120-l-h.jpg'},
-  'MOT-PAS':{n:'Motor a pasos de 4 líneas de control · 5 Vcc', p:41.75, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[24,18], img:RIMG+'19465b474/motor-a-pasos-de-4-lineas-de-control-5-vcc.jpg'},
-  'SRV-18':{n:'Micro servomotor · torque de 1.8 kgf/cm', p:54.52, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[22,16], img:RIMG+'196043d46/micro-servomotor-con-torque-de-1-8-kgf-cm.jpg'},
-  'MOT-D6':{n:'Motor reductor metálico eje tipo D · 6 Vcc', p:91.64, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[14,10], img:RIMG+'19579fc9f/motor-reductor-metalico-con-eje-tipo-d-6-vcc.jpg'},
-  'MOT-L298':{n:'Tarjeta para control de motores CC (L298N)', p:93.96, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-board', st:[16,11], img:RIMG+'19544e221/tarjeta-para-control-de-motores-cc-l298n.jpg'},
-  'SRV-10':{n:'Servomotor · torque de 10 kgf/cm', p:174, loc:'Pasillo 13 · Estudiantil', cat:'Estudiantil', ic:'i-motor', st:[9,6], img:RIMG+'203010f82/servomotor-con-torque-de-10-kgf-cm.jpg'},
-  'DES-6R':{n:'Juego de 6 desarmadores metálicos tipo relojero', p:61.48, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-screwdriver', st:[24,18], img:RIMG+'173595fee/juego-de-6-desarmadores-metalicos-tipo-relojero.jpg'},
-  'DES-30P':{n:'Desarmador con 30 puntas intercambiables', p:174, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-screwdriver', st:[15,11], img:RIMG+'173769022/desarmador-con-30-puntas-intercambiables.jpg'},
-  'DES-98P':{n:'Desarmador con 98 puntas intercambiables y accesorios', p:255.2, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-screwdriver', st:[9,6], img:RIMG+'23230a785/desarmador-con-98-puntas-intercambiables-y-accesorios.jpg'},
-  'PIN-PTA':{n:'Pinza profesional de punta', p:77.72, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-plier', st:[20,15], img:RIMG+'1736858ea/pinza-profesional-de-punta.jpg'},
-  'PIN-COR':{n:'Pinza profesional de corte angular', p:77.72, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-plier', st:[20,15], img:RIMG+'17367d6d7/pinza-profesional-de-corte-angular.jpg'},
-  'PIN-RJ45':{n:'Pinza ponchadora de plug RJ45', p:162.4, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-net', st:[14,10], img:RIMG+'174052330/pinza-ponchadora-de-plug-rj45.jpg'},
-  'PIN-24':{n:'Pinza multiherramientas 24 en 1', p:174, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-plier', st:[12,8], img:RIMG+'22329f84c/pinza-multiherramientas-24-en-1.jpg'},
-  'PIN-UTP':{n:'Pinza pela cable telefónico, coaxial y de red (UTP)', p:174, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-net', st:[11,7], img:RIMG+'173557dd5/pinza-pela-cable-telefonico-coaxial-y-de-red-utp.jpg'},
-  'PIN-CRI':{n:'Pinza profesional pela cable, cortadora y crimpadora', p:255.2, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-plier', st:[10,7], img:RIMG+'22993db9a/pinza-profesional-pela-cable-cortadora-y-de-presion-crimpadora.jpg'},
-  'PON-IMP':{n:'Ponchadora profesional de impacto para jack RJ45', p:417.6, loc:'Pasillo 9 · Herramienta', cat:'Herramienta', ic:'i-net', st:[7,4], img:RIMG+'22302df25/herramienta-profesional-de-impacto-ponchadora-para-jack-rj45-con-navaja-reversible.jpg'},
-  'EXT-3C4':{n:'Extensión de 3 contactos · 4 m', p:63.8, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[30,24], img:RIMG+'17173daa4/extension-de-3-contactos-de-4-m.jpg'},
-  'EXT-90':{n:'Extensión de 3 contactos con clavija a 90° · 4 m', p:67.28, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[26,20], img:RIMG+'171740769/extension-de-3-contactos-con-clavija-a-90-de-4-m.jpg'},
-  'EXT-3M':{n:'Extensión polarizada para uso rudo · 3 m', p:82.36, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[22,16], img:RIMG+'1717000da/extension-polarizada-para-uso-rudo-de-3-m.jpg'},
-  'EXT-SUP3':{n:'Extensión con supresor de picos (78 J) uso rudo · 3 m', p:106.72, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[18,13], img:RIMG+'23793d2e3/extension-polarizada-con-supresor-de-picos-78-j-para-uso-rudo-de-3-m.jpg'},
-  'EXT-10M':{n:'Extensión polarizada para uso rudo · 10 m', p:127.6, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[16,11], img:RIMG+'23683840b/extension-polarizada-para-uso-rudo-de-10-m.jpg'},
-  'EXT-8M':{n:'Extensión polarizada para uso rudo · 8 m', p:174, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[14,10], img:RIMG+'1717285c2/extension-polarizada-para-uso-rudo-de-8-m.jpg'},
-  'EXT-20M':{n:'Extensión polarizada para uso rudo · 20 m', p:208.8, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[9,6], img:RIMG+'236840d1b/extension-polarizada-para-uso-rudo-de-20-m.jpg'},
-  'EXT-SUP8':{n:'Extensión de 3 contactos con supresor (78 J) · 8 m', p:243.6, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[8,5], img:RIMG+'23794095e/extension-polarizada-de-3-contactos-con-supresor-de-picos-de-voltaje-78-j-para-uso-rudo-de-8-m.jpg'},
-  'EXT-30M':{n:'Extensión polarizada para uso rudo · 30 m', p:336.4, loc:'Pasillo 2 · Energía', cat:'Energía', ic:'i-strip', st:[5,3], img:RIMG+'23685e274/extension-polarizada-para-uso-rudo-de-30-m.jpg'}
+  'BAS-CIN':{n:'Báscula digital gramera cinética · hasta 5 kg', p:417.6, cat:'Casa', ic:'i-scale', img:RIMG+'2327266d7/bascula-digital-gramera-cinetica-hasta-5-kg.jpg'},
+  'BAS-5KG':{n:'Báscula digital gramera rectangular · hasta 5 kg', p:197.2, cat:'Casa', ic:'i-scale', img:RIMG+'23795b4c3/bascula-digital-gramera-hasta-5-kg-rectangular.jpg'},
+  'BAS-EQU':{n:'Báscula digital para equipaje · hasta 40 kg', p:162.4, cat:'Casa', ic:'i-scale', img:RIMG+'219001014/bascula-digital-para-equipaje-hasta-40-kg.jpg'},
+  'BAS-180':{n:'Báscula digital personal · hasta 180 kg', p:208.8, cat:'Casa', ic:'i-scale', img:RIMG+'20107d209/bascula-digital-hasta-180-kg.jpg'},
+  'TIM-080':{n:'Timbre inalámbrico · 80 m de alcance, 36 tonos', p:174, cat:'Casa', ic:'i-bell', img:RIMG+'214825468/timbre-inalambrico-con-boton-resistente-a-la-lluvia-80-m-de-alcance-36-tonos.jpg'},
+  'TIM-060':{n:'Timbre inalámbrico · 60 m de alcance, 50 tonos', p:208.8, cat:'Casa', ic:'i-bell', img:RIMG+'23841df94/timbre-inalambrico-con-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
+  'TIM-CIN':{n:'Timbre inalámbrico cinético · sin pilas, 100 m de alcance, 52 tonos', p:290, cat:'Casa', ic:'i-bell', img:RIMG+'2316489f7/timbre-inalambrico-cinetico-100-m-de-alcance-52-tonos.jpg'},
+  'TIM-2C':{n:'Timbre inalámbrico de 2 campanas · 60 m de alcance, 50 tonos', p:301.6, cat:'Casa', ic:'i-bell', img:RIMG+'23865e041/timbre-inalambrico-de-2-campanas-y-boton-resistente-a-la-lluvia-60-m-de-alcance-50-tonos.jpg'},
+  'TIM-140':{n:'Timbre inalámbrico con campana recargable · 140 m de alcance, 32 tonos', p:336.4, cat:'Casa', ic:'i-bell', img:RIMG+'236742558/timbre-inalambrico-con-campana-de-bateria-recargable-y-boton-resistente-a-la-lluvia-140-m-de-alcance-32-tonos.jpg'},
+  'TIM-170':{n:'Timbre inalámbrico con contacto en campana · 170 m de alcance, 58 tonos', p:359.6, cat:'Casa', ic:'i-bell', img:RIMG+'238736e22/timbre-inalambrico-con-contacto-en-la-campana-y-boton-resistente-a-la-lluvia-170-m-de-alcance-58-tonos.jpg'},
+  'TER-MINI':{n:'Mini termómetro digital con higrómetro', p:114.84, cat:'Casa', ic:'i-thermo', img:RIMG+'23367a77b/mini-termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
+  'TER-HIG':{n:'Termómetro digital con higrómetro', p:150.8, cat:'Casa', ic:'i-thermo', img:RIMG+'23179a027/termometro-digital-con-sensor-de-humedad-higrometro.jpg'},
+  'TER-IE':{n:'Termómetro digital interior/exterior con humedad', p:243.6, cat:'Casa', ic:'i-thermo', img:RIMG+'195763879/termometro-digital-para-interior-exterior-con-sensor-de-humedad.jpg'},
+  'VEN-INA':{n:'Ventilador personal inalámbrico recargable', p:239, cat:'Casa', ic:'i-home', img:RIMG+'2201082b9/ventilador-personal-inalambrico-recargable.jpg'},
+  'VEN-ROC':{n:'Ventilador personal con rociador y batería recargable', p:395, cat:'Casa', ic:'i-home', img:RIMG+'23317cdd1/ventilador-personal-con-rociador-y-bateria-recargable.jpg'},
+  'VEN-ENF':{n:'Ventilador de escritorio con enfriador de aire y luz LED', p:459, cat:'Casa', ic:'i-home', img:RIMG+'23276b97a/ventilador-con-enfriador-de-aire-y-luz-led-para-escritorio.jpg'},
+  'VEN-PLE':{n:'Ventilador plegable recargable con rejilla rotatoria', p:629, cat:'Casa', ic:'i-home', img:RIMG+'23284b891/ventilador-plegable-con-bateria-recargable-y-rejilla-rotatoria-para-escritorio.jpg'},
+  'VEN-OSC':{n:'Ventilador oscilante con temporizador · escritorio', p:699, cat:'Casa', ic:'i-home', img:RIMG+'22830e412/ventilador-oscilante-con-ajuste-de-velocidad-y-temporizador-para-escritorio.jpg'},
+  'EST-ORG':{n:'Estuche organizador para accesorios electrónicos', p:125, cat:'Casa', ic:'i-box', img:RIMG+'22787ee49/estuche-organizador-para-accesorios-electronicos.jpg'},
+  'EST-ORGG':{n:'Estuche organizador grande para accesorios', p:169, cat:'Casa', ic:'i-box', img:RIMG+'23346f281/estuche-organizador-grande-para-accesorios-electronicos.jpg'},
+  'HUM-130':{n:'Humidificador y difusor de aroma 130 ml · efecto flama', p:339, cat:'Casa', ic:'i-spray', img:RIMG+'2316824ea/humidificador-y-difusor-de-aroma-de-130-ml-con-efecto-flama.jpg'},
+  'DES-900':{n:'Deshumidificador electrónico · tanque de 900 ml', p:672.8, cat:'Casa', ic:'i-spray', img:RIMG+'23627539d/deshumidificador-electronico-con-tanque-de-900-ml.jpg'},
+  'DES-3L':{n:'Deshumidificador electrónico · tanque de 3 L', p:1682, cat:'Casa', ic:'i-spray', img:RIMG+'2170227eb/deshumidificador-electronico-con-tanque-de-3-l.jpg'},
+  'ASP-POR':{n:'Aspiradora portátil recargable', p:707.6, cat:'Casa', ic:'i-spray', img:RIMG+'23498b649/aspiradora-portatil.jpg'},
+  'LIM-ULT':{n:'Limpiador ultrasónico para metales y joyería · 550 ml', p:429.2, cat:'Casa', ic:'i-spray', img:RIMG+'22940ba5e/limpiador-ultrasonico-para-metales-y-joyeria-con-tina-de-550-ml.jpg'},
+  'POR-WIFI':{n:'Portarretratos digital Wi-Fi de 10"', p:1390, cat:'Casa', ic:'i-monitor', img:RIMG+'231635de5/portarretratos-digital-wi-fi-de-10-pulgadas.jpg'},
+  'CAM-DEP4K':{n:'Cámara deportiva sumergible 4K Wi-Fi', p:846.8, cat:'Casa', ic:'i-cam', img:RIMG+'19360b4d4/camara-deportiva-sumergible-4k-wi-fi.jpg'},
+  'COR-22':{n:'4 correas de silicón de 22 mm para smartwatch', p:116, cat:'Casa', ic:'i-timer', img:RIMG+'23388d4b8/4-correas-de-22-mm-de-silicon-para-smart-watch.jpg'},
+  'CAA-10':{n:'Cargador USB 10 W para auto', p:55.68, cat:'Automotriz', ic:'i-car', img:RIMG+'171518719/cargador-usb-10-w-para-auto.jpg'},
+  'CAA-18':{n:'Cargador USB QC 18 W para auto', p:62.64, cat:'Automotriz', ic:'i-car', img:RIMG+'19593bba7/cargador-usb-qc-18-w-para-auto.jpg'},
+  'CAA-2020':{n:'Cargador USB-C PD 20 W y USB QC 20 W para auto', p:84.68, cat:'Automotriz', ic:'i-car', img:RIMG+'2172259e4/cargador-usb-c-pd-20-w-y-usb-qc-20-w-para-auto.jpg'},
+  'CAA-3018':{n:'Cargador USB-C PD 30 W y USB QC 18 W para auto', p:150.8, cat:'Automotriz', ic:'i-car', img:RIMG+'230099849/cargador-usb-c-pd-30-w-y-usb-qc-18-w-para-auto.jpg'},
+  'CAA-30E':{n:'Cargador USB-C PD 30 W con extensor para auto', p:197.2, cat:'Automotriz', ic:'i-car', img:RIMG+'23386a9e3/cargador-usb-c-pd-30-w-con-extensor-para-auto.jpg'},
+  'CAA-RET':{n:'Cargador USB-C PD 30 W con cable retráctil para auto', p:278.4, cat:'Automotriz', ic:'i-car', img:RIMG+'23950bcf7/cargador-usb-c-pd-30-w-usb-qc-15-w-con-cable-retractil-para-auto.jpg'},
+  'CAA-65':{n:'Cargador USB-C PD 65 W / USB QC 18 W para auto', p:336.4, cat:'Automotriz', ic:'i-car', img:RIMG+'23137519c/cargador-usb-c-pd-65-w-usb-qc-18-w-para-auto.jpg'},
+  'CAA-100':{n:'Cargador USB-C PD 100 W / USB QC 18 W para auto', p:417.6, cat:'Automotriz', ic:'i-car', img:RIMG+'22816d93d/cargador-usb-c-pd-100-w-usb-qc-18-w-para-auto.jpg'},
+  'ALC-DIG':{n:'Alcoholímetro digital compacto', p:208.8, cat:'Automotriz', ic:'i-meter', img:RIMG+'177019df2/alcoholimetro-digital-compacto.jpg'},
+  'OBD-WIFI':{n:'Escáner automotriz OBD2 Wi-Fi · Android, iOS y Windows', p:255.2, cat:'Automotriz', ic:'i-scan', img:RIMG+'23025720a/escaner-automotriz-obd2-wi-fi-para-android-ios-y-windows.jpg'},
+  'ARR-PB':{n:'Arrancador para auto con power bank y linterna LED', p:823.6, cat:'Automotriz', ic:'i-powerbank', img:RIMG+'210450eb5/arrancador-para-auto-compacto-o-suv-power-bank-y-linterna-led.jpg'},
+  'ARR-INF':{n:'Arrancador para auto con inflador de llantas y power bank', p:1508, cat:'Automotriz', ic:'i-powerbank', img:RIMG+'236649f0e/arrancador-para-auto-compacto-o-suv-inflador-de-llantas-power-bank-y-linterna-led.jpg'},
+  'DASH-2K':{n:'Cámara para auto (Dash Cam) 2K con cámara de reversa', p:1067.2, cat:'Automotriz', ic:'i-cam', img:RIMG+'2303550c5/camara-para-auto-dash-cam-con-grabador-2k-wdr-y-camara-de-reversa.jpg'},
+  'GPS-OBD':{n:'Rastreador GPS OBDII para vehículos', p:1055.6, cat:'Automotriz', ic:'i-pin', img:RIMG+'23522da2f/rastreador-localizador-gps-obdii-para-vehiculos.jpg'},
+  'GPS-VEH':{n:'Rastreador/localizador GPS para vehículos', p:1450, cat:'Automotriz', ic:'i-pin', img:RIMG+'236666386/rastreador-localizador-gps-para-vehiculos.jpg'},
+  'KIT-SOL6':{n:'Kit solar 6 en 1 para armar', p:174, cat:'Estudiantil', ic:'i-kit', img:RIMG+'17494dd43/kit-solar-6-en-1-para-armar.jpg'},
+  'KIT-TES':{n:'Kit bobina de Tesla para armar', p:199, cat:'Estudiantil', ic:'i-kit', img:RIMG+'21891e629/kit-bobina-de-tesla-para-armar.jpg'},
+  'KIT-TOQ':{n:'Kit de caja de toques para armar', p:232, cat:'Estudiantil', ic:'i-kit', img:RIMG+'20019f5d3/kit-de-caja-de-toques-para-armar.jpg'},
+  'KIT-SOL4':{n:'Kit solar 4 en 1 para armar', p:255.2, cat:'Estudiantil', ic:'i-kit', img:RIMG+'19578c352/kit-solar-4-en-1.jpg'},
+  'KIT-SH12':{n:'Kit solar e hidráulico 12 en 1', p:580, cat:'Estudiantil', ic:'i-kit', img:RIMG+'204642aa6/kit-solar-e-hidraulico-12-en-1.jpg'},
+  'KIT-PM5':{n:'Kit de programación mecánica 5 en 1 para armar', p:661.2, cat:'Estudiantil', ic:'i-kit', img:RIMG+'20955d804/kit-de-programacion-mecanica-5-en-1-para-armar.jpg'},
+  'KIT-BOT':{n:'Kit para armar SmartBot', p:661.2, cat:'Estudiantil', ic:'i-kit', img:RIMG+'20463015e/kit-para-armar-smartbot.jpg'},
+  'SEN-OPT':{n:'Sensor óptico para proyectos', p:19.72, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'2143185cb/sensor-optico.jpg'},
+  'SEN-DHT':{n:'Sensor de temperatura y humedad (DHT11)', p:31.32, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'1946055a7/sensor-de-temperatura-y-humedad-dht11.jpg'},
+  'SEN-LIN':{n:'Sensor seguidor de línea', p:31.32, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'20292a55c/sensor-seguidor-de-linea.jpg'},
+  'SEN-PIR':{n:'Sensor de movimiento (PIR)', p:40.6, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'19454216b/sensor-de-movimiento-pir.jpg'},
+  'SEN-ULT':{n:'Sensor ultrasónico de distancia', p:41.75, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'1945948ab/sensor-ultrasonico.jpg'},
+  'SEN-POL':{n:'Sensor de polvo', p:150.8, cat:'Estudiantil', ic:'i-sensor', img:RIMG+'20305ccb4/sensor-de-polvo.jpg'},
+  'MOT-MINI':{n:'Mini motor de corriente directa', p:18.56, cat:'Estudiantil', ic:'i-motor', img:RIMG+'20367551d/mini-motor-de-corriente-directa.jpg'},
+  'MOT-RED48':{n:'Motor reductor de doble eje tipo I · 3 Vcc, 1:48', p:31.32, cat:'Estudiantil', ic:'i-motor', img:RIMG+'194642b82/motor-reductor-de-doble-eje-tipo-i-3-vcc-1-48.jpg'},
+  'BOM-80':{n:'Micro bomba de agua · 80–120 l/h', p:35.96, cat:'Estudiantil', ic:'i-motor', img:RIMG+'21430a4ed/micro-bomba-de-agua-con-flujo-de-80-120-l-h.jpg'},
+  'MOT-PAS':{n:'Motor a pasos de 4 líneas de control · 5 Vcc', p:41.75, cat:'Estudiantil', ic:'i-motor', img:RIMG+'19465b474/motor-a-pasos-de-4-lineas-de-control-5-vcc.jpg'},
+  'SRV-18':{n:'Micro servomotor · torque de 1.8 kgf/cm', p:54.52, cat:'Estudiantil', ic:'i-motor', img:RIMG+'196043d46/micro-servomotor-con-torque-de-1-8-kgf-cm.jpg'},
+  'MOT-D6':{n:'Motor reductor metálico eje tipo D · 6 Vcc', p:91.64, cat:'Estudiantil', ic:'i-motor', img:RIMG+'19579fc9f/motor-reductor-metalico-con-eje-tipo-d-6-vcc.jpg'},
+  'MOT-L298':{n:'Tarjeta para control de motores CC (L298N)', p:93.96, cat:'Estudiantil', ic:'i-board', img:RIMG+'19544e221/tarjeta-para-control-de-motores-cc-l298n.jpg'},
+  'SRV-10':{n:'Servomotor · torque de 10 kgf/cm', p:174, cat:'Estudiantil', ic:'i-motor', img:RIMG+'203010f82/servomotor-con-torque-de-10-kgf-cm.jpg'},
+  'DES-6R':{n:'Juego de 6 desarmadores metálicos tipo relojero', p:61.48, cat:'Herramienta', ic:'i-screwdriver', img:RIMG+'173595fee/juego-de-6-desarmadores-metalicos-tipo-relojero.jpg'},
+  'DES-30P':{n:'Desarmador con 30 puntas intercambiables', p:174, cat:'Herramienta', ic:'i-screwdriver', img:RIMG+'173769022/desarmador-con-30-puntas-intercambiables.jpg'},
+  'DES-98P':{n:'Desarmador con 98 puntas intercambiables y accesorios', p:255.2, cat:'Herramienta', ic:'i-screwdriver', img:RIMG+'23230a785/desarmador-con-98-puntas-intercambiables-y-accesorios.jpg'},
+  'PIN-PTA':{n:'Pinza profesional de punta', p:77.72, cat:'Herramienta', ic:'i-plier', img:RIMG+'1736858ea/pinza-profesional-de-punta.jpg'},
+  'PIN-COR':{n:'Pinza profesional de corte angular', p:77.72, cat:'Herramienta', ic:'i-plier', img:RIMG+'17367d6d7/pinza-profesional-de-corte-angular.jpg'},
+  'PIN-RJ45':{n:'Pinza ponchadora de plug RJ45', p:162.4, cat:'Herramienta', ic:'i-net', img:RIMG+'174052330/pinza-ponchadora-de-plug-rj45.jpg'},
+  'PIN-24':{n:'Pinza multiherramientas 24 en 1', p:174, cat:'Herramienta', ic:'i-plier', img:RIMG+'22329f84c/pinza-multiherramientas-24-en-1.jpg'},
+  'PIN-UTP':{n:'Pinza pela cable telefónico, coaxial y de red (UTP)', p:174, cat:'Herramienta', ic:'i-net', img:RIMG+'173557dd5/pinza-pela-cable-telefonico-coaxial-y-de-red-utp.jpg'},
+  'PIN-CRI':{n:'Pinza profesional pela cable, cortadora y crimpadora', p:255.2, cat:'Herramienta', ic:'i-plier', img:RIMG+'22993db9a/pinza-profesional-pela-cable-cortadora-y-de-presion-crimpadora.jpg'},
+  'PON-IMP':{n:'Ponchadora profesional de impacto para jack RJ45', p:417.6, cat:'Herramienta', ic:'i-net', img:RIMG+'22302df25/herramienta-profesional-de-impacto-ponchadora-para-jack-rj45-con-navaja-reversible.jpg'},
+  'EXT-3C4':{n:'Extensión de 3 contactos · 4 m', p:63.8, cat:'Energía', ic:'i-strip', img:RIMG+'17173daa4/extension-de-3-contactos-de-4-m.jpg'},
+  'EXT-90':{n:'Extensión de 3 contactos con clavija a 90° · 4 m', p:67.28, cat:'Energía', ic:'i-strip', img:RIMG+'171740769/extension-de-3-contactos-con-clavija-a-90-de-4-m.jpg'},
+  'EXT-3M':{n:'Extensión polarizada para uso rudo · 3 m', p:82.36, cat:'Energía', ic:'i-strip', img:RIMG+'1717000da/extension-polarizada-para-uso-rudo-de-3-m.jpg'},
+  'EXT-SUP3':{n:'Extensión con supresor de picos (78 J) uso rudo · 3 m', p:106.72, cat:'Energía', ic:'i-strip', img:RIMG+'23793d2e3/extension-polarizada-con-supresor-de-picos-78-j-para-uso-rudo-de-3-m.jpg'},
+  'EXT-10M':{n:'Extensión polarizada para uso rudo · 10 m', p:127.6, cat:'Energía', ic:'i-strip', img:RIMG+'23683840b/extension-polarizada-para-uso-rudo-de-10-m.jpg'},
+  'EXT-8M':{n:'Extensión polarizada para uso rudo · 8 m', p:174, cat:'Energía', ic:'i-strip', img:RIMG+'1717285c2/extension-polarizada-para-uso-rudo-de-8-m.jpg'},
+  'EXT-20M':{n:'Extensión polarizada para uso rudo · 20 m', p:208.8, cat:'Energía', ic:'i-strip', img:RIMG+'236840d1b/extension-polarizada-para-uso-rudo-de-20-m.jpg'},
+  'EXT-SUP8':{n:'Extensión de 3 contactos con supresor (78 J) · 8 m', p:243.6, cat:'Energía', ic:'i-strip', img:RIMG+'23794095e/extension-polarizada-de-3-contactos-con-supresor-de-picos-de-voltaje-78-j-para-uso-rudo-de-8-m.jpg'},
+  'EXT-30M':{n:'Extensión polarizada para uso rudo · 30 m', p:336.4, cat:'Energía', ic:'i-strip', img:RIMG+'23685e274/extension-polarizada-para-uso-rudo-de-30-m.jpg'}
 };
 
 
@@ -2124,9 +2123,8 @@ function specTail(sku){
   return [
     ['Marca', 'Steren'],
     ['Modelo', sku],
-    ['Dónde está', p.loc],
     ['Garantía', '1 año directo con Steren'],
-    ['Si aquí se agota', 'Te lo traemos de otra tienda o te lo mandamos a casa']
+    ['Si no hay aquí', 'Te lo conseguimos de otra tienda o te lo mandamos a casa']
   ];
 }
 
@@ -2237,148 +2235,148 @@ const PROBLEMS = [
    TAXONOMÍA REAL DE STEREN · el mapa único de voz y toque
    No inventamos navegación: usamos el árbol de categorías del catálogo.
    Cada subcategoría trae los sinónimos con los que la gente la nombra,
-   los productos del demo que le corresponden y su pasillo. Lo que aún
+   los productos del demo que le corresponden. Lo que aún
    no tiene ficha cargada se responde con honestidad y ubicación —
    nunca con un "no encontré eso".
    ===================================================================== */
 const TAX = [
   {id:'smart', l:'Smart Home', ic:'i-assistant', syn:['smart home','casa inteligente','domotica','automatizacion','cosas inteligentes','hogar inteligente'], subs:[
-    {l:'Focos inteligentes', syn:['foco inteligente','focos inteligentes','foco wifi','foco smart','foco led wifi'], skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24'], loc:'Pasillo 5'},
-    {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127'], loc:'Pasillo 5'},
-    {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[], loc:'Pasillo 5'},
-    {l:'Contactos inteligentes', syn:['contacto inteligente','contactos inteligentes','enchufe smart'], skus:[], loc:'Pasillo 5'},
-    {l:'Cámaras de seguridad Wi-Fi', syn:['camara','camaras','una camara','camara wifi','camara de seguridad','camara smart','camara ip'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}, loc:'Pasillo 5'},
-    {l:'Sistemas de seguridad inteligente', syn:['sistema de seguridad','kit de alarma inteligente','sensor de puerta'], skus:[], loc:'Pasillo 5'},
-    {l:'Asistentes de voz', syn:['alexa','asistente de voz','google home','bocina inteligente'], skus:[], loc:'Pasillo 5'},
-    {l:'Repetidores Wi-Fi', syn:['repetidor','repetidores','extensor de wifi','amplificador de wifi'], skus:['COM-8300','MESH-200+'], loc:'Pasillo 7'}
+    {l:'Focos inteligentes', syn:['foco inteligente','focos inteligentes','foco wifi','foco smart','foco led wifi'], skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24']},
+    {l:'Tiras y series LED smart', syn:['tira led','tiras led','tira inteligente','series led'], skus:['SHOME-127']},
+    {l:'Apagadores inteligentes', syn:['apagador','apagadores','switch inteligente','apagador smart'], skus:[]},
+    {l:'Contactos inteligentes', syn:['contacto inteligente','contactos inteligentes','enchufe smart'], skus:[]},
+    {l:'Cámaras de seguridad Wi-Fi', syn:['camara','camaras','una camara','camara wifi','camara de seguridad','camara smart','camara ip'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}},
+    {l:'Sistemas de seguridad inteligente', syn:['sistema de seguridad','kit de alarma inteligente','sensor de puerta'], skus:[]},
+    {l:'Asistentes de voz', syn:['alexa','asistente de voz','google home','bocina inteligente'], skus:[]},
+    {l:'Repetidores Wi-Fi', syn:['repetidor','repetidores','extensor de wifi','amplificador de wifi'], skus:['COM-8300','MESH-200+']}
   ]},
   {id:'audio', l:'Audio', ic:'i-speaker', syn:['audio','sonido','musica','equipo de sonido','para escuchar'], subs:[
-    {l:'Audífonos', syn:['audifonos','auriculares','diadema','headphones','audifono'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800'], ask:{q:'¿Cómo los prefieres?', opts:[{l:'De diadema', s:'los que van sobre las orejas', ic:'i-headset', skus:['AUD-7625','AUD-2540','AUD-7655','AUD-AE700']},{l:'Chiquitos, sin cables', s:'tipo FreePods', ic:'i-headset', skus:['AUD-7420','AUD-7120','AUD-AE200','AUD-AE600','AUD-AE800']},{l:'Que aíslen el ruido', s:'cancelación activa (ANC)', ic:'i-mic', skus:['AUD-2540','AUD-AE600','AUD-AE700','AUD-AE800']}]}, loc:'Pasillo 6'},
-    {l:'Bocinas', syn:['bocina','bocinas','altavoz','parlante','bafle bluetooth'], skus:['BOC-9030','BOC-9020','BOC-940','BOC-980','BOC-970','BOOM-300','BSD-120','BOC-095','BOC-066','SPK-BT700'], ask:{q:'¿Dónde la vas a usar?', opts:[{l:'Para llevarla a todos lados', s:'chica y resistente', ic:'i-speaker', skus:['BOC-9030','BOC-9020','BOC-940']},{l:'Fiesta o exterior', s:'que se oiga fuerte', ic:'i-party', skus:['BOC-980','BOC-970','BOOM-300','SPK-BT700']},{l:'Para la tele', s:'barra de sonido', ic:'i-tv', skus:['BSD-120']},{l:'Para la computadora', s:'de escritorio', ic:'i-monitor', skus:['BOC-095','BOC-066']}]}, loc:'Pasillo 6'},
-    {l:'Bafles con amplificador', syn:['bafle','bafles','bafle amplificado','sonido para fiesta'], skus:[], loc:'Pasillo 6'},
-    {l:'Micrófonos', syn:['microfono','microfonos','mic para cantar','microfono inalambrico'], skus:[], loc:'Pasillo 6'},
-    {l:'Luces para fiesta', syn:['luces para fiesta','luz de fiesta','esfera de luces','luces disco'], skus:[], loc:'Pasillo 6'},
-    {l:'Receptores y transmisores inalámbricos', syn:['transmisor bluetooth','receptor bluetooth','transmisor de audio'], skus:['POD-165'], loc:'Pasillo 6'},
-    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','fm bluetooth'], skus:[], loc:'Pasillo 6'},
-    {l:'Cables de audio', syn:['cable de audio','cable auxiliar','cable 3.5','cable optico','plug a plug'], skus:['255-258','299-400'], loc:'Pasillo 6'},
-    {l:'Adaptadores de audio', syn:['adaptador de audio','adaptador 3.5','convertidor de audio'], skus:['USB-456'], loc:'Pasillo 6'},
-    {l:'Grabadoras de voz', syn:['grabadora','grabadora de voz'], skus:[], loc:'Pasillo 6'},
-    {l:'Megáfonos', syn:['megafono','altavoz de mano','perifoneo'], skus:[], loc:'Pasillo 6'},
-    {l:'Amplificadores de audio', syn:['amplificador','amplificadores','ampli'], skus:[], loc:'Pasillo 6'},
-    {l:'Conectores de audio', syn:['conector de audio','plug','jack','conectores'], skus:[], loc:'Pasillo 6'}
+    {l:'Audífonos', syn:['audifonos','auriculares','diadema','headphones','audifono'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800'], ask:{q:'¿Cómo los prefieres?', opts:[{l:'De diadema', s:'los que van sobre las orejas', ic:'i-headset', skus:['AUD-7625','AUD-2540','AUD-7655','AUD-AE700']},{l:'Chiquitos, sin cables', s:'tipo FreePods', ic:'i-headset', skus:['AUD-7420','AUD-7120','AUD-AE200','AUD-AE600','AUD-AE800']},{l:'Que aíslen el ruido', s:'cancelación activa (ANC)', ic:'i-mic', skus:['AUD-2540','AUD-AE600','AUD-AE700','AUD-AE800']}]}},
+    {l:'Bocinas', syn:['bocina','bocinas','altavoz','parlante','bafle bluetooth'], skus:['BOC-9030','BOC-9020','BOC-940','BOC-980','BOC-970','BOOM-300','BSD-120','BOC-095','BOC-066','SPK-BT700'], ask:{q:'¿Dónde la vas a usar?', opts:[{l:'Para llevarla a todos lados', s:'chica y resistente', ic:'i-speaker', skus:['BOC-9030','BOC-9020','BOC-940']},{l:'Fiesta o exterior', s:'que se oiga fuerte', ic:'i-party', skus:['BOC-980','BOC-970','BOOM-300','SPK-BT700']},{l:'Para la tele', s:'barra de sonido', ic:'i-tv', skus:['BSD-120']},{l:'Para la computadora', s:'de escritorio', ic:'i-monitor', skus:['BOC-095','BOC-066']}]}},
+    {l:'Bafles con amplificador', syn:['bafle','bafles','bafle amplificado','sonido para fiesta'], skus:[]},
+    {l:'Micrófonos', syn:['microfono','microfonos','mic para cantar','microfono inalambrico'], skus:[]},
+    {l:'Luces para fiesta', syn:['luces para fiesta','luz de fiesta','esfera de luces','luces disco'], skus:[]},
+    {l:'Receptores y transmisores inalámbricos', syn:['transmisor bluetooth','receptor bluetooth','transmisor de audio'], skus:['POD-165']},
+    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','fm bluetooth'], skus:[]},
+    {l:'Cables de audio', syn:['cable de audio','cable auxiliar','cable 3.5','cable optico','plug a plug'], skus:['255-258','299-400']},
+    {l:'Adaptadores de audio', syn:['adaptador de audio','adaptador 3.5','convertidor de audio'], skus:['USB-456']},
+    {l:'Grabadoras de voz', syn:['grabadora','grabadora de voz'], skus:[]},
+    {l:'Megáfonos', syn:['megafono','altavoz de mano','perifoneo'], skus:[]},
+    {l:'Amplificadores de audio', syn:['amplificador','amplificadores','ampli'], skus:[]},
+    {l:'Conectores de audio', syn:['conector de audio','plug','jack','conectores'], skus:[]}
   ]},
   {id:'compu', l:'Computación', ic:'i-monitor', syn:['computacion','computadora','compu','para mi pc','accesorios de computadora','escritorio'], subs:[
-    {l:'Equipo y cables de red', syn:['cable de red','ethernet','utp','switch de red','cable rj45'], skus:[], loc:'Pasillo 7'},
-    {l:'Mouse y teclados', syn:['mouse','teclado','raton','teclado inalambrico'], skus:['MOU-1000','MOU-BT','MOU-VERT','TEC-LUZ','TEC-BT','KIT-TM'], ask:{q:'¿Qué necesitas?', opts:[{l:'Solo mouse', ic:'i-keyboard', skus:['MOU-1000','MOU-BT','MOU-VERT']},{l:'Solo teclado', ic:'i-keyboard', skus:['TEC-LUZ','TEC-BT']},{l:'Los dos', s:'en juego', ic:'i-laptop', skus:['KIT-TM']}]}, loc:'Pasillo 7'},
-    {l:'Memorias USB y SD', syn:['memoria usb','usb','memoria sd','micro sd','memoria'], skus:[], loc:'Pasillo 7'},
-    {l:'Accesorios para laptop', syn:['accesorio de laptop','base para laptop','soporte de laptop','enfriador'], skus:['COM-083'], loc:'Pasillo 3'},
-    {l:'Accesorios USB', syn:['hub usb','accesorio usb','multipuerto'], skus:['USB-471'], loc:'Pasillo 4'},
-    {l:'Reguladores y No Breaks', syn:['regulador','no break','nobreak','ups','respaldo de energia'], skus:['REG-1050','NB-900'], loc:'Pasillo 2'},
-    {l:'Cables USB', syn:['cable usb','usb c','cable de carga','cable tipo c'], skus:['USB-3102'], loc:'Pasillo 4'},
-    {l:'Cables VGA', syn:['vga','cable vga'], skus:[], loc:'Pasillo 4'},
-    {l:'Adaptadores para disco duro', syn:['adaptador de disco','disco duro','sata'], skus:[], loc:'Pasillo 7'},
-    {l:'Cableado estructurado', syn:['cableado estructurado','patch panel','jack de red'], skus:[], loc:'Pasillo 7'},
-    {l:'Lectores de código de barras', syn:['lector de codigo','codigo de barras','escaner'], skus:[], loc:'Pasillo 7'}
+    {l:'Equipo y cables de red', syn:['cable de red','ethernet','utp','switch de red','cable rj45'], skus:[]},
+    {l:'Mouse y teclados', syn:['mouse','teclado','raton','teclado inalambrico'], skus:['MOU-1000','MOU-BT','MOU-VERT','TEC-LUZ','TEC-BT','KIT-TM'], ask:{q:'¿Qué necesitas?', opts:[{l:'Solo mouse', ic:'i-keyboard', skus:['MOU-1000','MOU-BT','MOU-VERT']},{l:'Solo teclado', ic:'i-keyboard', skus:['TEC-LUZ','TEC-BT']},{l:'Los dos', s:'en juego', ic:'i-laptop', skus:['KIT-TM']}]}},
+    {l:'Memorias USB y SD', syn:['memoria usb','usb','memoria sd','micro sd','memoria'], skus:[]},
+    {l:'Accesorios para laptop', syn:['accesorio de laptop','base para laptop','soporte de laptop','enfriador'], skus:['COM-083']},
+    {l:'Accesorios USB', syn:['hub usb','accesorio usb','multipuerto'], skus:['USB-471']},
+    {l:'Reguladores y No Breaks', syn:['regulador','no break','nobreak','ups','respaldo de energia'], skus:['REG-1050','NB-900']},
+    {l:'Cables USB', syn:['cable usb','usb c','cable de carga','cable tipo c'], skus:['USB-3102']},
+    {l:'Cables VGA', syn:['vga','cable vga'], skus:[]},
+    {l:'Adaptadores para disco duro', syn:['adaptador de disco','disco duro','sata'], skus:[]},
+    {l:'Cableado estructurado', syn:['cableado estructurado','patch panel','jack de red'], skus:[]},
+    {l:'Lectores de código de barras', syn:['lector de codigo','codigo de barras','escaner'], skus:[]}
   ]},
   {id:'cables', l:'Cables', ic:'i-cable', syn:['cables','cable','cableado','conexiones','para conectar'], subs:[
-    {l:'Cables HDMI y video', syn:['hdmi','cable hdmi','cable de video','displayport','cable para tele'], skus:['299-502','295-503','299-830','295-600'], loc:'Pasillo 4'},
-    {l:'Cables de carga y datos', syn:['cable de carga','cable de datos','cargador de celular','usb c'], skus:['USB-3102'], loc:'Pasillo 4'},
-    {l:'Adaptadores de video', syn:['adaptador hdmi','usb c a hdmi','adaptador de video','convertidor'], skus:['USB-4724','USB-471'], loc:'Pasillo 4'},
-    {l:'Organizadores de cables', syn:['organizador de cables','espiral','canaleta','ordenar cables'], skus:['400-200N'], loc:'Pasillo 4'}
+    {l:'Cables HDMI y video', syn:['hdmi','cable hdmi','cable de video','displayport','cable para tele'], skus:['299-502','295-503','299-830','295-600']},
+    {l:'Cables de carga y datos', syn:['cable de carga','cable de datos','cargador de celular','usb c'], skus:['USB-3102']},
+    {l:'Adaptadores de video', syn:['adaptador hdmi','usb c a hdmi','adaptador de video','convertidor'], skus:['USB-4724','USB-471']},
+    {l:'Organizadores de cables', syn:['organizador de cables','espiral','canaleta','ordenar cables'], skus:['400-200N']}
   ]},
   {id:'tel', l:'Telefonía y tablets', ic:'i-phone', syn:['telefonia','celular','telefono','tablet','accesorios de celular','para mi celular'], subs:[
-    {l:'Power banks', syn:['power bank','powerbank','bateria portatil','pila portatil','cargador portatil'], skus:['PWB-5000','PWB-20000'], loc:'Pasillo 2'},
-    {l:'Cargadores USB', syn:['cargador','cargadores','cargador usb','eliminador de celular'], skus:['CAR-PD65','CAR-GAN45','CAR-PD100','CAR-GAN100','CAR-LAP45','CAR-LAP90'], ask:{q:'¿Qué vas a cargar?', opts:[{l:'Mi celular', s:'carga rápida', ic:'i-phone', skus:['CAR-PD65','CAR-GAN45']},{l:'Mi laptop', s:'de más potencia', ic:'i-laptop', skus:['CAR-LAP45','CAR-LAP90','CAR-PD100']},{l:'Varias cosas a la vez', s:'doble salida', ic:'i-strip', skus:['CAR-GAN100','CAR-PD100']}]}, loc:'Pasillo 2'},
-    {l:'Cables y adaptadores para celular', syn:['cable de celular','adaptador de celular','cable lightning'], skus:['USB-3102','USB-456'], loc:'Pasillo 4'},
-    {l:'Soportes para celular', syn:['soporte de celular','porta celular','sujetador de celular','base de celular'], skus:[], loc:'Pasillo 3'},
-    {l:'Memorias USB y SD', syn:['memoria de celular','micro sd para celular'], skus:[], loc:'Pasillo 7'},
-    {l:'Audífonos', syn:['audifonos de celular','manos libres'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800'], loc:'Pasillo 6'}
+    {l:'Power banks', syn:['power bank','powerbank','bateria portatil','pila portatil','cargador portatil'], skus:['PWB-5000','PWB-20000']},
+    {l:'Cargadores USB', syn:['cargador','cargadores','cargador usb','eliminador de celular'], skus:['CAR-PD65','CAR-GAN45','CAR-PD100','CAR-GAN100','CAR-LAP45','CAR-LAP90'], ask:{q:'¿Qué vas a cargar?', opts:[{l:'Mi celular', s:'carga rápida', ic:'i-phone', skus:['CAR-PD65','CAR-GAN45']},{l:'Mi laptop', s:'de más potencia', ic:'i-laptop', skus:['CAR-LAP45','CAR-LAP90','CAR-PD100']},{l:'Varias cosas a la vez', s:'doble salida', ic:'i-strip', skus:['CAR-GAN100','CAR-PD100']}]}},
+    {l:'Cables y adaptadores para celular', syn:['cable de celular','adaptador de celular','cable lightning'], skus:['USB-3102','USB-456']},
+    {l:'Soportes para celular', syn:['soporte de celular','porta celular','sujetador de celular','base de celular'], skus:[]},
+    {l:'Memorias USB y SD', syn:['memoria de celular','micro sd para celular'], skus:[]},
+    {l:'Audífonos', syn:['audifonos de celular','manos libres'], skus:['AUD-7625','AUD-2540','AUD-7655','AUD-7120','AUD-7420','AUD-AE200','AUD-AE600','AUD-AE700','AUD-AE800']}
   ]},
   {id:'tv', l:'TV y video', ic:'i-tv', syn:['tv y video','television','televisiones','pantallas','para la tele','video'], subs:[
-    {l:'Soportes para pantalla', syn:['soporte de pantalla','soporte para tele','base de tv','montaje de tv'], skus:['STV-105'], loc:'Pasillo 3'},
-    {l:'Cables para TV', syn:['cable para tv','hdmi para tele','coaxial'], skus:['299-502','299-830'], loc:'Pasillo 4'},
-    {l:'Antenas', syn:['antena','antena de tv','antena aerea'], skus:[], loc:'Pasillo 3'},
-    {l:'Controles remoto', syn:['control remoto','control de tv','control universal'], skus:[], loc:'Pasillo 3'}
+    {l:'Soportes para pantalla', syn:['soporte de pantalla','soporte para tele','base de tv','montaje de tv'], skus:['STV-105']},
+    {l:'Cables para TV', syn:['cable para tv','hdmi para tele','coaxial'], skus:['299-502','299-830']},
+    {l:'Antenas', syn:['antena','antena de tv','antena aerea'], skus:[]},
+    {l:'Controles remoto', syn:['control remoto','control de tv','control universal'], skus:[]}
   ]},
   {id:'cctv', l:'Videovigilancia y seguridad', ic:'i-cam', syn:['videovigilancia','seguridad','vigilancia','proteccion','vigilar','cuidar mi casa'], subs:[
-    {l:'Cámaras CCTV', syn:['camara cctv','camara de vigilancia','camara para negocio'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}, loc:'Pasillo 5'},
-    {l:'Grabadores CCTV (DVR)', syn:['dvr','grabador','nvr','grabadora de camaras'], skus:[], loc:'Pasillo 5'},
-    {l:'Cables y accesorios CCTV', syn:['cable de camara','accesorio cctv','fuente para camara'], skus:['ELI-12-5'], loc:'Pasillo 5'},
-    {l:'Alarmas y sirenas', syn:['alarma','sirena','alarma para casa'], skus:[], loc:'Pasillo 5'},
-    {l:'Video porteros e intercomunicadores', syn:['video portero','intercomunicador','timbre con camara'], skus:[], loc:'Pasillo 5'},
-    {l:'Cajas de seguridad', syn:['caja fuerte','caja de seguridad'], skus:[], loc:'Pasillo 9'},
-    {l:'Radios intercomunicadores', syn:['radio','radios','walkie talkie','intercomunicador portatil'], skus:[], loc:'Pasillo 9'},
-    {l:'Detectores de billetes', syn:['detector de billetes','contadora de billetes'], skus:[], loc:'Pasillo 9'}
+    {l:'Cámaras CCTV', syn:['camara cctv','camara de vigilancia','camara para negocio'], skus:['CCTV-203','CCTV-213','CCTV-611','CCTV-625','CCTV-238','CCTV-235','CCTV-641','CCTV-645'], ask:{q:'¿Dónde la vas a poner?', opts:[{l:'Adentro de casa', s:'sala, cuarto, negocio', ic:'i-home', skus:['CCTV-203','CCTV-213','CCTV-611']},{l:'Afuera, a la intemperie', s:'patio, cochera, fachada', ic:'i-flood', skus:['CCTV-625','CCTV-235','CCTV-641','CCTV-645']},{l:'Sin cablear nada', s:'panel solar o socket de foco', ic:'i-bulb', skus:['CCTV-238','CCTV-641','CCTV-645']}]}},
+    {l:'Grabadores CCTV (DVR)', syn:['dvr','grabador','nvr','grabadora de camaras'], skus:[]},
+    {l:'Cables y accesorios CCTV', syn:['cable de camara','accesorio cctv','fuente para camara'], skus:['ELI-12-5']},
+    {l:'Alarmas y sirenas', syn:['alarma','sirena','alarma para casa'], skus:[]},
+    {l:'Video porteros e intercomunicadores', syn:['video portero','intercomunicador','timbre con camara'], skus:[]},
+    {l:'Cajas de seguridad', syn:['caja fuerte','caja de seguridad'], skus:[]},
+    {l:'Radios intercomunicadores', syn:['radio','radios','walkie talkie','intercomunicador portatil'], skus:[]},
+    {l:'Detectores de billetes', syn:['detector de billetes','contadora de billetes'], skus:[]}
   ]},
   {id:'ilum', l:'Iluminación', ic:'i-bulb', syn:['iluminacion','luz','luces','alumbrado','iluminar'], subs:[
-    {l:'Focos LED', syn:['foco','focos','foco led','bombilla'], skus:['FOC-12C','FOC-4X12','FOC-USB5','SHOME-120','FOC-15W','FOC-3X10','FOC-SENS','LAM-T24'], ask:{q:'¿Qué necesitas del foco?', opts:[{l:'Luz normal', s:'blanca o cálida, a buen precio', ic:'i-bulb', skus:['FOC-12C','FOC-4X12','FOC-USB5']},{l:'Que cambie de color', s:'lo controlas desde el celular', ic:'i-assistant', skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24']},{l:'Que prenda solo', s:'con sensor de movimiento', ic:'i-sensor', skus:['FOC-SENS']}]}, loc:'Pasillo 5'},
-    {l:'Reflectores LED', syn:['reflector','reflectores','lampara de exterior'], skus:[], loc:'Pasillo 5'},
-    {l:'Series y tiras LED', syn:['serie de luces','tira led','luces navidenas'], skus:['SHOME-127'], loc:'Pasillo 5'},
-    {l:'Lámparas y linternas', syn:['lampara','linterna','lamparas','luz de mano'], skus:['LAM-180','LAM-290','LAM-200','LAM-500','LAM-088','COM-601'], ask:{q:'¿Para qué la quieres?', opts:[{l:'Para traerla conmigo', s:'de bolsillo o llavero', ic:'i-lamp', skus:['LAM-180','LAM-200']},{l:'Para el escritorio', s:'leer o trabajar', ic:'i-monitor', skus:['LAM-088','COM-601']},{l:'Para apagones o trabajo pesado', s:'mucha luz', ic:'i-flood', skus:['LAM-290','LAM-500']}]}, loc:'Pasillo 5'},
-    {l:'Lámparas con lupa', syn:['lampara con lupa','lupa con luz'], skus:[], loc:'Pasillo 9'},
-    {l:'Accesorios para focos', syn:['socket','portalamparas','accesorio de foco'], skus:[], loc:'Pasillo 5'}
+    {l:'Focos LED', syn:['foco','focos','foco led','bombilla'], skus:['FOC-12C','FOC-4X12','FOC-USB5','SHOME-120','FOC-15W','FOC-3X10','FOC-SENS','LAM-T24'], ask:{q:'¿Qué necesitas del foco?', opts:[{l:'Luz normal', s:'blanca o cálida, a buen precio', ic:'i-bulb', skus:['FOC-12C','FOC-4X12','FOC-USB5']},{l:'Que cambie de color', s:'lo controlas desde el celular', ic:'i-assistant', skus:['SHOME-120','FOC-15W','FOC-3X10','LAM-T24']},{l:'Que prenda solo', s:'con sensor de movimiento', ic:'i-sensor', skus:['FOC-SENS']}]}},
+    {l:'Reflectores LED', syn:['reflector','reflectores','lampara de exterior'], skus:[]},
+    {l:'Series y tiras LED', syn:['serie de luces','tira led','luces navidenas'], skus:['SHOME-127']},
+    {l:'Lámparas y linternas', syn:['lampara','linterna','lamparas','luz de mano'], skus:['LAM-180','LAM-290','LAM-200','LAM-500','LAM-088','COM-601'], ask:{q:'¿Para qué la quieres?', opts:[{l:'Para traerla conmigo', s:'de bolsillo o llavero', ic:'i-lamp', skus:['LAM-180','LAM-200']},{l:'Para el escritorio', s:'leer o trabajar', ic:'i-monitor', skus:['LAM-088','COM-601']},{l:'Para apagones o trabajo pesado', s:'mucha luz', ic:'i-flood', skus:['LAM-290','LAM-500']}]}},
+    {l:'Lámparas con lupa', syn:['lampara con lupa','lupa con luz'], skus:[]},
+    {l:'Accesorios para focos', syn:['socket','portalamparas','accesorio de foco'], skus:[]}
   ]},
   {id:'energia', l:'Energía', ic:'i-bolt', syn:['energia','corriente','electricidad','luz electrica','contactos','enchufes'], subs:[
-    {l:'Pilas y cargadores', syn:['pila','pilas','bateria','baterias','pila recargable'], fam:'pilas', skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500'], loc:'Pasillo 2'},
-    {l:'Eliminadores y fuentes de poder', syn:['eliminador','eliminadores','fuente de poder','fuente de voltaje'], fam:'fuente', skus:['ELI-12-2','ELI-12-5','ELI-MULTI'], loc:'Pasillo 2'},
-    {l:'Tiras multicontactos', syn:['multicontacto','regleta','tira de contactos','extension con contactos'], skus:['905-3107'], loc:'Pasillo 2'},
-    {l:'Reguladores y No Breaks', syn:['regulador de voltaje','no break','ups'], skus:['REG-1050','NB-900'], loc:'Pasillo 2'},
-    {l:'Extensiones eléctricas', syn:['extension','extensiones','cable de extension'], skus:['EXT-3C4','EXT-90','EXT-3M','EXT-SUP3','EXT-10M','EXT-8M','EXT-20M','EXT-SUP8','EXT-30M'], ask:{q:'¿Qué tan lejos necesitas llegar?', opts:[{l:'Aquí nomás', s:'3 a 4 metros', ic:'i-strip', skus:['EXT-3C4','EXT-90','EXT-3M','EXT-SUP3']},{l:'Al otro cuarto', s:'8 a 10 metros', ic:'i-home', skus:['EXT-8M','EXT-10M','EXT-SUP8']},{l:'Al patio o la obra', s:'20 a 30 metros', ic:'i-flood', skus:['EXT-20M','EXT-30M']},{l:'Que proteja el aparato', s:'con supresor de picos', ic:'i-shield', skus:['EXT-SUP3','EXT-SUP8']}]}, loc:'Pasillo 2'},
-    {l:'Protectores para electrodomésticos', syn:['protector','protector de voltaje','protector de refrigerador'], skus:['EXT-SUP3','EXT-SUP8'], loc:'Pasillo 2'},
-    {l:'Clavijas, convertidores y ladrones', syn:['clavija','ladron','convertidor de contacto'], skus:[], loc:'Pasillo 2'},
-    {l:'Inversores para auto', syn:['inversor','inversor de corriente','corriente en el carro'], skus:[], loc:'Pasillo 10'},
-    {l:'Temporizadores', syn:['temporizador','timer','apagado automatico'], skus:[], loc:'Pasillo 2'},
-    {l:'Transformadores', syn:['transformador','transformadores'], skus:[], loc:'Pasillo 8'},
-    {l:'Fusibles y portafusibles', syn:['fusible','fusibles','portafusible'], skus:[], loc:'Pasillo 8'},
-    {l:'Power banks', syn:['power bank','bateria portatil'], skus:['PWB-5000','PWB-20000'], loc:'Pasillo 2'}
+    {l:'Pilas y cargadores', syn:['pila','pilas','bateria','baterias','pila recargable'], fam:'pilas', skus:['PIL-D2','PIL-C2','PIL-D6','PIL-C6','PIL-N2','CR2016','CR2025-6','CR1632','LIPO-1000','LI-14500']},
+    {l:'Eliminadores y fuentes de poder', syn:['eliminador','eliminadores','fuente de poder','fuente de voltaje'], fam:'fuente', skus:['ELI-12-2','ELI-12-5','ELI-MULTI']},
+    {l:'Tiras multicontactos', syn:['multicontacto','regleta','tira de contactos','extension con contactos'], skus:['905-3107']},
+    {l:'Reguladores y No Breaks', syn:['regulador de voltaje','no break','ups'], skus:['REG-1050','NB-900']},
+    {l:'Extensiones eléctricas', syn:['extension','extensiones','cable de extension'], skus:['EXT-3C4','EXT-90','EXT-3M','EXT-SUP3','EXT-10M','EXT-8M','EXT-20M','EXT-SUP8','EXT-30M'], ask:{q:'¿Qué tan lejos necesitas llegar?', opts:[{l:'Aquí nomás', s:'3 a 4 metros', ic:'i-strip', skus:['EXT-3C4','EXT-90','EXT-3M','EXT-SUP3']},{l:'Al otro cuarto', s:'8 a 10 metros', ic:'i-home', skus:['EXT-8M','EXT-10M','EXT-SUP8']},{l:'Al patio o la obra', s:'20 a 30 metros', ic:'i-flood', skus:['EXT-20M','EXT-30M']},{l:'Que proteja el aparato', s:'con supresor de picos', ic:'i-shield', skus:['EXT-SUP3','EXT-SUP8']}]}},
+    {l:'Protectores para electrodomésticos', syn:['protector','protector de voltaje','protector de refrigerador'], skus:['EXT-SUP3','EXT-SUP8']},
+    {l:'Clavijas, convertidores y ladrones', syn:['clavija','ladron','convertidor de contacto'], skus:[]},
+    {l:'Inversores para auto', syn:['inversor','inversor de corriente','corriente en el carro'], skus:[]},
+    {l:'Temporizadores', syn:['temporizador','timer','apagado automatico'], skus:[]},
+    {l:'Transformadores', syn:['transformador','transformadores'], skus:[]},
+    {l:'Fusibles y portafusibles', syn:['fusible','fusibles','portafusible'], skus:[]},
+    {l:'Power banks', syn:['power bank','bateria portatil'], skus:['PWB-5000','PWB-20000']}
   ]},
   {id:'herr', l:'Herramientas', ic:'i-screwdriver', syn:['herramientas','herramienta','equipo de trabajo','para trabajar'], subs:[
-    {l:'Cautines y accesorios', syn:['cautin','cautines','soldar','soldadura','estano','desoldar'], fam:'soldar', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH'], loc:'Pasillo 9'},
-    {l:'Multímetros', syn:['multimetro','multimetros','tester','medir voltaje'], skus:['MUL-005','VCD-100','PUN-530'], loc:'Pasillo 9'},
-    {l:'Equipo de medición', syn:['equipo de medicion','osciloscopio','medidor'], skus:['PUN-010','PUN-030','VCD-100'], loc:'Pasillo 9'},
-    {l:'Pinzas y ponchadoras', syn:['pinza','pinzas','ponchadora','crimpadora'], skus:['PIN-PTA','PIN-COR','PIN-RJ45','PIN-24','PIN-UTP','PIN-CRI','PON-IMP'], ask:{q:'¿Qué vas a hacer con ella?', opts:[{l:'Cortar y sujetar', s:'pinzas de electrónica', ic:'i-plier', skus:['PIN-PTA','PIN-COR','PIN-24']},{l:'Ponchar cable de red', s:'RJ45 y UTP', ic:'i-net', skus:['PIN-RJ45','PIN-UTP','PON-IMP']},{l:'Pelar y crimpar', s:'trabajo pesado', ic:'i-plier', skus:['PIN-CRI']}]}, loc:'Pasillo 9'},
-    {l:'Juegos de desarmadores', syn:['desarmador','desarmadores','destornillador'], skus:['DES-6R','DES-30P','DES-98P'], loc:'Pasillo 9'},
-    {l:'Probadores de cable', syn:['probador de cable','generador de tono','pollo'], skus:[], loc:'Pasillo 9'},
-    {l:'Limpiadores', syn:['limpiador','limpia contactos','aire comprimido'], skus:[], loc:'Pasillo 9'},
-    {l:'Aislantes y caimanes', syn:['cinta aislante','aislante','caiman','caimanes'], skus:[], loc:'Pasillo 9'}
+    {l:'Cautines y accesorios', syn:['cautin','cautines','soldar','soldadura','estano','desoldar'], fam:'soldar', skus:['CAU-30','CAU-35','CAU-40','CAU-AJ30','CAU-EST45','SOL-17','SOL-50','SOL-100','PAS-25','CAU-BASE','DES-CH']},
+    {l:'Multímetros', syn:['multimetro','multimetros','tester','medir voltaje'], skus:['MUL-005','VCD-100','PUN-530']},
+    {l:'Equipo de medición', syn:['equipo de medicion','osciloscopio','medidor'], skus:['PUN-010','PUN-030','VCD-100']},
+    {l:'Pinzas y ponchadoras', syn:['pinza','pinzas','ponchadora','crimpadora'], skus:['PIN-PTA','PIN-COR','PIN-RJ45','PIN-24','PIN-UTP','PIN-CRI','PON-IMP'], ask:{q:'¿Qué vas a hacer con ella?', opts:[{l:'Cortar y sujetar', s:'pinzas de electrónica', ic:'i-plier', skus:['PIN-PTA','PIN-COR','PIN-24']},{l:'Ponchar cable de red', s:'RJ45 y UTP', ic:'i-net', skus:['PIN-RJ45','PIN-UTP','PON-IMP']},{l:'Pelar y crimpar', s:'trabajo pesado', ic:'i-plier', skus:['PIN-CRI']}]}},
+    {l:'Juegos de desarmadores', syn:['desarmador','desarmadores','destornillador'], skus:['DES-6R','DES-30P','DES-98P']},
+    {l:'Probadores de cable', syn:['probador de cable','generador de tono','pollo'], skus:[]},
+    {l:'Limpiadores', syn:['limpiador','limpia contactos','aire comprimido'], skus:[]},
+    {l:'Aislantes y caimanes', syn:['cinta aislante','aislante','caiman','caimanes'], skus:[]}
   ]},
   {id:'casa', l:'Casa y oficina', ic:'i-home', syn:['casa y oficina','hogar','oficina','cosas para la casa','para mi casa'], subs:[
-    {l:'Básculas digitales', syn:['bascula','basculas','pesar'], skus:['BAS-5KG','BAS-CIN','BAS-EQU','BAS-180'], loc:'Pasillo 9'},
-    {l:'Timbres inalámbricos', syn:['timbre','timbres','timbre inalambrico'], skus:['TIM-080','TIM-060','TIM-CIN','TIM-2C','TIM-140','TIM-170'], ask:{q:'¿Qué tan lejos queda la campana del botón?', opts:[{l:'Cerca — misma casa', s:'hasta 80 m', ic:'i-home', skus:['TIM-080','TIM-060']},{l:'Lejos — patio o taller', s:'140 a 170 m', ic:'i-flood', skus:['TIM-140','TIM-170']},{l:'Quiero dos campanas', s:'que se oiga en ambos lados', ic:'i-bell', skus:['TIM-2C']},{l:'Sin pilas en el botón', s:'timbre cinético', ic:'i-bolt', skus:['TIM-CIN']}]}, loc:'Pasillo 9'},
-    {l:'Control de plagas', syn:['control de plagas','ahuyentador','repelente de plagas'], skus:[], loc:'Pasillo 9'},
-    {l:'Termómetros digitales', syn:['termometro','termometros'], skus:['TER-MINI','TER-HIG','TER-IE'], loc:'Pasillo 9'},
-    {l:'Relojes', syn:['reloj','relojes','despertador'], skus:['COR-22'], loc:'Pasillo 9'},
-    {l:'Gadgets', syn:['gadget','gadgets','novedades','ventilador','ventiladores','humidificador','deshumidificador','aspiradora'], skus:['VEN-INA','VEN-ROC','VEN-ENF','VEN-PLE','VEN-OSC','EST-ORG','EST-ORGG','HUM-130','DES-900','DES-3L','ASP-POR','LIM-ULT','POR-WIFI'], ask:{q:'¿Qué te haría la vida más fácil?', opts:[{l:'Aire — hace calor', s:'ventiladores', ic:'i-home', skus:['VEN-INA','VEN-ROC','VEN-ENF','VEN-PLE','VEN-OSC']},{l:'Humedad en casa', s:'humidificar o deshumidificar', ic:'i-spray', skus:['HUM-130','DES-900','DES-3L']},{l:'Limpiar u ordenar', s:'aspiradora y organizadores', ic:'i-box', skus:['ASP-POR','LIM-ULT','EST-ORG','EST-ORGG']},{l:'Algo de regalo', s:'lo que llama la atención', ic:'i-star', skus:['POR-WIFI','HUM-130','LIM-ULT']}]}, loc:'Pasillo 9'},
-    {l:'Cámaras deportivas', syn:['camara deportiva','gopro','camara de accion'], skus:['CAM-DEP4K'], loc:'Pasillo 9'},
-    {l:'Deportes', syn:['deporte','deportes','fitness'], skus:[], loc:'Pasillo 9'}
+    {l:'Básculas digitales', syn:['bascula','basculas','pesar'], skus:['BAS-5KG','BAS-CIN','BAS-EQU','BAS-180']},
+    {l:'Timbres inalámbricos', syn:['timbre','timbres','timbre inalambrico'], skus:['TIM-080','TIM-060','TIM-CIN','TIM-2C','TIM-140','TIM-170'], ask:{q:'¿Qué tan lejos queda la campana del botón?', opts:[{l:'Cerca — misma casa', s:'hasta 80 m', ic:'i-home', skus:['TIM-080','TIM-060']},{l:'Lejos — patio o taller', s:'140 a 170 m', ic:'i-flood', skus:['TIM-140','TIM-170']},{l:'Quiero dos campanas', s:'que se oiga en ambos lados', ic:'i-bell', skus:['TIM-2C']},{l:'Sin pilas en el botón', s:'timbre cinético', ic:'i-bolt', skus:['TIM-CIN']}]}},
+    {l:'Control de plagas', syn:['control de plagas','ahuyentador','repelente de plagas'], skus:[]},
+    {l:'Termómetros digitales', syn:['termometro','termometros'], skus:['TER-MINI','TER-HIG','TER-IE']},
+    {l:'Relojes', syn:['reloj','relojes','despertador'], skus:['COR-22']},
+    {l:'Gadgets', syn:['gadget','gadgets','novedades','ventilador','ventiladores','humidificador','deshumidificador','aspiradora'], skus:['VEN-INA','VEN-ROC','VEN-ENF','VEN-PLE','VEN-OSC','EST-ORG','EST-ORGG','HUM-130','DES-900','DES-3L','ASP-POR','LIM-ULT','POR-WIFI'], ask:{q:'¿Qué te haría la vida más fácil?', opts:[{l:'Aire — hace calor', s:'ventiladores', ic:'i-home', skus:['VEN-INA','VEN-ROC','VEN-ENF','VEN-PLE','VEN-OSC']},{l:'Humedad en casa', s:'humidificar o deshumidificar', ic:'i-spray', skus:['HUM-130','DES-900','DES-3L']},{l:'Limpiar u ordenar', s:'aspiradora y organizadores', ic:'i-box', skus:['ASP-POR','LIM-ULT','EST-ORG','EST-ORGG']},{l:'Algo de regalo', s:'lo que llama la atención', ic:'i-star', skus:['POR-WIFI','HUM-130','LIM-ULT']}]}},
+    {l:'Cámaras deportivas', syn:['camara deportiva','gopro','camara de accion'], skus:['CAM-DEP4K']},
+    {l:'Deportes', syn:['deporte','deportes','fitness'], skus:[]}
   ]},
   {id:'electronica', l:'Proyectos de electrónica', ic:'i-chip', fams:['resist','soldar'], syn:['proyectos de electronica','electronica','componentes','proyectos','armar circuitos'], subs:[
-    {l:'Potenciómetros y resistencias', syn:['resistencia','resistencias','resistor','potenciometro'], fam:'resist', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W'], loc:'Pasillo 8'},
-    {l:'Capacitores', syn:['capacitor','capacitores','condensador'], skus:[], loc:'Pasillo 8'},
-    {l:'Circuitos integrados', syn:['circuito integrado','integrado','chip','ci'], skus:[], loc:'Pasillo 8'},
-    {l:'Protoboards', syn:['protoboard','proto','tabla de pruebas','board'], skus:[], loc:'Pasillo 8'},
-    {l:'Placas y accesorios para proyectos', syn:['placa','placas','arduino','modulo','raspberry'], skus:[], loc:'Pasillo 8'},
-    {l:'Kits educativos', syn:['kit','kits','kit educativo'], skus:['KIT-SOL6','KIT-TES','KIT-TOQ','KIT-SOL4','KIT-SH12','KIT-PM5','KIT-BOT'], loc:'Pasillo 8'},
-    {l:'Placas fenólicas', syn:['placa fenolica','fenolica','baquelita'], skus:[], loc:'Pasillo 8'},
-    {l:'Ventiladores', syn:['ventilador para gabinete','ventilador de 12 v','fan de gabinete','disipador'], skus:[], loc:'Pasillo 8'},
-    {l:'Cautines y soldadura', syn:['cautin','soldadura para proyectos'], fam:'soldar', skus:['CAU-30','SOL-17'], loc:'Pasillo 9'}
+    {l:'Potenciómetros y resistencias', syn:['resistencia','resistencias','resistor','potenciometro'], fam:'resist', skus:['R22-1/2','R47-1/2','R100-1/2','R330-1/2','R5K6-1/2','R10K-1/2','R100-1W','R330-1W','R5K6-1W','R10K-1W']},
+    {l:'Capacitores', syn:['capacitor','capacitores','condensador'], skus:[]},
+    {l:'Circuitos integrados', syn:['circuito integrado','integrado','chip','ci'], skus:[]},
+    {l:'Protoboards', syn:['protoboard','proto','tabla de pruebas','board'], skus:[]},
+    {l:'Placas y accesorios para proyectos', syn:['placa','placas','arduino','modulo','raspberry'], skus:[]},
+    {l:'Kits educativos', syn:['kit','kits','kit educativo'], skus:['KIT-SOL6','KIT-TES','KIT-TOQ','KIT-SOL4','KIT-SH12','KIT-PM5','KIT-BOT']},
+    {l:'Placas fenólicas', syn:['placa fenolica','fenolica','baquelita'], skus:[]},
+    {l:'Ventiladores', syn:['ventilador para gabinete','ventilador de 12 v','fan de gabinete','disipador'], skus:[]},
+    {l:'Cautines y soldadura', syn:['cautin','soldadura para proyectos'], fam:'soldar', skus:['CAU-30','SOL-17']}
   ]},
   {id:'auto', l:'Automotriz', ic:'i-car', syn:['automotriz','coche','carro','vehiculo','camioneta','para mi auto','en el coche'], subs:[
-    {l:'Inversores para auto', syn:['inversor para auto','corriente en el coche'], skus:[], loc:'Pasillo 10'},
-    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','bluetooth para el carro','musica en el coche'], skus:[], loc:'Pasillo 10'},
-    {l:'Cargadores USB para auto', syn:['cargador de auto','cargador de coche','cargador de encendedor','cargador para el carro','cargador para el coche','cargador para el auto'], skus:['CAA-10','CAA-18','CAA-2020','CAA-3018','CAA-30E','CAA-RET','CAA-65','CAA-100'], ask:{q:'¿Qué vas a cargar en el coche?', opts:[{l:'Solo mi celular', s:'lo básico y barato', ic:'i-phone', skus:['CAA-10','CAA-18','CAA-2020']},{l:'Dos celulares a la vez', s:'doble salida', ic:'i-strip', skus:['CAA-3018','CAA-65','CAA-30E']},{l:'Mi laptop también', s:'de 65 W para arriba', ic:'i-laptop', skus:['CAA-65','CAA-100']},{l:'Que alcance a los de atrás', s:'con extensor o cable retráctil', ic:'i-cable', skus:['CAA-30E','CAA-RET']}]}, loc:'Pasillo 10'},
-    {l:'Accesorios automotrices', syn:['accesorio automotriz','soporte de celular para auto'], skus:['ALC-DIG','OBD-WIFI','ARR-PB','ARR-INF','DASH-2K','GPS-OBD','GPS-VEH'], ask:{q:'¿Qué necesitas resolver del coche?', opts:[{l:'Que no me deje tirado', s:'arrancador y power bank', ic:'i-powerbank', skus:['ARR-PB','ARR-INF']},{l:'Grabar lo que pasa', s:'cámara de tablero', ic:'i-cam', skus:['DASH-2K']},{l:'Saber dónde está', s:'rastreador GPS', ic:'i-pin', skus:['GPS-OBD','GPS-VEH']},{l:'Revisar fallas', s:'escáner y alcoholímetro', ic:'i-scan', skus:['OBD-WIFI','ALC-DIG']}]}, loc:'Pasillo 10'},
-    {l:'Fusibles automotrices', syn:['fusible de auto','fusible automotriz'], skus:[], loc:'Pasillo 10'}
+    {l:'Inversores para auto', syn:['inversor para auto','corriente en el coche'], skus:[]},
+    {l:'Transmisores FM Bluetooth', syn:['transmisor fm','bluetooth para el carro','musica en el coche'], skus:[]},
+    {l:'Cargadores USB para auto', syn:['cargador de auto','cargador de coche','cargador de encendedor','cargador para el carro','cargador para el coche','cargador para el auto'], skus:['CAA-10','CAA-18','CAA-2020','CAA-3018','CAA-30E','CAA-RET','CAA-65','CAA-100'], ask:{q:'¿Qué vas a cargar en el coche?', opts:[{l:'Solo mi celular', s:'lo básico y barato', ic:'i-phone', skus:['CAA-10','CAA-18','CAA-2020']},{l:'Dos celulares a la vez', s:'doble salida', ic:'i-strip', skus:['CAA-3018','CAA-65','CAA-30E']},{l:'Mi laptop también', s:'de 65 W para arriba', ic:'i-laptop', skus:['CAA-65','CAA-100']},{l:'Que alcance a los de atrás', s:'con extensor o cable retráctil', ic:'i-cable', skus:['CAA-30E','CAA-RET']}]}},
+    {l:'Accesorios automotrices', syn:['accesorio automotriz','soporte de celular para auto'], skus:['ALC-DIG','OBD-WIFI','ARR-PB','ARR-INF','DASH-2K','GPS-OBD','GPS-VEH'], ask:{q:'¿Qué necesitas resolver del coche?', opts:[{l:'Que no me deje tirado', s:'arrancador y power bank', ic:'i-powerbank', skus:['ARR-PB','ARR-INF']},{l:'Grabar lo que pasa', s:'cámara de tablero', ic:'i-cam', skus:['DASH-2K']},{l:'Saber dónde está', s:'rastreador GPS', ic:'i-pin', skus:['GPS-OBD','GPS-VEH']},{l:'Revisar fallas', s:'escáner y alcoholímetro', ic:'i-scan', skus:['OBD-WIFI','ALC-DIG']}]}},
+    {l:'Fusibles automotrices', syn:['fusible de auto','fusible automotriz'], skus:[]}
   ]},
   {id:'estud', l:'Línea estudiantil', ic:'i-kit', syn:['linea estudiantil','escuela','estudiante','proyecto escolar','robotica','tarea','feria de ciencias'], subs:[
-    {l:'Kits para armar', syn:['kit para armar','proyecto escolar','kit escolar'], skus:['KIT-SOL6','KIT-TES','KIT-TOQ','KIT-SOL4','KIT-SH12','KIT-PM5','KIT-BOT'], ask:{q:'¿Para qué es el proyecto?', opts:[{l:'Tarea de la escuela', s:'lo clásico que piden', ic:'i-kit', skus:['KIT-SOL4','KIT-SOL6','KIT-TOQ']},{l:'Feria de ciencias', s:'que impresione', ic:'i-star', skus:['KIT-TES','KIT-SH12']},{l:'Quiero que programe', s:'robótica', ic:'i-board', skus:['KIT-BOT','KIT-PM5']}]}, loc:'Pasillo 8'},
-    {l:'Sensores para proyectos', syn:['sensor','sensores','sensor de movimiento'], skus:['SEN-OPT','SEN-DHT','SEN-LIN','SEN-PIR','SEN-ULT','SEN-POL'], ask:{q:'¿Qué quieres que detecte?', opts:[{l:'Movimiento o presencia', ic:'i-sensor', skus:['SEN-PIR','SEN-OPT']},{l:'Distancia u obstáculos', s:'para un robot', ic:'i-motor', skus:['SEN-ULT','SEN-LIN']},{l:'Temperatura o aire', ic:'i-thermo', skus:['SEN-DHT','SEN-POL']}]}, loc:'Pasillo 8'},
-    {l:'Motores para proyectos', syn:['motor','motores','servomotor','motor a pasos'], skus:['MOT-MINI','MOT-RED48','BOM-80','MOT-PAS','SRV-18','MOT-D6','MOT-L298','SRV-10'], ask:{q:'¿Qué tiene que hacer el motor?', opts:[{l:'Girar y ya', s:'lo más simple', ic:'i-motor', skus:['MOT-MINI','MOT-RED48','MOT-D6']},{l:'Girar a un ángulo exacto', s:'servomotores', ic:'i-timer', skus:['SRV-18','SRV-10','MOT-PAS']},{l:'Mover agua', s:'bomba', ic:'i-spray', skus:['BOM-80']},{l:'Controlarlo desde una placa', s:'driver de motores', ic:'i-board', skus:['MOT-L298']}]}, loc:'Pasillo 8'},
-    {l:'Placas de programación', syn:['placa de programacion','arduino','esp32','microcontrolador'], skus:[], loc:'Pasillo 8'},
-    {l:'Switches y relevadores', syn:['switch','relevador','relay','interruptor'], skus:[], loc:'Pasillo 8'},
-    {l:'Optoelectrónica', syn:['led','diodo','optoacoplador','display de 7 segmentos'], skus:[], loc:'Pasillo 8'},
-    {l:'Electrónica digital y analógica', syn:['electronica digital','electronica analogica','compuerta'], skus:[], loc:'Pasillo 8'},
-    {l:'Conectores y terminales', syn:['conector','terminal','terminales','bornera'], skus:[], loc:'Pasillo 8'}
+    {l:'Kits para armar', syn:['kit para armar','proyecto escolar','kit escolar'], skus:['KIT-SOL6','KIT-TES','KIT-TOQ','KIT-SOL4','KIT-SH12','KIT-PM5','KIT-BOT'], ask:{q:'¿Para qué es el proyecto?', opts:[{l:'Tarea de la escuela', s:'lo clásico que piden', ic:'i-kit', skus:['KIT-SOL4','KIT-SOL6','KIT-TOQ']},{l:'Feria de ciencias', s:'que impresione', ic:'i-star', skus:['KIT-TES','KIT-SH12']},{l:'Quiero que programe', s:'robótica', ic:'i-board', skus:['KIT-BOT','KIT-PM5']}]}},
+    {l:'Sensores para proyectos', syn:['sensor','sensores','sensor de movimiento'], skus:['SEN-OPT','SEN-DHT','SEN-LIN','SEN-PIR','SEN-ULT','SEN-POL'], ask:{q:'¿Qué quieres que detecte?', opts:[{l:'Movimiento o presencia', ic:'i-sensor', skus:['SEN-PIR','SEN-OPT']},{l:'Distancia u obstáculos', s:'para un robot', ic:'i-motor', skus:['SEN-ULT','SEN-LIN']},{l:'Temperatura o aire', ic:'i-thermo', skus:['SEN-DHT','SEN-POL']}]}},
+    {l:'Motores para proyectos', syn:['motor','motores','servomotor','motor a pasos'], skus:['MOT-MINI','MOT-RED48','BOM-80','MOT-PAS','SRV-18','MOT-D6','MOT-L298','SRV-10'], ask:{q:'¿Qué tiene que hacer el motor?', opts:[{l:'Girar y ya', s:'lo más simple', ic:'i-motor', skus:['MOT-MINI','MOT-RED48','MOT-D6']},{l:'Girar a un ángulo exacto', s:'servomotores', ic:'i-timer', skus:['SRV-18','SRV-10','MOT-PAS']},{l:'Mover agua', s:'bomba', ic:'i-spray', skus:['BOM-80']},{l:'Controlarlo desde una placa', s:'driver de motores', ic:'i-board', skus:['MOT-L298']}]}},
+    {l:'Placas de programación', syn:['placa de programacion','arduino','esp32','microcontrolador'], skus:[]},
+    {l:'Switches y relevadores', syn:['switch','relevador','relay','interruptor'], skus:[]},
+    {l:'Optoelectrónica', syn:['led','diodo','optoacoplador','display de 7 segmentos'], skus:[]},
+    {l:'Electrónica digital y analógica', syn:['electronica digital','electronica analogica','compuerta'], skus:[]},
+    {l:'Conectores y terminales', syn:['conector','terminal','terminales','bornera'], skus:[]}
   ]}
 ];
 /* Fichas: complementos curados y notas por producto */
@@ -2767,7 +2765,7 @@ function subAsk(sub, cat){
   }, true);
 }
 /* Lo que la tienda SÍ maneja pero el demo aún no tiene en ficha:
-   nunca "no encontré eso" — sí lo tenemos, y está en tal pasillo. */
+   nunca "no encontré eso" — sí lo tenemos, y este es su código. */
 function subAvailable(sub, cat){
   track('sin_ficha', cat.l + ' · ' + sub.l);
   flow = {type:'refine', step:1, cat};
@@ -2776,8 +2774,8 @@ function subAvailable(sub, cat){
   go('s-chat');
   $('#chat-voicehint').style.display = 'none';
   setSteps(0, 0);
-  botSay($('#bot-text'), 'Sí manejamos ' + sub.l.toLowerCase() + ' — están en ' + sub.loc +
-    ', sección ' + cat.l + '. ¿Te acompaña un asesor o seguimos buscando?', () => {});
+  botSay($('#bot-text'), 'Sí manejamos ' + sub.l.toLowerCase() + ' en ' + cat.l +
+    '. ¿Te acompaña un asesor o seguimos buscando?', () => {});
   renderChips([
     {ic:'i-person', l:'Que me acompañe un asesor', act:'human', pri:1},
     {ic:cat.ic, l:'Ver más de ' + cat.l, act:'cat'},
@@ -2833,7 +2831,7 @@ function addBrowseRow(box, sku){
     const p = P[sku];
     const r = document.createElement('button');
     r.className = 'prow';
-    r.innerHTML = `<div class="ppic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div><div><div class="pnm">${p.n}</div><div class="ploc">${p.loc}</div></div><div class="ppr">${money(p.p)}</div>`;
+    r.innerHTML = `<div class="ppic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div><div><div class="pnm">${p.n}</div><div class="ploc">${p.cat}</div></div><div class="ppr">${money(p.p)}</div>`;
     r.addEventListener('click', () => { track('browse_product', sku); flow.step = 3; showResult(fichaFor(sku)); });
     box.appendChild(r);
   }
@@ -2915,11 +2913,10 @@ const WARRANTY = [
    ===================================================================== */
 const SIM = {offline:false, boterr:false, nomatch:false};
 /* Vendedores de esta tienda (en producción: configurable por sucursal) */
-const VENDORS = [
-  {n:'Memo',  i:'M', r:'asesor de esta tienda'},
-  {n:'Karla', i:'K', r:'asesora de esta tienda'}
-];
-let vSeq = 0, sessionV = VENDORS[0];
+/* Los asesores rotan: el kiosko nunca promete una persona con nombre.
+   Promete el rol, que sí es estable en cualquier tienda y turno. */
+const ASESOR = {n:'un asesor', r:'cualquiera del piso te ayuda'};
+let vSeq = 0;
 let session = null;           // null = sin sesión (attract)
 let sessionHadResult = false, surveyed = false;
 let currentScreen = 's-attract';
@@ -3035,7 +3032,7 @@ function tCard(sku){
     '<div class="tacts"><button class="tw"><svg><use href="#i-check"/></svg>Lo quiero</button>' +
     '<button class="tv">Ver más</button></div></div>';
   d.querySelector('.tn').textContent = p.n;
-  d.querySelector('.tl').textContent = p.loc;
+  d.querySelector('.tl').textContent = p.cat;
   d.querySelector('.tp').textContent = money(p.p);
   const wb = d.querySelector('.tw');
   wb.addEventListener('click', () => {
@@ -3297,7 +3294,7 @@ function prodCard(sku, cls){
       <div class="nm">${p.n}</div>
       <div class="meta">
         <div class="price">${money(p.p)}</div>
-        <div class="loc"><svg><use href="#i-pin"/></svg>${p.loc}</div>
+        <div class="loc"><svg><use href="#i-scan"/></svg>Código ${sku}</div>
       </div>
     </div>
     <svg class="chev"><use href="#i-fwd"/></svg>
@@ -3322,11 +3319,8 @@ function needRow(n, i){
 
 function sugRow(sku, rel){
   const p = P[sku];
-  const lbl = rel === 'sim' ? 'Parecido al que viste'
-            : 'También podrías necesitar · ' + sessionV.n;
-  const ava = rel === 'sim'
-    ? `<div class="npic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div>`
-    : `<span class="vava">${sessionV.i}</span>`;
+  const lbl = rel === 'sim' ? 'Parecido al que viste' : 'También podrías necesitar';
+  const ava = `<div class="npic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div>`;
   return `<div class="sug-row" data-sku="${sku}">
     ${ava}
     <div class="ninf">
@@ -3468,7 +3462,7 @@ function finishSession(){
     phoneDone = true;
     pubPhone({t:'done', total: listTotal(), items: myList.map(r => {
       const p = P[r.sku];
-      return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty, img: p.img};
+      return {sku: r.sku, n: p.n, cat: p.cat, p: p.p, q: r.qty, img: p.img};
     })});
   }
   const close = () => endSession(phoneDone
@@ -3487,7 +3481,7 @@ function renderPaseTake(){
     card.classList.add('done');
     box.innerHTML = '<svg><use href="#i-check"/></svg>';
     $('#pase-take-t').textContent = 'Tu lista ya está en tu teléfono';
-    $('#pase-take-s').textContent = 'Ahí tienes los códigos y el pasillo — y puedes seguir pidiendo por voz.';
+    $('#pase-take-s').textContent = 'Ahí tienes los códigos — y puedes seguir pidiendo por voz.';
     return;
   }
   card.classList.remove('done');
@@ -3496,7 +3490,7 @@ function renderPaseTake(){
   if(typeof QRCode !== 'undefined') new QRCode(box, {text:url, width:216, height:216, correctLevel:QRCode.CorrectLevel.M});
   else box.innerHTML = '<div class="qr-fallback"></div>';
   $('#pase-take-t').textContent = 'Llévatela en tu teléfono';
-  $('#pase-take-s').textContent = 'Escanea y tu lista aparece ahí — con códigos y pasillo. Desde ahí puedes seguir pidiendo.';
+  $('#pase-take-s').textContent = 'Escanea y tu lista aparece ahí, con todo y códigos. Desde ahí puedes seguir pidiendo.';
 }
 /* El cierre: la lista lleva a caja. El asesor vuelve a ser ayuda humana. */
 function showPase(silent){
@@ -3515,7 +3509,7 @@ function showPase(silent){
     const p = P[r.sku];
     html += `<div class="code-row">` +
       `<div class="cpic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div>` +
-      `<div class="ck"><div class="skubig">${r.sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div>` +
+      `<div class="ck"><div class="skubig">${r.sku}</div><div class="cnm">${p.n}</div><div class="cloc">${p.cat}</div></div>` +
       `<div class="qty-ctl"><button data-sku="${r.sku}" data-d="-1">−</button><span class="qv">${r.qty}</span><button data-sku="${r.sku}" data-d="1">+</button></div>` +
       `<div class="cpr">${money(p.p * r.qty)}</div></div>`;
   });
@@ -3538,8 +3532,8 @@ function showPase(silent){
   go('s-pase');
   if(!silent){
     botSay($('#pase-bot'), pairOn
-      ? (nProd > 1 ? 'Estos son tus ' + nProd + ' productos — ya están en tu teléfono. Tómalos del pasillo o dilos en caja.'
-                   : 'Ese es — ya está en tu teléfono. Tómalo del pasillo o dilo en caja.')
+      ? (nProd > 1 ? 'Estos son tus ' + nProd + ' productos — ya están en tu teléfono. Muestra los códigos a un asesor o dilos en caja.'
+                   : 'Ese es — ya está en tu teléfono. Muestra el código a un asesor o dilo en caja.')
       : (nProd > 1 ? 'Estos son tus ' + nProd + ' productos. Escanea el código y llévatelos en tu teléfono — y si falta algo, dímelo.'
                    : 'Ese es. Escanea el código y llévatelo en tu teléfono — y si falta algo, dímelo.'));
     if(pairOn) pubPhone({t:'ask', x:'Tu lista está lista. ¿Agregamos algo más?'});
@@ -3598,12 +3592,11 @@ function showHandoff(customCtx){
     let total = 0, html = '';
     myList.forEach(r => {
       const p = P[r.sku]; total += p.p * r.qty;
-      html += `<div class="code-row"><div class="ck"><div class="skubig">${r.sku}${r.qty > 1 ? ' ×' + r.qty : ''}</div><div class="cnm">${p.n}</div><div class="cloc">${p.loc}</div></div><div class="cpr">${money(p.p * r.qty)}</div></div>`;
+      html += `<div class="code-row"><div class="ck"><div class="skubig">${r.sku}${r.qty > 1 ? ' ×' + r.qty : ''}</div><div class="cnm">${p.n}</div><div class="cloc">${p.cat}</div></div><div class="cpr">${money(p.p * r.qty)}</div></div>`;
     });
     html += `<div class="code-total"><div class="tl">Total estimado<small>Precios de lista · confirma en caja</small></div><div class="cpr">${money(total)}</div></div>`;
     box.innerHTML = html;
     box.style.display = 'flex';
-    $('#pt-vendor').textContent = sessionV.n;
     $('#ho-phototip').style.display = 'flex';
   }else{
     $('#ho-context').textContent = ctxMsg ? '“' + ctxMsg + '.”' : '';
@@ -3614,16 +3607,17 @@ function showHandoff(customCtx){
     $('#ho-phototip').style.display = 'none';
   }
   $('#asesor-crumb').textContent = myList.length ? 'Ya casi es tuyo' : 'Ayuda de una persona';
-  $('#asesor-title').innerHTML = myList.length ? 'Tómalo del pasillo<br>o pídelo en caja' : 'Ellos te<br>atienden hoy';
-  $('#asesor-vendors').innerHTML = VENDORS.map(v =>
-    `<div class="vchip"><span class="vava">${v.i}</span><div><b>${v.n}</b><small>${v.r}</small></div></div>`).join('');
+  $('#asesor-title').innerHTML = myList.length ? 'Muestra estos códigos<br>a un asesor o en caja' : 'Busca a un asesor<br>y muéstrale esto';
+  $('#asesor-vendors').innerHTML =
+    `<div class="vchip"><span class="vava"><svg><use href="#i-person"/></svg></span>` +
+    `<div><b>Busca a un asesor</b><small>Cualquiera del piso te puede ayudar</small></div></div>`;
   go('s-asesor');
   if(!myList.length) $('#ab-phone').classList.add('ab-hide');
   botSay($('#asesor-bot'), myList.length
     ? (myList.length > 1
-        ? 'Tu lista va creciendo. ¿Buscas algo más? Dímelo — o dilos en caja y listo.'
-        : 'Ellos te ayudan — o di los códigos en caja y listo.')
-    : 'Búscalos en pasillos o mostrador.');
+        ? 'Tu lista va creciendo. Muéstrale estos códigos a cualquier asesor y él te los junta — o dilos en caja.'
+        : 'Muéstrale este código a cualquier asesor y él te lo trae — o dilo en caja.')
+    : 'Busca a cualquier asesor de piso y dile qué necesitas. Traen el mismo catálogo que este kiosko.');
   if(pairOn) pubPhone({t:'ask', x:'¿Agregamos algo más? Dime otra búsqueda — o continúa en caja.'});
   track('handoff', ctxMsg || (lastResult ? lastResult.ctx : 'sin contexto'));
 }
@@ -3703,10 +3697,7 @@ function showDetail(sku){
   buildGallery(sku);
   $('#det-price').textContent = money(p.p);
   $('#det-sku').textContent = 'SKU ' + sku + ' · ' + p.cat;
-  const st = p.st[0];
-  $('#det-stock').innerHTML = st > 0
-    ? `<span class="stock-ok">✓ Disponible en esta tienda</span><small>~${st} pzas según sistema · confirma en tienda</small>`
-    : `<span class="stock-out">Agotado en esta tienda</span><small>en steren.com.mx o en otra sucursal</small>`;
+  // Existencias por tienda: dato que no existe en el sistema real — el nodo se retiró.
   // Banda "lo elegiste por": la respuesta de la pregunta guía, tal cual
   const ab = $('#det-askband');
   if(lastAsk && lastAsk.skus.indexOf(sku) >= 0){
@@ -3734,11 +3725,12 @@ function showDetail(sku){
   const tip = (lastResult && sku === lastResult.main && lastResult.note) ? lastResult.note : null;
   $('#det-tipband').style.display = tip ? 'flex' : 'none';
   if(tip){
-    $('#dt-ava').textContent = sessionV.i;
-    $('#dt-who').textContent = 'Tip de ' + sessionV.n + ' · ' + sessionV.r;
+    $('#dt-ava').innerHTML = '<svg><use href="#i-person"/></svg>';
+    $('#dt-who').textContent = 'Lo que suele preguntar la gente en piso';
     $('#dt-note').textContent = tip;
   }
-  $('#det-loc').innerHTML = `<svg><use href="#i-pin"/></svg><span>${p.loc} <small>· referencia, puede variar por acomodo</small></span>`;
+  // El pasillo no existe como dato: el código ES el remate.
+  $('#det-loc').innerHTML = `<svg><use href="#i-scan"/></svg><span>Muéstrale este código a un asesor <small>· él te lo ubica en piso</small></span>`;
   go('s-detail');
   $('#det-scroll').scrollTop = 0;
   track('product_detail', sku);
@@ -4218,7 +4210,7 @@ function routeVoice(raw){
     return startBrowse();
   }
 
-  // 1.3) PREGUNTAS SOBRE LO QUE ESTÁ EN PANTALLA — precio, pasillo,
+  // 1.3) PREGUNTAS SOBRE LO QUE ESTÁ EN PANTALLA — precio, ubicación,
   //      ficha o cualquier característica. Es la mitad de una conversación
   //      real de mostrador: el bot enseña, el cliente pregunta SOBRE eso.
   const ctxV = voiceCtx();
@@ -4247,7 +4239,7 @@ function routeVoice(raw){
     const pv = P[ctxV.sku];
     if(askDetail){ sayLine('Va — su ficha completa.'); return showDetail(ctxV.sku); }
     if(askPrice){ sayLine(pv.n.split(' · ')[0] + ' cuesta ' + money(pv.p) + '. Si lo quieres, dime “lo quiero”.'); return; }
-    sayLine('Está en ' + pv.loc + '. ¿Te lo apunto en tu lista?');
+    sayLine('Su código es ' + ctxV.sku + '. Muéstraselo a cualquier asesor y te lo ubica. ¿Te lo apunto en tu lista?');
     return;
   }
   // Característica dicha como pregunta: "¿tiene bluetooth?" "¿es recargable?"
@@ -4786,7 +4778,7 @@ function renderVMPage(){
     const p = P[sku];
     const r = document.createElement('button');
     r.className = 'prow';
-    r.innerHTML = `<div class="ppic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div><div><div class="pnm">${p.n}</div><div class="ploc">${p.loc}</div></div><div class="ppr">${money(p.p)}</div>`;
+    r.innerHTML = `<div class="ppic"><img src="${p.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none"><use href="#${p.ic}"/></svg></div><div><div class="pnm">${p.n}</div><div class="ploc">${p.cat}</div></div><div class="ppr">${money(p.p)}</div>`;
     r.addEventListener('click', () => { track('voice_match_pick', sku); showResult(fichaFor(sku)); });
     box.appendChild(r);
   });
@@ -4841,7 +4833,7 @@ function pubList(){
   pubPhone({t:'list', total: listTotal(), items: myList.map(r => {
     const p = P[r.sku];
     // img: el usuario quiere VER qué se lleva, no leer un SKU
-    return {sku: r.sku, n: p.n, loc: p.loc, p: p.p, q: r.qty, img: p.img};
+    return {sku: r.sku, n: p.n, cat: p.cat, p: p.p, q: r.qty, img: p.img};
   })});
 }
 function openPair(){
@@ -5495,7 +5487,6 @@ function endSession(msg){
 function startSession(){
   session = {t: 0};
   sessionHadResult = false; surveyed = false;
-  sessionV = VENDORS[vSeq++ % VENDORS.length];
   sid = 'S' + Date.now().toString(36);
   track('session_start');
   voiceMode = false; voiceSource = null;
