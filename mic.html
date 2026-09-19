@@ -4,11 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Stebot · Tu teléfono es el micrófono</title>
-<link rel="preconnect" href="https://broker.emqx.io">
-<link rel="preconnect" href="https://broker.hivemq.com">
-<link rel="preconnect" href="https://test.mosquitto.org">
-<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
-<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
 <style>
 :root{
   --blue:#0046BE; --blue-2:#1265E0; --navy:#061530;
@@ -82,8 +79,7 @@ main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:
 #mic svg{width:52px;height:52px}
 .miclbl{font-size:14px;font-weight:800;color:var(--ink);text-align:center;line-height:1.3;min-height:18px}
 #live{min-height:0;font-size:15px;font-weight:700;color:var(--ink);text-align:center;font-style:italic;padding:0 8px}
-#live:empty,.fb:empty,#diag:empty{display:none}
-#diag{font-size:11px;color:#8A99AC;text-align:center;line-height:1.35;padding:0 8px;word-break:break-word}
+#live:empty,.fb:empty{display:none}
 .txtrow{display:flex;gap:10px;flex-shrink:0}
 .txtrow input{
   flex:1;min-width:0;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;
@@ -149,7 +145,7 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 </head>
 <body>
 <header>
-  <div class="t">Stebot · Asistente Steren<small>Tu sesión del kiosko, en tu mano · v2.2</small></div>
+  <div class="t">Stebot · Asistente Steren<small>Tu sesión del kiosko, en tu mano</small></div>
   <span class="st" id="st">Conectando…</span>
 </header>
 <main>
@@ -182,7 +178,6 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 <div id="dock" class="hide">
     <div class="fb" id="fb"></div>
     <div id="live"></div>
-    <div id="diag"></div>
     <div class="txtrow hide" id="txtrow">
       <input id="txt" placeholder="Escríbelo aquí…" autocomplete="off">
       <button id="send">Enviar</button>
@@ -211,23 +206,34 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
-/* El kiosko elige el broker público más rápido en ese momento. El teléfono no
-   sabe cuál ganó, así que toca en los tres a la vez y se queda con el que
-   responde "ack". Los otros se cierran. Compatible con el kiosko anterior. */
-const BROKERS = [
-  'wss://broker.emqx.io:8084/mqtt',
-  'wss://broker.hivemq.com:8884/mqtt',
-  'wss://test.mosquitto.org:8081/mqtt'
-];
+const BROKER = 'wss://broker.emqx.io:8084/mqtt';
 let client = null, code = '', connected = false, blocked = false, finished = false;
-let cands = [], helloTimer = null, acked = false;
 const pid = Math.random().toString(36).slice(2, 10); // identidad de este teléfono
 
 function topic(sub){ return 'steren-kiosko-demo/' + code + '/' + sub; }
 function setSt(cls, txt){ const el = $('#st'); el.className = 'st ' + cls; el.textContent = txt; }
 function fb(cls, txt){ const el = $('#fb'); el.className = 'fb ' + cls; el.textContent = txt; }
 
-function onMsg(tp, msg){
+function start(c){
+  code = c.toUpperCase();
+  $('#codebox').classList.add('hide');
+  $('#talkui').classList.remove('hide');
+  $('#dock').classList.remove('hide');
+  if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
+  setSt('', 'Conectando…');
+  client = mqtt.connect(BROKER, {
+    clientId: 'phone-' + code + '-' + pid,
+    clean: true, connectTimeout: 8000, reconnectPeriod: 3000,
+    // aviso de última voluntad: si el teléfono muere (pila, red), el kiosko lo sabe
+    will: {topic: 'steren-kiosko-demo/' + code.toUpperCase() + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false}
+  });
+  client.on('connect', () => {
+    connected = true;
+    setSt('', 'Sincronizando…');
+    client.subscribe(topic('k2p'));
+    client.publish(topic('p2k'), JSON.stringify({t:'hello', ph:pid}));
+  });
+  client.on('message', (tp, msg) => {
     let d = null;
     try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
     if(d.t === 'ack' && d.ph === pid){ blocked = false; setSt('ok', 'Conectado'); }
@@ -271,59 +277,12 @@ function onMsg(tp, msg){
     }
     if(d.t === 'ok' && d.x){ fb('ok', d.x); }
     if(d.t === 'miss' && d.x){ fb('miss', d.x); }
-}
-function start(c){
-  code = c.toUpperCase();
-  $('#codebox').classList.add('hide');
-  $('#talkui').classList.remove('hide');
-  $('#dock').classList.remove('hide');
-  if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
-  setSt('', 'Conectando…');
-  const will = {topic: 'steren-kiosko-demo/' + code + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false};
-  const hello = JSON.stringify({t:'hello', ph:pid});
-  let errors = 0;
-  BROKERS.forEach(url => {
-    let c;
-    try{
-      c = mqtt.connect(url, {
-        clientId: 'phone-' + code + '-' + pid + '-' + Math.random().toString(36).slice(2, 5),
-        clean: true, connectTimeout: 6000, reconnectPeriod: 1500, keepalive: 20, will
-      });
-    }catch(e){ return; }
-    cands.push(c);
-    c.on('connect', () => {
-      if(acked && c !== client){ try{ c.end(true); }catch(e){} return; }
-      connected = true;
-      if(!client) client = c;                 // provisional: el primero en conectar
-      setSt('', 'Buscando el kiosko…');
-      c.subscribe(topic('k2p'), {qos:1});
-      try{ c.publish(topic('p2k'), hello, {qos:1}); }catch(e){}
-    });
-    c.on('message', (tp, msg) => {
-      // el primer "ack" decide el canal: ese cliente se queda, los demás se van
-      if(!acked){
-        let d = null; try{ d = JSON.parse(msg.toString()); }catch(e){}
-        if(d && d.t === 'ack' && d.ph === pid){
-          acked = true; client = c; clearInterval(helloTimer);
-          cands.forEach(o => { if(o !== c){ try{ o.end(true); }catch(e){} } });
-          cands = [c];
-        }else if(c !== client) return;          // ruido de otro broker antes del ack
-      }else if(c !== client) return;
-      onMsg(tp, msg);
-    });
-    c.on('error', () => { if(!connected && ++errors >= BROKERS.length) setSt('err', 'Sin conexión'); });
-    c.on('close', () => { if(connected && c === client && acked) setSt('', 'Reconectando…'); });
   });
-  // "hello" se repite hasta que el kiosko conteste: si llegó antes de que el
-  // kiosko se suscribiera, ya no se pierde (antes era una sola vez y a rezar).
-  let tries = 0;
-  helloTimer = setInterval(() => {
-    if(acked || ++tries > 30){ clearInterval(helloTimer); if(!acked) setSt('err', 'No encuentro el kiosko — vuelve a escanear'); return; }
-    cands.forEach(o => { if(o.connected){ try{ o.publish(topic('p2k'), hello, {qos:1}); }catch(e){} } });
-  }, 1200);
   window.addEventListener('beforeunload', () => {
     try{ client.publish(topic('p2k'), JSON.stringify({t:'bye', ph:pid})); }catch(e){}
   });
+  client.on('error', () => { if(!connected) setSt('err', 'Sin conexión'); });
+  client.on('close', () => { if(connected) setSt('', 'Reconectando…'); });
 }
 /* Foto → el display. Se reduce a 640 px / JPEG antes de viajar por el
    canal (≈60–150 KB): cabe de sobra en el broker y llega al instante.
@@ -392,7 +351,7 @@ const money = n => '$' + (n % 1 ? n.toLocaleString('es-MX', {minimumFractionDigi
 function sendText(x){
   x = (x || '').trim();
   if(!x || !client || blocked) return;
-  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}), {qos:1});
+  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}));
   // Confirmación que no deja duda: botón verde + palomita + vibración,
   // y la frase enviada se queda visible un momento con su ✓.
   clearTimeout(micReset);
@@ -424,94 +383,42 @@ if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el 
 const vib = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 let micReset = null;
 function micLbl(txt){ $('#miclbl').textContent = txt; }
-/* ---- Diagnóstico visible: qué hizo el dictado y cuándo ---- */
-let diag = [], diagT0 = 0;
-function diagReset(){ diag = []; diagT0 = performance.now(); const el = $('#diag'); if(el) el.textContent = ''; }
-function diagLog(x){ diag.push(x + ' ' + ((performance.now() - diagT0) / 1000).toFixed(1) + 's'); const el = $('#diag'); if(el) el.textContent = diag.join(' · '); }
-/* Configuraciones alternas del dictado. Si una no da resultados, el
-   siguiente intento usa la siguiente; la que funcione se queda. */
-const SR_MODES = [
-  {name:'A', continuous:false, interimResults:true,  lang:'es-MX'},
-  {name:'B', continuous:true,  interimResults:true,  lang:'es-MX'},
-  {name:'C', continuous:false, interimResults:false, lang:'es-MX'},
-  {name:'D', continuous:false, interimResults:true,  lang:'es'}
-];
-let srAttempt = 0;
-let cur = null; // sesión de dictado en curso (para que el segundo toque pueda cerrarla)
-function endDictation(s, why){
-  if(s.fired) return;
-  s.fired = true; clearTimeout(s.quiet); clearTimeout(s.guard);
-  listening = false; if(cur === s) cur = null;
-  $('#mic').classList.remove('rec');
-  if(s.heard){ diagLog('enviado'); sendText(s.heard); return; }   // sendText pinta la confirmación
-  srAttempt++; // sin resultado: el próximo intento prueba otra configuración
-  diagLog('sin frase' + (why ? ' (' + why + ')' : ''));
-  micLbl('No te escuché' + (why ? ' (' + why + ')' : '') + ' — toca de nuevo (probaré el modo ' + SR_MODES[srAttempt % SR_MODES.length].name + ') o usa el teclado');
-  micReset = setTimeout(() => micLbl('Toca para hablar'), 4500);
-}
 $('#mic').addEventListener('click', () => {
   if(blocked || !client) return;
   if(!SR){ $('#txt').focus(); return; }
-  if(listening && cur){
-    // segundo toque = enviar ya. Si el dictado no suelta nada en 1.2 s, se libera el botón.
-    const s = cur;
-    diagLog('toque');
-    try{ rec.stop(); }catch(e){}
-    clearTimeout(s.guard);
-    s.guard = setTimeout(() => { try{ rec.abort(); }catch(e){} endDictation(s, s.heard ? '' : 'sin respuesta del dictado'); }, 1200);
-    return;
-  }
+  if(listening){ try{ rec.stop(); }catch(e){} return; }  // segundo toque = enviar ya
   clearTimeout(micReset);
   $('#mic').classList.remove('sent', 'cue');
   // barge-in: avisa al kiosko ANTES de dictar — si el bot está hablando,
   // se calla en ese instante y no se dicta encima de su voz
   try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
-  const mode = SR_MODES[srAttempt % SR_MODES.length];
-  diagReset(); diagLog('modo ' + mode.name);
   rec = new SR();
-  rec.lang = mode.lang; rec.interimResults = mode.interimResults; rec.continuous = mode.continuous;
-  try{ rec.maxAlternatives = 1; }catch(e){}
-  /* Reglas del dictado:
-       resultado final → se envía YA (antes se esperaba a que "terminara solo");
-       la frase deja de cambiar 1.3 s → se corta y se envía;
-       iOS a veces entrega el resultado DESPUÉS de onend → 400 ms de gracia;
-       12 s sin ninguna señal → se aborta y se libera el botón con el motivo.
-     El botón nunca se queda rojo para siempre. */
-  const s = cur = {heard:'', fired:false, quiet:null, guard:null, err:''};
+  rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
+  let heard = '';
   listening = true;
   $('#mic').classList.add('rec');          // señal INMEDIATA, antes de que arranque el dictado
   micLbl('Preparando…');
   $('#live').textContent = '';
   vib(25);
-  rec.onstart = () => { diagLog('start'); if(listening) micLbl('Te escucho — habla'); };
-  rec.onaudiostart = () => { diagLog('audio'); if(listening) micLbl('Te escucho — habla'); };
-  rec.onsoundstart = () => diagLog('sonido');
-  rec.onspeechstart = () => { diagLog('voz'); if(listening) micLbl('Te escucho…'); };
-  rec.onspeechend = () => diagLog('fin voz');
-  rec.onnomatch = () => diagLog('nomatch');
+  rec.onstart = rec.onaudiostart = () => { if(listening) micLbl('Te escucho — habla'); };
+  rec.onspeechstart = () => { if(listening) micLbl('Te escucho…'); };
   rec.onresult = e => {
     let fin = '', mid = '';
     for(let i = 0; i < e.results.length; i++){
-      const r = e.results[i], alt = r && r[0];
-      if(!alt) continue;
-      if(r.isFinal) fin += alt.transcript; else mid += alt.transcript;
+      if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
     }
-    const h = (fin || mid).trim();
-    diagLog(fin.trim() ? 'final' : 'parcial');
-    if(h){
-      s.heard = h;
-      $('#live').textContent = '“' + h + '”';
-      micLbl('Al terminar se envía solo — o toca para enviar ya');
-      clearTimeout(s.guard);
-      clearTimeout(s.quiet);
-      s.quiet = setTimeout(() => { diagLog('silencio'); try{ rec.stop(); }catch(e){} endDictation(s); }, 1300);
-    }
-    if(fin.trim()){ try{ rec.stop(); }catch(e){} endDictation(s); }
+    heard = (fin || mid).trim();
+    if(heard){ $('#live').textContent = '“' + heard + '”'; micLbl('Al terminar se envía solo — o toca para enviar ya'); }
   };
-  rec.onerror = e => { s.err = (e && e.error) || 'error'; diagLog('error ' + s.err); listening = false; };
-  rec.onend = () => { diagLog('end'); if(s.heard) endDictation(s); else setTimeout(() => endDictation(s, s.err), 400); };
-  s.guard = setTimeout(() => { if(!s.fired && !s.heard){ diagLog('sin señal 12 s'); try{ rec.abort(); }catch(e){} endDictation(s, 'sin respuesta del dictado'); } }, 12000);
-  try{ rec.start(); }catch(e){ diagLog('start falló'); listening = false; cur = null; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
+  rec.onerror = () => { listening = false; };
+  rec.onend = () => {
+    listening = false;
+    $('#mic').classList.remove('rec');
+    if(heard){ sendText(heard); return; }   // sendText pinta la confirmación
+    micLbl('No te escuché — toca e intenta otra vez');
+    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
+  };
+  try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
 });
 $('#kb').addEventListener('click', () => {
   const r = $('#txtrow');
@@ -523,19 +430,8 @@ $('#txt').addEventListener('keydown', e => { if(e.key === 'Enter'){ sendText($('
 $('#code-go').addEventListener('click', () => { const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); });
 $('#code-in').addEventListener('keydown', e => { if(e.key === 'Enter'){ const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); } });
 
-/* Modo prueba (mic.html?test=1): sin kiosko ni canal. Sirve para saber si el
-   teléfono transcribe por sí solo — si aquí no hay frase, el problema es del
-   dictado del teléfono (permiso, idioma, red), no del kiosko. */
-function testMode(){
-  code = 'TEST'; acked = true; connected = true; blocked = false;
-  client = {connected:true, publish(){}, end(){}};
-  $('#codebox').classList.add('hide'); $('#talkui').classList.remove('hide'); $('#dock').classList.remove('hide');
-  setSt('ok', 'Prueba de dictado');
-  $('#hintline').innerHTML = '<b>Modo prueba</b> — toca el micrófono y habla. Aquí no hay kiosko: solo se comprueba que tu teléfono transcriba.';
-}
 const qs = new URLSearchParams(location.search);
-if(qs.get('test')) testMode();
-else if(qs.get('c')) start(qs.get('c'));
+if(qs.get('c')) start(qs.get('c'));
 </script>
 </body>
 </html>
