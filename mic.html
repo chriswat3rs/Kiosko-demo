@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Stebot · Tu teléfono es el micrófono</title>
-<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
-<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
+<link rel="preconnect" href="https://broker.emqx.io">
+<link rel="preconnect" href="https://broker.hivemq.com">
+<link rel="preconnect" href="https://test.mosquitto.org">
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
 <style>
 :root{
   --blue:#0046BE; --blue-2:#1265E0; --navy:#061530;
@@ -206,34 +209,23 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
-const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+/* El kiosko elige el broker público más rápido en ese momento. El teléfono no
+   sabe cuál ganó, así que toca en los tres a la vez y se queda con el que
+   responde "ack". Los otros se cierran. Compatible con el kiosko anterior. */
+const BROKERS = [
+  'wss://broker.emqx.io:8084/mqtt',
+  'wss://broker.hivemq.com:8884/mqtt',
+  'wss://test.mosquitto.org:8081/mqtt'
+];
 let client = null, code = '', connected = false, blocked = false, finished = false;
+let cands = [], helloTimer = null, acked = false;
 const pid = Math.random().toString(36).slice(2, 10); // identidad de este teléfono
 
 function topic(sub){ return 'steren-kiosko-demo/' + code + '/' + sub; }
 function setSt(cls, txt){ const el = $('#st'); el.className = 'st ' + cls; el.textContent = txt; }
 function fb(cls, txt){ const el = $('#fb'); el.className = 'fb ' + cls; el.textContent = txt; }
 
-function start(c){
-  code = c.toUpperCase();
-  $('#codebox').classList.add('hide');
-  $('#talkui').classList.remove('hide');
-  $('#dock').classList.remove('hide');
-  if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
-  setSt('', 'Conectando…');
-  client = mqtt.connect(BROKER, {
-    clientId: 'phone-' + code + '-' + pid,
-    clean: true, connectTimeout: 8000, reconnectPeriod: 3000,
-    // aviso de última voluntad: si el teléfono muere (pila, red), el kiosko lo sabe
-    will: {topic: 'steren-kiosko-demo/' + code.toUpperCase() + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false}
-  });
-  client.on('connect', () => {
-    connected = true;
-    setSt('', 'Sincronizando…');
-    client.subscribe(topic('k2p'));
-    client.publish(topic('p2k'), JSON.stringify({t:'hello', ph:pid}));
-  });
-  client.on('message', (tp, msg) => {
+function onMsg(tp, msg){
     let d = null;
     try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
     if(d.t === 'ack' && d.ph === pid){ blocked = false; setSt('ok', 'Conectado'); }
@@ -277,12 +269,59 @@ function start(c){
     }
     if(d.t === 'ok' && d.x){ fb('ok', d.x); }
     if(d.t === 'miss' && d.x){ fb('miss', d.x); }
+}
+function start(c){
+  code = c.toUpperCase();
+  $('#codebox').classList.add('hide');
+  $('#talkui').classList.remove('hide');
+  $('#dock').classList.remove('hide');
+  if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
+  setSt('', 'Conectando…');
+  const will = {topic: 'steren-kiosko-demo/' + code + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false};
+  const hello = JSON.stringify({t:'hello', ph:pid});
+  let errors = 0;
+  BROKERS.forEach(url => {
+    let c;
+    try{
+      c = mqtt.connect(url, {
+        clientId: 'phone-' + code + '-' + pid + '-' + Math.random().toString(36).slice(2, 5),
+        clean: true, connectTimeout: 6000, reconnectPeriod: 1500, keepalive: 20, will
+      });
+    }catch(e){ return; }
+    cands.push(c);
+    c.on('connect', () => {
+      if(acked && c !== client){ try{ c.end(true); }catch(e){} return; }
+      connected = true;
+      if(!client) client = c;                 // provisional: el primero en conectar
+      setSt('', 'Buscando el kiosko…');
+      c.subscribe(topic('k2p'), {qos:1});
+      try{ c.publish(topic('p2k'), hello, {qos:1}); }catch(e){}
+    });
+    c.on('message', (tp, msg) => {
+      // el primer "ack" decide el canal: ese cliente se queda, los demás se van
+      if(!acked){
+        let d = null; try{ d = JSON.parse(msg.toString()); }catch(e){}
+        if(d && d.t === 'ack' && d.ph === pid){
+          acked = true; client = c; clearInterval(helloTimer);
+          cands.forEach(o => { if(o !== c){ try{ o.end(true); }catch(e){} } });
+          cands = [c];
+        }else if(c !== client) return;          // ruido de otro broker antes del ack
+      }else if(c !== client) return;
+      onMsg(tp, msg);
+    });
+    c.on('error', () => { if(!connected && ++errors >= BROKERS.length) setSt('err', 'Sin conexión'); });
+    c.on('close', () => { if(connected && c === client && acked) setSt('', 'Reconectando…'); });
   });
+  // "hello" se repite hasta que el kiosko conteste: si llegó antes de que el
+  // kiosko se suscribiera, ya no se pierde (antes era una sola vez y a rezar).
+  let tries = 0;
+  helloTimer = setInterval(() => {
+    if(acked || ++tries > 30){ clearInterval(helloTimer); if(!acked) setSt('err', 'No encuentro el kiosko — vuelve a escanear'); return; }
+    cands.forEach(o => { if(o.connected){ try{ o.publish(topic('p2k'), hello, {qos:1}); }catch(e){} } });
+  }, 1200);
   window.addEventListener('beforeunload', () => {
     try{ client.publish(topic('p2k'), JSON.stringify({t:'bye', ph:pid})); }catch(e){}
   });
-  client.on('error', () => { if(!connected) setSt('err', 'Sin conexión'); });
-  client.on('close', () => { if(connected) setSt('', 'Reconectando…'); });
 }
 /* Foto → el display. Se reduce a 640 px / JPEG antes de viajar por el
    canal (≈60–150 KB): cabe de sobra en el broker y llega al instante.
@@ -351,7 +390,7 @@ const money = n => '$' + (n % 1 ? n.toLocaleString('es-MX', {minimumFractionDigi
 function sendText(x){
   x = (x || '').trim();
   if(!x || !client || blocked) return;
-  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}));
+  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}), {qos:1});
   // Confirmación que no deja duda: botón verde + palomita + vibración,
   // y la frase enviada se queda visible un momento con su ✓.
   clearTimeout(micReset);
@@ -394,7 +433,19 @@ $('#mic').addEventListener('click', () => {
   try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
   rec = new SR();
   rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
-  let heard = '';
+  let heard = '', fired = false, quiet = null;
+  // Antes se esperaba a que el dictado "terminara solo" (~2–3 s de silencio).
+  // Ahora: resultado final → se envía YA; y si la frase deja de cambiar 1.1 s,
+  // se corta el dictado. El segundo toque sigue enviando al instante.
+  const fire = () => {
+    if(fired) return;
+    fired = true; clearTimeout(quiet);
+    listening = false;
+    $('#mic').classList.remove('rec');
+    if(heard){ sendText(heard); return; }
+    micLbl('No te escuché — toca e intenta otra vez');
+    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
+  };
   listening = true;
   $('#mic').classList.add('rec');          // señal INMEDIATA, antes de que arranque el dictado
   micLbl('Preparando…');
@@ -408,16 +459,16 @@ $('#mic').addEventListener('click', () => {
       if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
     }
     heard = (fin || mid).trim();
-    if(heard){ $('#live').textContent = '“' + heard + '”'; micLbl('Al terminar se envía solo — o toca para enviar ya'); }
+    if(heard){
+      $('#live').textContent = '“' + heard + '”';
+      micLbl('Al terminar se envía solo — o toca para enviar ya');
+      clearTimeout(quiet);
+      quiet = setTimeout(() => { try{ rec.stop(); }catch(e){} fire(); }, 1100);
+    }
+    if(fin.trim()){ try{ rec.stop(); }catch(e){} fire(); }
   };
   rec.onerror = () => { listening = false; };
-  rec.onend = () => {
-    listening = false;
-    $('#mic').classList.remove('rec');
-    if(heard){ sendText(heard); return; }   // sendText pinta la confirmación
-    micLbl('No te escuché — toca e intenta otra vez');
-    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
-  };
+  rec.onend = fire;
   try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
 });
 $('#kb').addEventListener('click', () => {
