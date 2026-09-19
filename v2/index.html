@@ -4,13 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kiosco Steren · Prototipo interactivo 43" vertical</title>
-<link rel="preconnect" href="https://broker.emqx.io">
-<link rel="preconnect" href="https://broker.hivemq.com">
-<link rel="preconnect" href="https://test.mosquitto.org">
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
-<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
 <style>
 :root{
   --blue:#0046BE; --blue-2:#1265E0; --blue-3:#3E8BFF;
@@ -3239,7 +3235,6 @@ function showInfo(w){
    PENSANDO → RESULTADO
    ===================================================================== */
 let pendingThink = null;
-const THINK_MS = 900; // beat de "pensando": antes 1500 ms; la red ya aporta espera suficiente
 function think(msg, cb){
   if(SIM.nomatch){
     SIM.nomatch = false;
@@ -3254,7 +3249,7 @@ function think(msg, cb){
   }
   $('#think-text').innerHTML = msg + '<span>…</span>';
   go('s-think');
-  setTimeout(cb, THINK_MS);
+  setTimeout(cb, 1500);
 }
 function showBotError(){
   flow = {type:'error'};
@@ -4819,61 +4814,7 @@ window.voiceReady = true; // renderChips ya puede invocar la capa de voz
    bot + Ref del kiosko. En el dummie: MQTT sobre WebSocket público.
    ===================================================================== */
 const MIC_PAGE = 'https://chriswat3rs.github.io/Kiosko-demo/mic.html';
-/* ---- Canal teléfono ↔ kiosko ----
-   Antes: un solo broker público (emqx) al que el kiosko se conectaba hasta que
-   aparecía el QR. Cuando emqx anda saturado, todo se arrastra: conectar,
-   emparejar y cada mensaje. Ahora:
-     · tres brokers públicos en CARRERA — gana el que conecte primero;
-     · la conexión se abre al INICIAR la sesión, no al mostrar el QR, así el
-       kiosko ya está suscrito cuando el teléfono llega (antes, un "hello" que
-       llegaba temprano se perdía y el teléfono se quedaba en "Sincronizando…");
-     · keepalive corto y reconexión rápida. El teléfono busca al kiosko en los
-       tres brokers y se queda con el que le contesta. */
-const PAIR_BROKERS = [
-  'wss://broker.emqx.io:8084/mqtt',
-  'wss://broker.hivemq.com:8884/mqtt',
-  'wss://test.mosquitto.org:8081/mqtt'
-];
-let PAIR_BROKER = PAIR_BROKERS[0];
-const PAIR_OPTS = {clean:true, connectTimeout:6000, reconnectPeriod:1500, keepalive:20};
-let pairWarm = null; // carrera en curso (promesa que resuelve al cliente ganador)
-function pairRace(){
-  if(pairWarm) return pairWarm;
-  if(typeof mqtt === 'undefined') return Promise.reject(new Error('mqtt'));
-  pairWarm = new Promise((resolve, reject) => {
-    let settled = false, alive = PAIR_BROKERS.length;
-    const cands = [];
-    const drop = c => { try{ c.end(true); }catch(e){} };
-    PAIR_BROKERS.forEach(url => {
-      let c;
-      try{
-        c = mqtt.connect(url, Object.assign({clientId:'kiosk-' + Math.random().toString(36).slice(2, 8) + '-' + Date.now().toString(36)}, PAIR_OPTS));
-      }catch(e){ if(--alive === 0 && !settled){ settled = true; reject(e); } return; }
-      cands.push(c);
-      let failed = false;
-      c.once('connect', () => {
-        if(settled){ drop(c); return; }
-        settled = true;
-        PAIR_BROKER = url;
-        cands.forEach(o => { if(o !== c) drop(o); });
-        try{ console.log('[pair] canal:', url); }catch(e){}
-        resolve(c);
-      });
-      c.on('error', () => {
-        if(settled || failed) return;
-        failed = true; drop(c);
-        if(--alive === 0){ settled = true; reject(new Error('sin broker')); }
-      });
-    });
-    setTimeout(() => {
-      if(settled) return;
-      settled = true; cands.forEach(drop); reject(new Error('timeout'));
-    }, 9000);
-  });
-  pairWarm.catch(() => { pairWarm = null; });
-  return pairWarm;
-}
-function warmPair(){ pairRace().catch(() => {}); }
+const PAIR_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 let pairClient = null, pairCode = '', pairOn = false, voiceSource = null, pairPid = null;
 const pairTopic = sub => 'steren-kiosko-demo/' + pairCode + '/' + sub;
 
@@ -4941,7 +4882,16 @@ function setPairStatus(s){
     : '<span class="pdot"></span>Esperando tu teléfono…';
 }
 function closePair(){ $('#ov-pair').classList.remove('active'); if(typeof homeListen === 'function') homeListen(); }
-function pairOnMessage(topic, msg){
+function connectPair(){
+  if(typeof mqtt === 'undefined'){ setPairStatus('err'); return; }
+  try{
+    if(pairClient){ try{ pairClient.end(true); }catch(e){} }
+    pairClient = mqtt.connect(PAIR_BROKER, {
+      clientId: 'kiosk-' + pairCode + '-' + Date.now().toString(36),
+      clean: true, connectTimeout: 8000, reconnectPeriod: 3000
+    });
+    pairClient.on('connect', () => { pairClient.subscribe(pairTopic('p2k')); });
+    pairClient.on('message', (topic, msg) => {
       let d = null;
       try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
       const ph = d.ph || 'p1';
@@ -4953,7 +4903,7 @@ function pairOnMessage(topic, msg){
           voiceSource = 'telefono';
           setPairStatus('ok');
           track('pair_connected', pairIntent);
-          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph}), {qos:1}); }catch(e){}
+          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
           if(pairIntent === 'lista'){
             // Escaneó desde el pase: su lista aparece en su teléfono y ahí sigue la conversación
             setTimeout(() => {
@@ -4970,7 +4920,7 @@ function pairOnMessage(topic, msg){
             setTimeout(phoneWelcome, 700);
           }
         }else if(ph === pairPid){
-          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph}), {qos:1}); }catch(e){}
+          try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'ack', ph})); }catch(e){}
           setTimeout(pubList, 300);
         }else{
           // segundo teléfono con el mismo código: sesión ocupada
@@ -4986,26 +4936,9 @@ function pairOnMessage(topic, msg){
       if(d.t === 'text' && d.x && pairOn && ph === pairPid) handleRemoteText(String(d.x).slice(0, 200));
       if(d.t === 'qty' && d.sku && pairOn && ph === pairPid) setQty(String(d.sku), parseInt(d.q, 10) || 0, true);
       if(d.t === 'img' && d.d && pairOn && ph === pairPid && String(d.d).indexOf('data:image/') === 0) handleRemoteImage(d.d);
-}
-function connectPair(){
-  if(typeof mqtt === 'undefined'){ setPairStatus('err'); return; }
-  const myCode = pairCode;
-  pairRace().then(c => {
-    if(myCode !== pairCode) return;             // el QR cambió mientras conectaba
-    if(pairClient && pairClient !== c){ try{ pairClient.end(true); }catch(e){} }
-    pairClient = c;
-    if(!c.__bound){
-      c.__bound = true;
-      c.on('message', pairOnMessage);
-      c.on('error', () => { if(!pairOn) setPairStatus('err'); });
-      // sesión limpia: tras una reconexión el broker olvida la suscripción → volver a suscribir
-      c.on('connect', () => { if(c.__topic){ try{ c.subscribe(c.__topic, {qos:1}); }catch(e){} } });
-    }
-    const tp = pairTopic('p2k');
-    if(c.__topic && c.__topic !== tp){ try{ c.unsubscribe(c.__topic); }catch(e){} }
-    c.__topic = tp;
-    c.subscribe(tp, {qos:1}, err => { if(err) setPairStatus('err'); });
-  }).catch(() => setPairStatus('err'));
+    });
+    pairClient.on('error', () => { if(!pairOn) setPairStatus('err'); });
+  }catch(e){ setPairStatus('err'); }
 }
 function showToast(msg){
   const el = $('#ptoast'); // aviso propio — el id #toast pertenece al toast de sesión
@@ -5031,7 +4964,6 @@ function endPhoneSession(){
     try{ pairClient.end(false); }catch(e){}
     pairClient = null;
   }
-  pairWarm = null;
   pairOn = false;
   pairPid = null;
   phoneDone = false; doneArmed = 0;
@@ -5561,7 +5493,6 @@ function startSession(){
   wipeSession();   // cada sesión empieza en blanco, pase lo que pase antes
   endPhoneSession();
   closePair();
-  warmPair();      // el canal se abre ya, para que el QR encuentre al kiosko listo
   go('s-mode');
   armIdle();
 }
