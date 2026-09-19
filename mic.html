@@ -422,10 +422,27 @@ if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el 
 const vib = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 let micReset = null;
 function micLbl(txt){ $('#miclbl').textContent = txt; }
+let cur = null; // sesión de dictado en curso (para que el segundo toque pueda cerrarla)
+function endDictation(s, why){
+  if(s.fired) return;
+  s.fired = true; clearTimeout(s.quiet); clearTimeout(s.guard);
+  listening = false; if(cur === s) cur = null;
+  $('#mic').classList.remove('rec');
+  if(s.heard){ sendText(s.heard); return; }   // sendText pinta la confirmación
+  micLbl('No te escuché' + (why ? ' (' + why + ')' : '') + ' — toca e intenta otra vez, o usa el teclado');
+  micReset = setTimeout(() => micLbl('Toca para hablar'), 3500);
+}
 $('#mic').addEventListener('click', () => {
   if(blocked || !client) return;
   if(!SR){ $('#txt').focus(); return; }
-  if(listening){ try{ rec.stop(); }catch(e){} return; }  // segundo toque = enviar ya
+  if(listening && cur){
+    // segundo toque = enviar ya. Si el dictado no suelta nada en 1.2 s, se libera el botón.
+    const s = cur;
+    try{ rec.stop(); }catch(e){}
+    clearTimeout(s.guard);
+    s.guard = setTimeout(() => { try{ rec.abort(); }catch(e){} endDictation(s, s.heard ? '' : 'sin respuesta del dictado'); }, 1200);
+    return;
+  }
   clearTimeout(micReset);
   $('#mic').classList.remove('sent', 'cue');
   // barge-in: avisa al kiosko ANTES de dictar — si el bot está hablando,
@@ -433,19 +450,13 @@ $('#mic').addEventListener('click', () => {
   try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
   rec = new SR();
   rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
-  let heard = '', fired = false, quiet = null;
-  // Antes se esperaba a que el dictado "terminara solo" (~2–3 s de silencio).
-  // Ahora: resultado final → se envía YA; y si la frase deja de cambiar 1.1 s,
-  // se corta el dictado. El segundo toque sigue enviando al instante.
-  const fire = () => {
-    if(fired) return;
-    fired = true; clearTimeout(quiet);
-    listening = false;
-    $('#mic').classList.remove('rec');
-    if(heard){ sendText(heard); return; }
-    micLbl('No te escuché — toca e intenta otra vez');
-    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
-  };
+  /* Reglas del dictado:
+       resultado final → se envía YA (antes se esperaba a que "terminara solo");
+       la frase deja de cambiar 1.3 s → se corta y se envía;
+       iOS a veces entrega el resultado DESPUÉS de onend → 400 ms de gracia;
+       12 s sin ninguna señal → se aborta y se libera el botón con el motivo.
+     El botón nunca se queda rojo para siempre. */
+  const s = cur = {heard:'', fired:false, quiet:null, guard:null, err:''};
   listening = true;
   $('#mic').classList.add('rec');          // señal INMEDIATA, antes de que arranque el dictado
   micLbl('Preparando…');
@@ -458,18 +469,21 @@ $('#mic').addEventListener('click', () => {
     for(let i = 0; i < e.results.length; i++){
       if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
     }
-    heard = (fin || mid).trim();
-    if(heard){
-      $('#live').textContent = '“' + heard + '”';
+    const h = (fin || mid).trim();
+    if(h){
+      s.heard = h;
+      $('#live').textContent = '“' + h + '”';
       micLbl('Al terminar se envía solo — o toca para enviar ya');
-      clearTimeout(quiet);
-      quiet = setTimeout(() => { try{ rec.stop(); }catch(e){} fire(); }, 1100);
+      clearTimeout(s.guard);
+      clearTimeout(s.quiet);
+      s.quiet = setTimeout(() => { try{ rec.stop(); }catch(e){} endDictation(s); }, 1300);
     }
-    if(fin.trim()){ try{ rec.stop(); }catch(e){} fire(); }
+    if(fin.trim()){ try{ rec.stop(); }catch(e){} endDictation(s); }
   };
-  rec.onerror = () => { listening = false; };
-  rec.onend = fire;
-  try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
+  rec.onerror = e => { s.err = (e && e.error) || 'error'; listening = false; };
+  rec.onend = () => { if(s.heard) endDictation(s); else setTimeout(() => endDictation(s, s.err), 400); };
+  s.guard = setTimeout(() => { if(!s.fired && !s.heard){ try{ rec.abort(); }catch(e){} endDictation(s, 'sin respuesta del dictado'); } }, 12000);
+  try{ rec.start(); }catch(e){ listening = false; cur = null; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
 });
 $('#kb').addEventListener('click', () => {
   const r = $('#txtrow');
