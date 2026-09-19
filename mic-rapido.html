@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Stebot · Tu teléfono es el micrófono</title>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>if(typeof mqtt==='undefined')document.write('<scr'+'ipt src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></scr'+'ipt>');</script>
+<style>
+:root{
+  --blue:#0046BE; --blue-2:#1265E0; --navy:#061530;
+  --ink:#0B1526; --ink-2:#3E5064; --line:#DCE4EE; --bg:#F5F7FB;
+  --green:#0A7A45; --red:#C22C2C; --amber:#8A5200; --amber-s:#FCF1DF;
+  --grad:linear-gradient(135deg,#1265E0 0%,#0046BE 55%,#00308F 100%);
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+header{
+  background:var(--grad);color:#fff;padding:18px 22px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+header .t{font-size:17px;font-weight:800}
+header .t small{display:block;font-size:12px;font-weight:500;color:#BCD8F5;margin-top:2px}
+.st{font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;background:#ffffff22;color:#CFE2FA}
+.st.ok{background:#0A7A45;color:#fff}
+.st.err{background:#C22C2C;color:#fff}
+main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:auto}
+.ask{
+  background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;
+  box-shadow:0 6px 18px rgba(6,21,48,.06);
+}
+.ask .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.ask .q{font-size:19px;font-weight:700;line-height:1.35}
+.fb{
+  font-size:14px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.35;
+}
+.fb.ok{color:var(--green)}
+.fb.miss{color:var(--amber)}
+/* Durante la conversación el teléfono es UN BOTÓN. La plática se sigue
+   en el display: dos pantallas compitiendo fue lo que perdió a la gente. */
+.micstage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:26px 8px}
+.hintline{font-size:15px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.45;padding:0 10px}
+.hintline b{color:var(--blue)}
+/* ── DOCK FIJO ──
+   El micrófono es el volante del teléfono: SIEMPRE bajo el pulgar.
+   La lista crece hacia arriba en su propio scroll; los controles y la
+   confirmación de envío quedan anclados — el scroll jamás se los lleva. */
+#dock{
+  flex-shrink:0;background:#fff;border-top:1.5px solid var(--line);
+  box-shadow:0 -10px 26px rgba(6,21,48,.07);
+  padding:8px 18px calc(12px + env(safe-area-inset-bottom, 0px));
+  display:flex;flex-direction:column;gap:8px;
+}
+.dockrow{display:flex;align-items:flex-end;justify-content:center;gap:26px}
+.side{display:flex;flex-direction:column;align-items:center;gap:5px}
+.side>span{font-size:12px;font-weight:700;color:var(--ink-2)}
+.side button{
+  width:58px;height:58px;border-radius:50%;background:var(--bg);border:1.5px solid var(--line);
+  color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.side button:active{transform:scale(.93)}
+.side button svg{width:26px;height:26px}
+#mic{
+  width:112px;height:112px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--grad);color:#fff;box-shadow:0 10px 24px rgba(0,70,190,.35);
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+#mic:active{transform:scale(.94)}
+#mic.rec{background:var(--red);box-shadow:0 0 0 10px rgba(194,44,44,.15),0 12px 30px rgba(194,44,44,.35);animation:pulse 1.2s ease-in-out infinite}
+/* Enviado: el botón LO DICE — verde, palomita, vibración. El usuario no
+   debe dudar ni un segundo de si su voz salió o no. */
+#mic.sent{background:var(--green);box-shadow:0 0 0 10px rgba(10,122,69,.15),0 12px 30px rgba(10,122,69,.35);animation:none}
+/* Tu turno: cuando el bot pregunta, el micrófono llama con dos latidos */
+#mic.cue{animation:cue 1.4s ease-out 2}
+@keyframes cue{0%{box-shadow:0 0 0 0 rgba(0,70,190,.4),0 12px 30px rgba(0,70,190,.35)}70%{box-shadow:0 0 0 24px rgba(0,70,190,0),0 12px 30px rgba(0,70,190,.35)}100%{box-shadow:0 0 0 0 rgba(0,70,190,0),0 12px 30px rgba(0,70,190,.35)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+#mic svg{width:52px;height:52px}
+.miclbl{font-size:14px;font-weight:800;color:var(--ink);text-align:center;line-height:1.3;min-height:18px}
+#live{min-height:0;font-size:15px;font-weight:700;color:var(--ink);text-align:center;font-style:italic;padding:0 8px}
+#live:empty,.fb:empty{display:none}
+.txtrow{display:flex;gap:10px;flex-shrink:0}
+.txtrow input{
+  flex:1;min-width:0;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;
+  font-family:var(--sans);font-size:16px;background:#fff;color:var(--ink);outline:none;
+}
+.txtrow input:focus{border-color:var(--blue)}
+.txtrow button{
+  height:52px;padding:0 18px;flex-shrink:0;border:none;border-radius:14px;background:var(--blue);color:#fff;
+  font-family:var(--sans);font-size:16px;font-weight:800;cursor:pointer;
+}
+.txtrow #cam{
+  width:52px;padding:0;flex-shrink:0;background:#fff;color:var(--blue);
+  border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;
+}
+/* TU LISTA en el teléfono — el mismo objeto que vive en el kiosko */
+.mylist{
+  background:linear-gradient(160deg,#1265E0 0%,#0046BE 60%,#00308F 100%);
+  border-radius:18px;padding:16px 18px;color:#fff;box-shadow:0 10px 26px rgba(0,70,190,.28);
+}
+.ml-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ml-h .ml-t{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#BCD8F5}
+.ml-h .ml-tot{font-size:22px;font-weight:800}
+.ml-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #ffffff26}
+.ml-row:first-child{border-top:0}
+.ml-row .ml-pic{
+  width:56px;height:56px;border-radius:12px;background:#fff;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px;
+}
+.ml-row .ml-pic img{max-width:100%;max-height:100%;object-fit:contain}
+.ml-row .ml-k{flex:1;min-width:0}
+.ml-row .ml-sku{font-family:'SF Mono',Menlo,monospace;font-size:21px;font-weight:700;letter-spacing:.03em}
+.ml-row .ml-n{font-size:14px;color:#E4EEFB;margin-top:3px;line-height:1.3}
+.ml-row .ml-l{font-size:13px;color:#A9C6EE;margin-top:2px}
+.ml-row .ml-q{font-size:15px;font-weight:800;color:#BCD8F5;flex-shrink:0}
+.ml-row .ml-p{font-size:17px;font-weight:800;text-align:right}
+.ml-row .ml-r{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.ml-qc{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ml-qc button{
+  width:38px;height:38px;border-radius:11px;border:1.5px solid #ffffff59;background:#ffffff1f;
+  color:#fff;font-size:22px;font-weight:800;font-family:var(--sans);line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.ml-qc button:active{transform:scale(.92);background:#ffffff38}
+.ml-qc .qv{min-width:24px;text-align:center;font-size:19px;font-weight:800}
+.done-note{
+  background:var(--green);color:#fff;border-radius:14px;padding:12px 16px;
+  font-size:15px;font-weight:700;text-align:center;line-height:1.35;
+}
+.ml-f{font-size:13px;color:#BCD8F5;margin-top:12px;text-align:center;line-height:1.35}
+.codebox{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:20px;text-align:center}
+.codebox p{font-size:15px;color:var(--ink-2);margin-bottom:12px;line-height:1.4}
+.codebox input{
+  width:180px;height:56px;border:2px solid var(--line);border-radius:14px;text-align:center;
+  font-family:'SF Mono',Menlo,monospace;font-size:24px;letter-spacing:.2em;text-transform:uppercase;outline:none;
+}
+.codebox button{
+  display:block;margin:14px auto 0;height:52px;padding:0 26px;border:none;border-radius:14px;
+  background:var(--blue);color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--sans);
+}
+footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-height:1.4}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="t">Stebot · Asistente Steren<small>Tu sesión del kiosko, en tu mano · PRUEBA</small></div>
+  <span class="st" id="st">Conectando…</span>
+</header>
+<main>
+  <div class="codebox" id="codebox">
+    <p>Escribe el código que aparece en la pantalla del kiosko:</p>
+    <input id="code-in" maxlength="6" autocomplete="off" autocapitalize="characters">
+    <button id="code-go">Conectar</button>
+  </div>
+
+  <div id="talkui" class="hide" style="display:contents">
+    <div class="ask hide" id="ask-card">
+      <div class="k" id="ask-k">Stebot</div>
+      <div class="q" id="ask">Dime qué necesitas.</div>
+    </div>
+    <div class="micstage" id="micstage">
+      <div class="hintline" id="hintline">Toca el micrófono y dime qué buscas — <b>la conversación va en la pantalla del kiosko</b></div>
+    </div>
+    <div class="done-note hide" id="done-note">Listo — muéstrala en caja o toma los productos del pasillo.</div>
+    <div class="mylist hide" id="mylist">
+      <div class="ml-h"><span class="ml-t" id="ml-t">Tu lista</span><span class="ml-tot" id="ml-total">$0</span></div>
+      <div id="ml-rows"></div>
+      <div class="ml-f">Dilos en caja o tómalos del pasillo · precios de lista</div>
+    </div>
+    <footer>Demo · Kiosco Interactivo Steren. Esta página no guarda datos; la sesión se borra al cerrar.</footer>
+  </div>
+</main>
+<!-- DOCK FIJO: el micrófono, el teclado y la foto viven ANCLADOS abajo.
+     La lista puede crecer lo que quiera — los controles jamás se van con
+     el scroll, y la confirmación de envío tampoco. -->
+<div id="dock" class="hide">
+    <div class="fb" id="fb"></div>
+    <div id="live"></div>
+    <div class="txtrow hide" id="txtrow">
+      <input id="txt" placeholder="Escríbelo aquí…" autocomplete="off">
+      <button id="send">Enviar</button>
+    </div>
+    <div class="dockrow" id="minirow">
+      <div class="side">
+        <button id="kb" aria-label="Teclado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></button>
+        <span>Teclado</span>
+      </div>
+      <div class="side mid">
+        <button id="mic" aria-label="Hablar">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="25" y="8" width="14" height="26" rx="7"/><path d="M17 28a15 15 0 0 0 30 0M32 44v10M23 56h18"/>
+          </svg>
+        </button>
+        <span class="miclbl" id="miclbl">Toca para hablar</span>
+      </div>
+      <div class="side">
+        <button id="cam" aria-label="Foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg></button>
+        <span>Foto</span>
+      </div>
+      <input type="file" id="cam-in" accept="image/*" style="display:none">
+    </div>
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+let client = null, code = '', connected = false, blocked = false, finished = false;
+const pid = Math.random().toString(36).slice(2, 10); // identidad de este teléfono
+
+function topic(sub){ return 'steren-kiosko-demo/' + code + '/' + sub; }
+function setSt(cls, txt){ const el = $('#st'); el.className = 'st ' + cls; el.textContent = txt; }
+function fb(cls, txt){ const el = $('#fb'); el.className = 'fb ' + cls; el.textContent = txt; }
+
+function start(c){
+  code = c.toUpperCase();
+  $('#codebox').classList.add('hide');
+  $('#talkui').classList.remove('hide');
+  $('#dock').classList.remove('hide');
+  if(typeof mqtt === 'undefined'){ setSt('err', 'Sin conexión'); return; }
+  setSt('', 'Conectando…');
+  client = mqtt.connect(BROKER, {
+    clientId: 'phone-' + code + '-' + pid,
+    clean: true, connectTimeout: 8000, reconnectPeriod: 3000,
+    // aviso de última voluntad: si el teléfono muere (pila, red), el kiosko lo sabe
+    will: {topic: 'steren-kiosko-demo/' + code.toUpperCase() + '/p2k', payload: JSON.stringify({t:'bye', ph:pid}), qos: 0, retain: false}
+  });
+  client.on('connect', () => {
+    connected = true;
+    setSt('', 'Sincronizando…');
+    client.subscribe(topic('k2p'));
+    client.publish(topic('p2k'), JSON.stringify({t:'hello', ph:pid}));
+  });
+  client.on('message', (tp, msg) => {
+    let d = null;
+    try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
+    if(d.t === 'ack' && d.ph === pid){ blocked = false; setSt('ok', 'Conectado'); }
+    if(d.t === 'busy' && d.ph === pid){
+      blocked = true;
+      setSt('err', 'Kiosko ocupado');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide'); $('#dock').classList.add('hide');
+      $('#ask').textContent = 'Este kiosko ya está en sesión con otro teléfono. Espera a que termine y escanea de nuevo.';
+      fb('miss', '');
+    }
+    if(d.t === 'done'){
+      // El kiosko se liberó para el siguiente cliente; tu lista se queda contigo
+      finished = true; blocked = true;
+      renderList(d);
+      setSt('ok', 'Tu lista');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide');
+      $('#ask-k').textContent = 'Stebot · Steren';
+      $('#ask').textContent = 'Gracias por tu visita.';
+      $('#done-note').textContent = 'Tu lista se queda aquí — muéstrala en caja o toma los productos del pasillo.';
+      $('#done-note').classList.remove('hide');
+      $('#dock').classList.add('hide');
+      fb('', '');
+      return;
+    }
+    if(d.t === 'end'){
+      if(finished) return; // ya nos despedimos bien: no la mates
+      blocked = true;
+      setSt('', 'Sesión terminada');
+      $('#ask-card').classList.remove('hide'); $('#micstage').classList.add('hide'); $('#dock').classList.add('hide');
+      $('#ask').textContent = 'La sesión del kiosko terminó. Escanea el QR de la pantalla para empezar otra.';
+      fb('', '');
+      try{ client.end(true); }catch(e){}
+    }
+    if(blocked) return;
+    if(d.t === 'list'){ renderList(d); }
+    // La pregunta del bot NO se repite aquí: vive en el display.
+    if(d.t === 'ask'){
+      fb('', '');
+      // Tu turno: el micrófono da dos latidos para llamar la mano
+      if(!listening){ $('#mic').classList.remove('cue'); void $('#mic').offsetWidth; $('#mic').classList.add('cue'); }
+    }
+    if(d.t === 'ok' && d.x){ fb('ok', d.x); }
+    if(d.t === 'miss' && d.x){ fb('miss', d.x); }
+  });
+  window.addEventListener('beforeunload', () => {
+    try{ client.publish(topic('p2k'), JSON.stringify({t:'bye', ph:pid})); }catch(e){}
+  });
+  client.on('error', () => { if(!connected) setSt('err', 'Sin conexión'); });
+  client.on('close', () => { if(connected) setSt('', 'Reconectando…'); });
+}
+/* Foto → el display. Se reduce a 640 px / JPEG antes de viajar por el
+   canal (≈60–150 KB): cabe de sobra en el broker y llega al instante.
+   En producción la imagen entra a la tubería de visión del bot. */
+$('#cam').addEventListener('click', () => { if(!blocked && client) $('#cam-in').click(); });
+$('#cam-in').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!f || !client || blocked) return;
+  fb('', 'Preparando tu foto…');
+  const img = new Image();
+  const url = URL.createObjectURL(f);
+  img.onload = () => {
+    const MAX = 640;
+    const sc = Math.min(1, MAX / Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * sc);
+    c.height = Math.round(img.height * sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    const d = c.toDataURL('image/jpeg', 0.72);
+    try{
+      client.publish(topic('p2k'), JSON.stringify({t:'img', d, ph:pid}));
+      fb('ok', 'Foto enviada — Stebot la está analizando.');
+    }catch(err){ fb('miss', 'No se pudo enviar la foto — intenta otra vez.'); }
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); fb('miss', 'No pude leer esa imagen.'); };
+  img.src = url;
+});
+
+/* La lista del kiosko, en vivo. Llega al emparejar y en cada cambio. */
+function renderList(d){
+  const wrap = $('#mylist'), items = d.items || [];
+  if(!items.length){ wrap.classList.add('hide'); return; }
+  const uds = items.reduce((a, r) => a + r.q, 0);
+  $('#ml-t').textContent = 'Tu lista · ' + items.length + (items.length === 1 ? ' producto' : ' productos') +
+    (uds > items.length ? ' · ' + uds + ' piezas' : '');
+  $('#ml-total').textContent = money(d.total || 0);
+  $('#ml-rows').innerHTML = items.map(r =>
+    '<div class="ml-row">' +
+    (r.img ? '<div class="ml-pic"><img src="' + esc(r.img) + '" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>' : '') +
+    '<div class="ml-k"><div class="ml-sku">' + esc(r.sku) + '</div>' +
+    '<div class="ml-n">' + esc(r.n) + '</div><div class="ml-l">' + esc(r.loc) + '</div></div>' +
+    // cantidad y precio APILADOS a la derecha: el nombre respira en un teléfono angosto
+    '<div class="ml-r">' +
+    (finished
+      ? (r.q > 1 ? '<div class="ml-q">×' + r.q + '</div>' : '')
+      : '<div class="ml-qc"><button data-sku="' + esc(r.sku) + '" data-q="' + (r.q - 1) + '">−</button>' +
+        '<span class="qv">' + r.q + '</span>' +
+        '<button data-sku="' + esc(r.sku) + '" data-q="' + (r.q + 1) + '">+</button></div>') +
+    '<div class="ml-p">' + money(r.p * r.q) + '</div></div></div>').join('');
+  wrap.classList.remove('hide');
+}
+/* La lista se edita desde el teléfono: el kiosko aplica y reenvía */
+$('#ml-rows').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b || finished || blocked || !client) return;
+  const q = parseInt(b.dataset.q, 10);
+  if(isNaN(q) || q > 20) return;
+  try{ client.publish(topic('p2k'), JSON.stringify({t:'qty', sku:b.dataset.sku, q, ph:pid})); }catch(err){}
+  fb('', q <= 0 ? 'Quitándolo…' : 'Actualizando…');
+});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const money = n => '$' + (n % 1 ? n.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}) : n.toLocaleString('es-MX'));
+
+function sendText(x){
+  x = (x || '').trim();
+  if(!x || !client || blocked) return;
+  client.publish(topic('p2k'), JSON.stringify({t:'text', x, ph:pid}));
+  // Confirmación que no deja duda: botón verde + palomita + vibración,
+  // y la frase enviada se queda visible un momento con su ✓.
+  clearTimeout(micReset);
+  $('#mic').classList.remove('rec');
+  $('#mic').classList.add('sent');
+  micLbl('Enviado ✓');
+  $('#live').textContent = '✓ “' + x + '”';
+  fb('ok', 'Mira la pantalla del kiosko — Stebot te contesta ahí.');
+  vib([30, 40, 30]);
+  micReset = setTimeout(() => {
+    $('#mic').classList.remove('sent');
+    micLbl('Toca para hablar');
+    $('#live').textContent = '';
+  }, 2200);
+}
+
+/* ---- Voz en el teléfono (Web Speech API; con respaldo de texto) ---- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el teclado de abajo.'; $('#miclbl').textContent = 'Usa el teclado'; }
+/* El botón dice su estado en CADA instante — la fricción que se veía en
+   pruebas era el silencio entre "toqué" y "¿me oyó?": el dictado tarda
+   ~medio segundo en arrancar y no había ninguna señal. Ahora:
+     toco   → rojo al INSTANTE + "Preparando…" + vibración
+     listo  → "Te escucho — habla"
+     hablo  → la frase se pinta en vivo
+     callo  → se envía SOLO (o toco para enviar ya) → VERDE + ✓ + vibración
+   Nadie se queda pensando si su mensaje salió. */
+const vib = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+let micReset = null;
+function micLbl(txt){ $('#miclbl').textContent = txt; }
+$('#mic').addEventListener('click', () => {
+  if(blocked || !client) return;
+  if(!SR){ $('#txt').focus(); return; }
+  if(listening){ try{ rec.stop(); }catch(e){} return; }  // segundo toque = enviar ya
+  clearTimeout(micReset);
+  $('#mic').classList.remove('sent', 'cue');
+  // barge-in: avisa al kiosko ANTES de dictar — si el bot está hablando,
+  // se calla en ese instante y no se dicta encima de su voz
+  try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
+  rec = new SR();
+  rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
+  let heard = '', sent = false;
+  listening = true;
+  $('#mic').classList.add('rec');          // señal INMEDIATA, antes de que arranque el dictado
+  micLbl('Preparando…');
+  $('#live').textContent = '';
+  vib(25);
+  rec.onstart = rec.onaudiostart = () => { if(listening) micLbl('Te escucho — habla'); };
+  rec.onspeechstart = () => { if(listening) micLbl('Te escucho…'); };
+  rec.onresult = e => {
+    let fin = '', mid = '';
+    for(let i = 0; i < e.results.length; i++){
+      if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
+    }
+    heard = (fin || mid).trim();
+    if(heard){ $('#live').textContent = '“' + heard + '”'; micLbl('Al terminar se envía solo — o toca para enviar ya'); }
+    /* Único cambio respecto a la versión estable: si el dictado ya dio una
+       frase DEFINITIVA, se envía en ese instante. Antes se esperaba a que el
+       teléfono decidiera que habías terminado de hablar (2–4 s en Safari).
+       Si iOS no marca nada como definitivo, no pasa nada: sigue el camino de
+       siempre por onend. */
+    if(fin.trim() && !sent){
+      sent = true;
+      listening = false;
+      $('#mic').classList.remove('rec');
+      sendText(heard);
+      try{ rec.stop(); }catch(e){}
+    }
+  };
+  rec.onerror = () => { listening = false; };
+  rec.onend = () => {
+    listening = false;
+    $('#mic').classList.remove('rec');
+    if(sent) return;                        // ya se envió al llegar la frase definitiva
+    if(heard){ sendText(heard); return; }   // sendText pinta la confirmación
+    micLbl('No te escuché — toca e intenta otra vez');
+    micReset = setTimeout(() => micLbl('Toca para hablar'), 2200);
+  };
+  try{ rec.start(); }catch(e){ listening = false; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
+});
+$('#kb').addEventListener('click', () => {
+  const r = $('#txtrow');
+  r.classList.toggle('hide');
+  if(!r.classList.contains('hide')) $('#txt').focus();
+});
+$('#send').addEventListener('click', () => { sendText($('#txt').value); $('#txt').value = ''; });
+$('#txt').addEventListener('keydown', e => { if(e.key === 'Enter'){ sendText($('#txt').value); $('#txt').value = ''; } });
+$('#code-go').addEventListener('click', () => { const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); });
+$('#code-in').addEventListener('keydown', e => { if(e.key === 'Enter'){ const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); } });
+
+const qs = new URLSearchParams(location.search);
+if(qs.get('c')) start(qs.get('c'));
+</script>
+</body>
+</html>
