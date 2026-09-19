@@ -82,7 +82,8 @@ main{flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:
 #mic svg{width:52px;height:52px}
 .miclbl{font-size:14px;font-weight:800;color:var(--ink);text-align:center;line-height:1.3;min-height:18px}
 #live{min-height:0;font-size:15px;font-weight:700;color:var(--ink);text-align:center;font-style:italic;padding:0 8px}
-#live:empty,.fb:empty{display:none}
+#live:empty,.fb:empty,#diag:empty{display:none}
+#diag{font-size:11px;color:#8A99AC;text-align:center;line-height:1.35;padding:0 8px;word-break:break-word}
 .txtrow{display:flex;gap:10px;flex-shrink:0}
 .txtrow input{
   flex:1;min-width:0;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;
@@ -148,7 +149,7 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 </head>
 <body>
 <header>
-  <div class="t">Stebot · Asistente Steren<small>Tu sesión del kiosko, en tu mano</small></div>
+  <div class="t">Stebot · Asistente Steren<small>Tu sesión del kiosko, en tu mano · v2.2</small></div>
   <span class="st" id="st">Conectando…</span>
 </header>
 <main>
@@ -181,6 +182,7 @@ footer{padding:6px 8px 2px;font-size:12px;color:#8A99AC;text-align:center;line-h
 <div id="dock" class="hide">
     <div class="fb" id="fb"></div>
     <div id="live"></div>
+    <div id="diag"></div>
     <div class="txtrow hide" id="txtrow">
       <input id="txt" placeholder="Escríbelo aquí…" autocomplete="off">
       <button id="send">Enviar</button>
@@ -422,15 +424,30 @@ if(!SR){ $('#hintline').textContent = 'Tu navegador no tiene dictado — usa el 
 const vib = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 let micReset = null;
 function micLbl(txt){ $('#miclbl').textContent = txt; }
+/* ---- Diagnóstico visible: qué hizo el dictado y cuándo ---- */
+let diag = [], diagT0 = 0;
+function diagReset(){ diag = []; diagT0 = performance.now(); const el = $('#diag'); if(el) el.textContent = ''; }
+function diagLog(x){ diag.push(x + ' ' + ((performance.now() - diagT0) / 1000).toFixed(1) + 's'); const el = $('#diag'); if(el) el.textContent = diag.join(' · '); }
+/* Configuraciones alternas del dictado. Si una no da resultados, el
+   siguiente intento usa la siguiente; la que funcione se queda. */
+const SR_MODES = [
+  {name:'A', continuous:false, interimResults:true,  lang:'es-MX'},
+  {name:'B', continuous:true,  interimResults:true,  lang:'es-MX'},
+  {name:'C', continuous:false, interimResults:false, lang:'es-MX'},
+  {name:'D', continuous:false, interimResults:true,  lang:'es'}
+];
+let srAttempt = 0;
 let cur = null; // sesión de dictado en curso (para que el segundo toque pueda cerrarla)
 function endDictation(s, why){
   if(s.fired) return;
   s.fired = true; clearTimeout(s.quiet); clearTimeout(s.guard);
   listening = false; if(cur === s) cur = null;
   $('#mic').classList.remove('rec');
-  if(s.heard){ sendText(s.heard); return; }   // sendText pinta la confirmación
-  micLbl('No te escuché' + (why ? ' (' + why + ')' : '') + ' — toca e intenta otra vez, o usa el teclado');
-  micReset = setTimeout(() => micLbl('Toca para hablar'), 3500);
+  if(s.heard){ diagLog('enviado'); sendText(s.heard); return; }   // sendText pinta la confirmación
+  srAttempt++; // sin resultado: el próximo intento prueba otra configuración
+  diagLog('sin frase' + (why ? ' (' + why + ')' : ''));
+  micLbl('No te escuché' + (why ? ' (' + why + ')' : '') + ' — toca de nuevo (probaré el modo ' + SR_MODES[srAttempt % SR_MODES.length].name + ') o usa el teclado');
+  micReset = setTimeout(() => micLbl('Toca para hablar'), 4500);
 }
 $('#mic').addEventListener('click', () => {
   if(blocked || !client) return;
@@ -438,6 +455,7 @@ $('#mic').addEventListener('click', () => {
   if(listening && cur){
     // segundo toque = enviar ya. Si el dictado no suelta nada en 1.2 s, se libera el botón.
     const s = cur;
+    diagLog('toque');
     try{ rec.stop(); }catch(e){}
     clearTimeout(s.guard);
     s.guard = setTimeout(() => { try{ rec.abort(); }catch(e){} endDictation(s, s.heard ? '' : 'sin respuesta del dictado'); }, 1200);
@@ -448,8 +466,11 @@ $('#mic').addEventListener('click', () => {
   // barge-in: avisa al kiosko ANTES de dictar — si el bot está hablando,
   // se calla en ese instante y no se dicta encima de su voz
   try{ client.publish(topic('p2k'), JSON.stringify({t:'hush', ph:pid})); }catch(e){}
+  const mode = SR_MODES[srAttempt % SR_MODES.length];
+  diagReset(); diagLog('modo ' + mode.name);
   rec = new SR();
-  rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = false;
+  rec.lang = mode.lang; rec.interimResults = mode.interimResults; rec.continuous = mode.continuous;
+  try{ rec.maxAlternatives = 1; }catch(e){}
   /* Reglas del dictado:
        resultado final → se envía YA (antes se esperaba a que "terminara solo");
        la frase deja de cambiar 1.3 s → se corta y se envía;
@@ -462,28 +483,35 @@ $('#mic').addEventListener('click', () => {
   micLbl('Preparando…');
   $('#live').textContent = '';
   vib(25);
-  rec.onstart = rec.onaudiostart = () => { if(listening) micLbl('Te escucho — habla'); };
-  rec.onspeechstart = () => { if(listening) micLbl('Te escucho…'); };
+  rec.onstart = () => { diagLog('start'); if(listening) micLbl('Te escucho — habla'); };
+  rec.onaudiostart = () => { diagLog('audio'); if(listening) micLbl('Te escucho — habla'); };
+  rec.onsoundstart = () => diagLog('sonido');
+  rec.onspeechstart = () => { diagLog('voz'); if(listening) micLbl('Te escucho…'); };
+  rec.onspeechend = () => diagLog('fin voz');
+  rec.onnomatch = () => diagLog('nomatch');
   rec.onresult = e => {
     let fin = '', mid = '';
     for(let i = 0; i < e.results.length; i++){
-      if(e.results[i].isFinal) fin += e.results[i][0].transcript; else mid += e.results[i][0].transcript;
+      const r = e.results[i], alt = r && r[0];
+      if(!alt) continue;
+      if(r.isFinal) fin += alt.transcript; else mid += alt.transcript;
     }
     const h = (fin || mid).trim();
+    diagLog(fin.trim() ? 'final' : 'parcial');
     if(h){
       s.heard = h;
       $('#live').textContent = '“' + h + '”';
       micLbl('Al terminar se envía solo — o toca para enviar ya');
       clearTimeout(s.guard);
       clearTimeout(s.quiet);
-      s.quiet = setTimeout(() => { try{ rec.stop(); }catch(e){} endDictation(s); }, 1300);
+      s.quiet = setTimeout(() => { diagLog('silencio'); try{ rec.stop(); }catch(e){} endDictation(s); }, 1300);
     }
     if(fin.trim()){ try{ rec.stop(); }catch(e){} endDictation(s); }
   };
-  rec.onerror = e => { s.err = (e && e.error) || 'error'; listening = false; };
-  rec.onend = () => { if(s.heard) endDictation(s); else setTimeout(() => endDictation(s, s.err), 400); };
-  s.guard = setTimeout(() => { if(!s.fired && !s.heard){ try{ rec.abort(); }catch(e){} endDictation(s, 'sin respuesta del dictado'); } }, 12000);
-  try{ rec.start(); }catch(e){ listening = false; cur = null; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
+  rec.onerror = e => { s.err = (e && e.error) || 'error'; diagLog('error ' + s.err); listening = false; };
+  rec.onend = () => { diagLog('end'); if(s.heard) endDictation(s); else setTimeout(() => endDictation(s, s.err), 400); };
+  s.guard = setTimeout(() => { if(!s.fired && !s.heard){ diagLog('sin señal 12 s'); try{ rec.abort(); }catch(e){} endDictation(s, 'sin respuesta del dictado'); } }, 12000);
+  try{ rec.start(); }catch(e){ diagLog('start falló'); listening = false; cur = null; $('#mic').classList.remove('rec'); micLbl('Toca para hablar'); }
 });
 $('#kb').addEventListener('click', () => {
   const r = $('#txtrow');
@@ -495,8 +523,19 @@ $('#txt').addEventListener('keydown', e => { if(e.key === 'Enter'){ sendText($('
 $('#code-go').addEventListener('click', () => { const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); });
 $('#code-in').addEventListener('keydown', e => { if(e.key === 'Enter'){ const v = $('#code-in').value.trim(); if(v.length >= 4) start(v); } });
 
+/* Modo prueba (mic.html?test=1): sin kiosko ni canal. Sirve para saber si el
+   teléfono transcribe por sí solo — si aquí no hay frase, el problema es del
+   dictado del teléfono (permiso, idioma, red), no del kiosko. */
+function testMode(){
+  code = 'TEST'; acked = true; connected = true; blocked = false;
+  client = {connected:true, publish(){}, end(){}};
+  $('#codebox').classList.add('hide'); $('#talkui').classList.remove('hide'); $('#dock').classList.remove('hide');
+  setSt('ok', 'Prueba de dictado');
+  $('#hintline').innerHTML = '<b>Modo prueba</b> — toca el micrófono y habla. Aquí no hay kiosko: solo se comprueba que tu teléfono transcriba.';
+}
 const qs = new URLSearchParams(location.search);
-if(qs.get('c')) start(qs.get('c'));
+if(qs.get('test')) testMode();
+else if(qs.get('c')) start(qs.get('c'));
 </script>
 </body>
 </html>
