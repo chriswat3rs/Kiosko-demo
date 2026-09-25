@@ -4825,7 +4825,17 @@ let pairClient = null, pairCode = '', pairOn = false, voiceSource = null, pairPi
 let phoneSeen = 0, phoneBeats = false, phoneWatch = null;
 const PHONE_STALE_MS = 45000;
 function freePhoneSlot(){
-  if(pairOn && pairClient){ try{ pairClient.publish(pairTopic('k2p'), JSON.stringify({t:'end'})); }catch(e){} }
+  if(pairOn && pairClient){
+    /* El canal viejo se retira con calma: primero entrega el aviso 'end' al
+       teléfono anterior y luego se cierra. connectPair cierra a la fuerza el
+       cliente que encuentre, y eso tiraba el aviso: el teléfono se quedaba en
+       "Conectado" sin saber que su sesión terminó. */
+    const old = pairClient, oldTopic = pairTopic('k2p');
+    pairClient = null;
+    try{ old.publish(oldTopic, JSON.stringify({t:'end'}), () => { try{ old.end(false); }catch(e){} }); }
+    catch(e){ try{ old.end(true); }catch(_){} }
+    setTimeout(() => { try{ old.end(true); }catch(e){} }, 3000);   // por si el aviso nunca sale
+  }
   pairOn = false; pairPid = null; phoneSeen = 0; phoneBeats = false;
   clearInterval(phoneWatch); phoneWatch = null;
 }
@@ -4927,6 +4937,8 @@ function connectPair(){
       let d = null;
       try{ d = JSON.parse(msg.toString()); }catch(e){ return; }
       const ph = d.ph || 'p1';
+      // un canal que se está retirando (QR anterior) ya no atiende a nadie
+      if(topic !== pairTopic('p2k')) return;
       // cualquier señal del teléfono emparejado cuenta como "sigue ahí"
       if(pairOn && ph === pairPid) phoneSeen = Date.now();
       // latido: NO reinicia el temporizador de inactividad del kiosko, a propósito
