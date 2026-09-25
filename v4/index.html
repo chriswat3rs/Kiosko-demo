@@ -5848,31 +5848,78 @@ setInterval(() => {
 </script>
 <script type="module">
 /* ── Nota de voz → texto, en el propio kiosko ──
-   Whisper corriendo en el navegador del kiosko (transformers.js). El modelo
-   se descarga UNA vez y queda en caché: los teléfonos de los clientes no
-   descargan nada, solo graban y envían, como en WhatsApp. En el MVP esto se
-   sustituye por el servicio de voz del backend — el protocolo no cambia. */
+   Whisper corriendo en el navegador del kiosko (transformers.js). El modelo se
+   descarga UNA vez y queda en caché; los teléfonos de los clientes no descargan
+   nada, solo graban y envían, como en WhatsApp. Se usa el más preciso que
+   aguante la máquina:
+     GPU con media precisión → large-v3-turbo (casi el mejor de Whisper; ~1.3 GB la 1a vez)
+     GPU sin media precisión → small
+     sin GPU                 → base (el ligero)
+   ?asr=turbo|small|base fuerza uno, para pruebas. En el MVP esto se sustituye
+   por el servicio de voz del backend — el protocolo teléfono ⇄ kiosko no cambia. */
 const TF_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
-const MODEL = 'onnx-community/whisper-base';
+const TIERS = {
+  turbo: {model: 'onnx-community/whisper-large-v3-turbo', opt: {device: 'webgpu', dtype: {encoder_model: 'fp16', decoder_model_merged: 'q4'}}},
+  small: {model: 'onnx-community/whisper-small', opt: {device: 'webgpu', dtype: {encoder_model: 'fp32', decoder_model_merged: 'q4'}}},
+  base:  {model: 'onnx-community/whisper-base', opt: {dtype: 'q8'}}
+};
 let asr = null, loading = null, device = '';
-function build(tf){
-  const wasm = () => tf.pipeline('automatic-speech-recognition', MODEL, {dtype: 'q8'}).then(p => { device = 'wasm'; return p; });
-  if(!navigator.gpu) return wasm();
-  return tf.pipeline('automatic-speech-recognition', MODEL, {device: 'webgpu', dtype: {encoder_model: 'fp32', decoder_model_merged: 'q4'}})
-    .then(p => { device = 'webgpu'; return p; })
-    .catch(e => { console.warn('[voz] WebGPU no disponible, uso WASM', e); return wasm(); });
+// aviso discreto para quien opera el kiosko: cuánto falta para que Stebot pueda oír
+const pill = document.createElement('div');
+pill.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:99999;padding:7px 12px;border-radius:999px;background:rgba(6,21,48,.78);color:#fff;font:600 13px/1.2 -apple-system,Segoe UI,Roboto,Arial,sans-serif;pointer-events:none;transition:opacity .4s;opacity:0';
+document.body.appendChild(pill);
+function status(t, hideIn){
+  pill.textContent = t; pill.style.opacity = t ? '1' : '0';
+  clearTimeout(status._t);
+  if(hideIn) status._t = setTimeout(() => { pill.style.opacity = '0'; }, hideIn);
+}
+async function order(){
+  const want = new URLSearchParams(location.search).get('asr');
+  if(want && TIERS[want]) return [want];
+  if(!navigator.gpu) return ['base'];
+  let f16 = false;
+  try{ const ad = await navigator.gpu.requestAdapter(); f16 = !!(ad && ad.features.has('shader-f16')); }catch(e){}
+  return f16 ? ['turbo', 'small', 'base'] : ['small', 'base'];
+}
+async function build(tf){
+  const files = {};
+  const progress = p => {
+    if(!p || !p.file || !p.total) return;
+    files[p.file] = [p.loaded || 0, p.total];
+    let a = 0, b = 0;
+    for(const f in files){ a += files[f][0]; b += files[f][1]; }
+    if(b > 20e6) status('🎙 Preparando el oído de Stebot · ' + Math.min(99, Math.floor(a / b * 100)) + '%');
+  };
+  let lastErr = null;
+  for(const name of await order()){
+    const t = TIERS[name];
+    try{
+      const p = await tf.pipeline('automatic-speech-recognition', t.model, Object.assign({progress_callback: progress}, t.opt));
+      device = name + (t.opt.device === 'webgpu' ? ' · webgpu' : ' · wasm');
+      return p;
+    }catch(e){ lastErr = e; console.warn('[voz] no se pudo cargar ' + name + ', pruebo el siguiente', e); }
+  }
+  throw lastErr || new Error('sin modelo de voz');
 }
 function load(){
   if(asr) return Promise.resolve(asr);
   if(!loading){
+    status('🎙 Preparando el oído de Stebot…');
     loading = import(TF_URL)
       .then(tf => { tf.env.allowLocalModels = false; return build(tf); })
       .then(async p => {
-        // calentamiento: la primera inferencia compila todo; así la del cliente sale rápida
+        status('🎙 Afinando el oído de Stebot…');
+        // calentamiento: la primera inferencia compila la GPU; así la del cliente sale rápida
         try{ await p(new Float32Array(16000), {language: 'spanish', task: 'transcribe'}); }catch(e){}
-        asr = p; console.log('[voz] Whisper listo ·', device); return p;
+        asr = p; console.log('[voz] Whisper listo ·', device);
+        status('🎙 Stebot ya puede oír notas de voz', 3500);
+        return p;
       })
-      .catch(e => { loading = null; console.warn('[voz] no se pudo cargar Whisper', e); throw e; });
+      .catch(e => {
+        loading = null; console.warn('[voz] no se pudo cargar Whisper', e);
+        status('🎙 Sin reconocimiento de voz — usa el teclado del teléfono', 8000);
+        throw e;
+      });
   }
   return loading;
 }
