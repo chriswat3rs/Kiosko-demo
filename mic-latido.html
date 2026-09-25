@@ -296,7 +296,8 @@ function start(c){
     try{ client.publish(topic('p2k'), JSON.stringify({t:'bye', ph:pid})); }catch(e){}
   });
   client.on('error', () => { if(!connected) setSt('err', 'Sin conexión'); });
-  client.on('close', () => { if(connected) setSt('', 'Reconectando…'); });
+  // si el kiosko nos despidió o estamos bloqueados, no pisar "Sesión terminada" con "Reconectando…"
+  client.on('close', () => { if(connected && !blocked && !finished) setSt('', 'Reconectando…'); });
 }
 /* Foto → el display. Se reduce a 640 px / JPEG antes de viajar por el
    canal (≈60–150 KB): cabe de sobra en el broker y llega al instante.
